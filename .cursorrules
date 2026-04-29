@@ -7,6 +7,7 @@
 - 스타일링: @emotion/styled, @emotion/react
 - 애니메이션: Framer Motion
 - 백엔드: Supabase
+- 패키지 매니저: yarn (npm 사용 금지)
 
 ## 코딩 스타일
 
@@ -26,7 +27,8 @@
 - `@emotion/styled` 사용
 - Framer Motion과 함께 사용 시: `styled(motion.button)` 형태로 직접 감싸기
 - `as` prop으로 motion 컴포넌트 전달 금지 (타입 에러 발생)
-- 테마는 `useTheme()` hook으로 접근
+- 테마 시스템은 색상 등 디자인 토큰에만 사용 (컬러 팔레트)
+- 레이아웃, 간격(spacing) 등은 테마 참조하지 않고 직접 `rem` 또는 `px` 값 사용
 - 모든 스타일 컴포넌트는 파일 상단에 정의하지 않고 .style.ts 파일에 정의하는 등 유동적으로 사용하는 것을 권장
 
 ### 파일 구조
@@ -70,6 +72,12 @@
 - 클라이언트는 `src/lib/supabaseClient.ts`에서 import
 - 환경 변수는 `.env.local`에 정의
 - 타입은 Supabase에서 자동 생성된 타입 사용 권장
+
+## 패키지 매니저
+- **yarn 사용**: 모든 패키지 설치/관리는 yarn 사용 (npm 사용 금지)
+- `yarn add <package>` - 패키지 설치
+- `yarn remove <package>` - 패키지 제거
+- `yarn install` - 의존성 설치
 
 ## 코드 생성 시 주의사항
 1. 새로운 컴포넌트 생성 시 적절한 디렉토리에 배치

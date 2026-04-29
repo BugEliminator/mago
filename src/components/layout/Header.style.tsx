@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { LAYOUT_CONTENT_MAX_WIDTH } from "@/lib/layout";
 
 export const HeaderContainer = styled.header`
   width: calc(100% - 4rem);
@@ -9,7 +10,7 @@ export const HeaderContainer = styled.header`
   position: fixed;
   top: 2rem;
   z-index: 100;
-  max-width: 1400px;
+  max-width: ${LAYOUT_CONTENT_MAX_WIDTH};
   left: 50%;
   transform: translateX(-50%);
 `;

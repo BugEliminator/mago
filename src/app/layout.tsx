@@ -1,7 +1,7 @@
 import EmotionRegistry from "@/lib/registry";
 import ThemeProvider from "@/components/providers/ThemeProvider";
 import type { Metadata } from "next";
-import HeaderContainer from "@/components/layout/Header";
+import ConditionalHeader from "@/components/layout/ConditionalHeader";
 
 export const metadata: Metadata = {
   title: "MAGO - AI 기반 타로 서비스",
@@ -33,7 +33,7 @@ export default function RootLayout({
       </head>
       <body>
         <EmotionRegistry>
-          <HeaderContainer />
+          <ConditionalHeader />
           <ThemeProvider>{children}</ThemeProvider>
         </EmotionRegistry>
       </body>

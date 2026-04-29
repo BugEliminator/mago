@@ -5,6 +5,9 @@
 // 테마 타입 (lib/theme.ts에서 re-export)
 export type { Theme } from "@/lib/theme";
 
+// 타로 관련 타입 (types/tarot.ts에서 re-export)
+export * from "./tarot";
+
 // 사용자 타입 (향후 확장 가능)
 export interface User {
   id: string;

@@ -21,7 +21,7 @@ export default function Header() {
             <Link href="/">MAGO</Link>
           </Logo>
           <NavLink>
-            <Link href="/">타로 시작하기</Link>
+            <Link href="/tarot/setup">타로 시작하기</Link>
           </NavLink>
         </LeftSection>
 
