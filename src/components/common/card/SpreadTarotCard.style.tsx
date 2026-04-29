@@ -41,9 +41,10 @@ export const CardRoot = styled.div<{
     const direction = $isTop ? -1 : 1;
     return `translateX(${$index * step * direction}px)`;
   }};
+  /* transform 만 스태거 — box-shadow 는 딜레이 없이(호버 글로우 즉시 반응) */
   transition: ${({ $index }) => {
     const delay = (lastIndex - $index) * STAGGER_S;
-    return `transform 1.5s cubic-bezier(0.22, 1, 0.36, 1) ${delay}s, box-shadow 1.5s ease ${delay}s`;
+    return `transform 1.5s cubic-bezier(0.22, 1, 0.36, 1) ${delay}s, box-shadow 0.32s ease`;
   }};
   transform-origin: ${({ $isTop }) => ($isTop ? "bottom right" : "top left")};
   /* 상·하 덱 모두: index 클수록 펼쳐진 쪽(덱 '맨 위' 카드)이 앞에 오도록 */
@@ -58,8 +59,24 @@ export const CardRoot = styled.div<{
     border-color: ${CARD_BORDER_HOVER};
     box-shadow: ${({ $isSpread }) =>
       $isSpread
-        ? `0 10px 25px -5px rgba(0, 0, 0, 0.8), 0 0 16px rgba(${CARD_BORDER_GLOW}, 0.4), inset 0 0 0 1px rgba(255, 248, 230, 0.28)`
-        : `2px 0 5px rgba(0, 0, 0, 0.6), inset 0 0 0 1px rgba(255, 248, 230, 0.24)`};
+        ? `0 10px 25px -5px rgba(0, 0, 0, 0.8),
+          0 0 16px rgba(${CARD_BORDER_GLOW}, 0.4),
+          inset 0 0 0 1px rgba(255, 248, 230, 0.28),
+          0 0 18px rgba(255, 255, 255, 0.45),
+          0 0 32px rgba(255, 255, 255, 0.18)`
+        : `2px 0 5px rgba(0, 0, 0, 0.6),
+          inset 0 0 0 1px rgba(255, 248, 230, 0.24),
+          0 0 16px rgba(255, 255, 255, 0.4),
+          0 0 28px rgba(255, 255, 255, 0.15)`};
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    &:hover {
+      box-shadow: ${({ $isSpread }) =>
+        $isSpread
+          ? `0 10px 25px -5px rgba(0, 0, 0, 0.8), 0 0 12px rgba(${CARD_BORDER_GLOW}, 0.35), inset 0 0 0 1px rgba(255, 248, 230, 0.25), 0 0 12px rgba(255, 255, 255, 0.25)`
+          : `2px 0 5px rgba(0, 0, 0, 0.6), inset 0 0 0 1px rgba(255, 248, 230, 0.2), 0 0 10px rgba(255, 255, 255, 0.22)`};
+    }
   }
 `;
 

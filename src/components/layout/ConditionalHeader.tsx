@@ -11,6 +11,9 @@ export default function ConditionalHeader() {
 
   // 헤더를 숨길 경로 목록
   const hideHeaderPaths = [
+    "/login",
+    "/signup",
+    "/forget-password",
     "/tarot/setup",
     "/tarot/reading",
   ];
