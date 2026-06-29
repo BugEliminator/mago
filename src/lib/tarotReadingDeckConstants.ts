@@ -1,0 +1,47 @@
+/**
+ * 타로 리딩 덱 레이아웃·애니메이션 상수 — 스타일(CardSlot 폭/높이)과 동기 유지
+ */
+
+export const TAROT_PICK_PROMPT_TOAST_ID = "tarot-pick-prompt";
+export const TAROT_PICK_PROMPT_TOAST_DURATION_MS = 10_000;
+
+export const TOTAL_CARDS = 78;
+export const CARDS_PER_ROW = 16;
+export const VISIBLE_DECK_COUNT = 32;
+
+export const SPREAD_ROW_COUNT = Math.ceil(TOTAL_CARDS / CARDS_PER_ROW);
+export const SPREAD_ROW_CENTER = (SPREAD_ROW_COUNT - 1) / 2;
+export const SPREAD_CARD_HEIGHT_PX = 287;
+export const SPREAD_ROW_GAP_PX = 28;
+export const SPREAD_ROW_SPACING = SPREAD_CARD_HEIGHT_PX + SPREAD_ROW_GAP_PX;
+export const SPREAD_COL_SPACING = 74;
+export const SPREAD_ORIGIN_X = -0.5 * (CARDS_PER_ROW - 1) * SPREAD_COL_SPACING;
+
+export const SPREAD_SLIDE_LEAD_PX = 64;
+
+export const SPREAD_SLIDE_COL_STAGGER_MS = 100;
+export const SPREAD_SLIDE_ROW_START_GAP_MS = 1000;
+export const SPREAD_SLIDE_DURATION_MS = 1500;
+
+export const SPREAD_MS_CENTER = 520;
+export const SPREAD_MS_ROW_FAN = 780;
+
+export const SPREAD_ROW_FAN_STAGGER_MS = 120;
+
+export const SPREAD_STAGE_MIN_HEIGHT_PX =
+  (SPREAD_ROW_COUNT - 1) * SPREAD_ROW_SPACING + SPREAD_CARD_HEIGHT_PX + 280;
+
+export const DECK_STAGE_HEIGHT_PX = 750;
+
+export const SPREAD_STAGE_VERTICAL_CENTER_DELTA_PX =
+  (SPREAD_STAGE_MIN_HEIGHT_PX - DECK_STAGE_HEIGHT_PX) / 2;
+
+export const CARD_SLOT_WIDTH_PX = 170;
+
+export const SPREAD_STAGE_MIN_WIDTH_PX = Math.ceil(
+  Math.abs(SPREAD_ORIGIN_X - SPREAD_SLIDE_LEAD_PX) +
+    CARD_SLOT_WIDTH_PX / 2 +
+    (SPREAD_ORIGIN_X + (CARDS_PER_ROW - 1) * SPREAD_COL_SPACING) +
+    CARD_SLOT_WIDTH_PX / 2 +
+    80,
+);

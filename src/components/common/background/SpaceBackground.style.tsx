@@ -1,21 +1,22 @@
 import styled from "@emotion/styled";
+import {
+  cosmicBackgroundViewportCss,
+  COSMIC_BACKGROUND_BASE,
+} from "./cosmicBackgroundViewport";
 
 /**
- * 야간/우주 풀스크린 배경 — 베이스, 딥 오라, 별 레이어
+ * 야간/우주 풀스크린 배경 — 뷰포트 전체 고정
  */
 
 export const SpaceLayerRoot = styled.div`
-  position: absolute;
-  inset: 0;
-  z-index: 0;
+  ${cosmicBackgroundViewportCss}
   overflow: hidden;
-  pointer-events: none;
 `;
 
 export const BaseFill = styled.div`
   position: absolute;
   inset: 0;
-  background: #05070a;
+  background: ${COSMIC_BACKGROUND_BASE};
 `;
 
 export const DeepAuraLayer = styled.div`

@@ -1,27 +1,48 @@
-"use client";
+import {
+  dehydrate,
+  HydrationBoundary,
+  QueryClient,
+} from "@tanstack/react-query";
+import { getTarotReadingQueryData } from "@/lib/server/fetchTarotSessionFromDb";
+import { getServerAuthUserId } from "@/lib/supabaseServer";
+import { tarotReadingQueryKey } from "@/lib/tarotReadingQuery";
+import ResultPageClient from "./ResultPageClient";
 
-import { useParams } from "next/navigation";
-import { Container, Title, ResultContainer, Placeholder } from "./page.style";
+type TarotResultPageProps = {
+  params: Promise<{ readingId: string }>;
+};
 
 /**
- * 타로 결과 페이지
- * 선택한 카드의 해석 결과를 보여주는 페이지
+ * 타로 결과 페이지 — Server prefetch + Query dehydrate/hydrate
  */
+export default async function TarotResultPage({ params }: TarotResultPageProps) {
+  const { readingId } = await params;
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        staleTime: Infinity,
+        refetchOnWindowFocus: false,
+      },
+    },
+  });
 
-export default function TarotResultPage() {
-  const params = useParams();
-  const readingId = params.readingId as string;
+  const userId = await getServerAuthUserId();
+  if (userId != null) {
+    await queryClient.prefetchQuery({
+      queryKey: tarotReadingQueryKey(readingId),
+      queryFn: async () => {
+        const data = await getTarotReadingQueryData(readingId, userId);
+        if (data == null) {
+          throw new Error("리딩 결과를 찾을 수 없습니다.");
+        }
+        return data;
+      },
+    });
+  }
 
   return (
-    <Container>
-      <Title>타로 해석 결과</Title>
-      <ResultContainer>
-        <Placeholder>
-          타로 결과가 여기에 표시됩니다.
-          <br />
-          Reading ID: {readingId}
-        </Placeholder>
-      </ResultContainer>
-    </Container>
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <ResultPageClient readingId={readingId} />
+    </HydrationBoundary>
   );
 }

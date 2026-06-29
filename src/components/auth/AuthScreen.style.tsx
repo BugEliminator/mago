@@ -17,7 +17,7 @@ export const AuthContentLayer = styled.section`
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
+  padding: 1rem;
 `;
 
 /** 글래스모피즘 카드 */
@@ -29,7 +29,7 @@ const AuthCardBase = styled.div`
   -webkit-backdrop-filter: blur(24px);
   border: 1px solid #3d455c;
   border-radius: 1.5rem;
-  padding: 2.75rem 2.25rem 2.25rem;
+  padding: 2.75rem 1rem 2.25rem;
   box-shadow:
     inset 0 0 0 1px #4a3c24,
     0 32px 64px #030407;
@@ -42,7 +42,7 @@ export const CardHeader = styled.div`
   margin-bottom: 2rem;
 `;
 
-/** 브랜드 심볼 */
+/** 브랜드 심볼 — 텍스트 (비밀번호 찾기 등) */
 export const CardBrand = styled.p`
   margin: 0 0 1.25rem;
   font-family: "Noto Serif KR", serif;
@@ -52,10 +52,19 @@ export const CardBrand = styled.p`
   color: #f9a825;
 `;
 
+/** 브랜드 로고 — 로그인·회원가입 */
+export const CardBrandLogoWrap = styled.div`
+  display: flex;
+  justify-content: center;
+  margin: 0 0 1.25rem;
+  line-height: 0;
+`;
+
 /** 제목 */
 export const CardTitle = styled.h1`
   margin: 0 0 0.5rem;
-  font-family: "Noto Serif KR", serif;
+  font-family: "Noto Sans KR", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
   font-size: 1.75rem;
   font-weight: 600;
   color: #f5f6fa;
@@ -68,6 +77,8 @@ export const CardSubtitle = styled.p`
   font-size: 0.875rem;
   line-height: 1.5;
   color: #8b93a8;
+  word-break: keep-all;
+  overflow-wrap: break-word;
 `;
 
 /** 주요 제출 버튼 */

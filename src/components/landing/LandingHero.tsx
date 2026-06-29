@@ -1,6 +1,10 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useTarotSetupEntry } from "@/hooks/useTarotSetupEntry";
+import TarotDraftResumeModal from "@/components/tarot/TarotDraftResumeModal";
+import TarotReadingResumeModal from "@/components/tarot/TarotReadingResumeModal";
+import TarotGuestEntryModal from "@/components/tarot/TarotGuestEntryModal";
 import WarpSpeedBackground from "@/components/common/background/WarpSpeedBackground";
 import SpreadTarotCard from "@/components/common/card/SpreadTarotCard";
 import {
@@ -9,35 +13,71 @@ import {
   HeroCopy,
   HeroTitle,
   Highlight,
-  CtaButton,
-  CtaShine,
-  CTA_SHINE_CLASS,
   HeroDeckFrame,
   DeckAnchor,
 } from "./LandingHero.style";
+import { preloadLandingDeckImages } from "@/lib/preloadLandingDeckImages";
 import {
   SPREAD_DECK_VISIBLE_COUNT,
+  SPREAD_DECK_VISIBLE_COUNT_MOBILE,
   LANDING_MAJOR_ARCANA_FACE_PATHS,
 } from "@/types/tarot";
+import {
+  MOBILE_MAX_PX,
+  LAYOUT_DESKTOP_CARD_WIDTH_PX,
+  LAYOUT_DESKTOP_SPREAD_STEP_PX,
+  LAYOUT_MOBILE_CARD_WIDTH_PX,
+  calcLandingSpreadStepPx,
+} from "@/lib/layout";
 
 const SPREAD_MS = 500;
 const TEXT_REVEAL_MS = 2000;
 
 /**
- * 랜딩 히어로 — 워프 캔버스 배경, 카드 덱, 중앙 카피·CTA
- * (고정 헤더는 `ConditionalHeader`에서 렌더)
+ * 랜딩 히어로 — 워프 배경 + 세로 스택(상단 카드 → 텍스트 → 하단 카드)
+ * (헤더는 `AppLayoutShell`의 `ConditionalHeader`에서 렌더)
  */
 export default function LandingHero() {
+  const {
+    guestEntryOpen,
+    readingResumeOpen,
+    resumeOpen,
+    handleGuestBrowse,
+    handleGuestLogin,
+    handleDismissGuestEntry,
+    handleResumeReading,
+    handleStartFreshFromReading,
+    handleDismissReadingResume,
+    handleResume,
+    handleStartFresh,
+    handleDismissResume,
+  } = useTarotSetupEntry();
   const [isSpread, setIsSpread] = useState(false);
   const [showText, setShowText] = useState(false);
   const deckFrameRef = useRef<HTMLDivElement | null>(null);
   const [contentWidth, setContentWidth] = useState(0);
-  const [cardWidthPx, setCardWidthPx] = useState(90);
+  const [deckCount, setDeckCount] = useState(SPREAD_DECK_VISIBLE_COUNT);
+  const [isDesktopLayout, setIsDesktopLayout] = useState(true);
 
-  /**
-   * 헤더 정렬 박스와 동일한 폭 — 이 너비에 맞게 스프레드 간격(px) 계산
-   */
+  /** ≤640px 모바일: 프레임 너비에 맞춰 스프레드 간격 계산 */
   useLayoutEffect(() => {
+    const mq = window.matchMedia(`(min-width: ${MOBILE_MAX_PX + 1}px)`);
+    const readLayout = () => {
+      const desktop = mq.matches;
+      setIsDesktopLayout(desktop);
+      setDeckCount(
+        desktop ? SPREAD_DECK_VISIBLE_COUNT : SPREAD_DECK_VISIBLE_COUNT_MOBILE,
+      );
+    };
+    readLayout();
+    mq.addEventListener("change", readLayout);
+    return () => mq.removeEventListener("change", readLayout);
+  }, []);
+
+  /** 모바일 전용 — 덱 프레임 실제 너비 측정 */
+  useLayoutEffect(() => {
+    if (isDesktopLayout) return;
+
     const el = deckFrameRef.current;
     if (!el) return;
 
@@ -50,31 +90,27 @@ export default function LandingHero() {
       if (w != null) setContentWidth(w);
     });
     ro.observe(el);
-    return () => {
-      ro.disconnect();
-    };
-  }, []);
+    return () => ro.disconnect();
+  }, [isDesktopLayout]);
 
-  /** sm 브레이크포인트(와 일치)에 맞는 카드 실제 px 너비 */
-  useLayoutEffect(() => {
-    const mq = window.matchMedia("(min-width: 640px)");
-    const read = () => {
-      setCardWidthPx(mq.matches ? 130 : 90);
-    };
-    read();
-    mq.addEventListener("change", read);
-    return () => {
-      mq.removeEventListener("change", read);
-    };
-  }, []);
+  const n = deckCount;
+  /** ≥641px: 1240 고정 step / ≤640px: 프레임 너비 기준 유동 step */
+  const spreadStepPx = isDesktopLayout
+    ? LAYOUT_DESKTOP_SPREAD_STEP_PX
+    : calcLandingSpreadStepPx(
+        contentWidth,
+        LAYOUT_MOBILE_CARD_WIDTH_PX,
+        n,
+      );
+  const cardWidthPx = isDesktopLayout
+    ? LAYOUT_DESKTOP_CARD_WIDTH_PX
+    : LAYOUT_MOBILE_CARD_WIDTH_PX;
+  const stackStepPx = Math.round(cardWidthPx * 0.025);
 
-  const n = SPREAD_DECK_VISIBLE_COUNT;
-  /** 프레임(헤더와 동일 폭) 꽉 채울 때 인접 카드 간 가로 px — `LAYOUT_CONTENT_MAX_WIDTH` 를 줄이면 겹침이 늘어남 */
-  const spreadStepPx =
-    contentWidth > 0 && n > 1
-      ? Math.max(0, (contentWidth - cardWidthPx) / (n - 1))
-      : 0;
-  const stackStepPx = cardWidthPx * 0.025;
+  /** 직접 URL 진입·캐시 미스 시 덱 이미지 선로드 */
+  useEffect(() => {
+    void preloadLandingDeckImages();
+  }, []);
 
   useEffect(() => {
     const spreadTimer = setTimeout(() => {
@@ -92,52 +128,71 @@ export default function LandingHero() {
   }, []);
 
   return (
-    <LandingRoot>
-      <WarpSpeedBackground />
+    <>
+      {guestEntryOpen ? (
+        <TarotGuestEntryModal
+          onBrowse={handleGuestBrowse}
+          onLogin={handleGuestLogin}
+          onDismiss={handleDismissGuestEntry}
+        />
+      ) : null}
+      {readingResumeOpen ? (
+        <TarotReadingResumeModal
+          onResume={handleResumeReading}
+          onStartFresh={handleStartFreshFromReading}
+          onDismiss={handleDismissReadingResume}
+        />
+      ) : null}
+      {resumeOpen ? (
+        <TarotDraftResumeModal
+          onResume={handleResume}
+          onStartFresh={handleStartFresh}
+          onDismiss={handleDismissResume}
+        />
+      ) : null}
+      <LandingRoot>
+        <WarpSpeedBackground />
 
-      <HeroMain>
-        <HeroCopy $visible={showText}>
-          <HeroTitle>
-            타로와 현대 AI 기술이 만나 탄생한
-            <br />
-            <Highlight>신비로운</Highlight> 타로 서비스
-          </HeroTitle>
+        <HeroMain>
+          <HeroDeckFrame ref={deckFrameRef}>
+            <DeckAnchor $placement="top" aria-hidden>
+              {Array.from({ length: deckCount }, (_, i) => (
+                <SpreadTarotCard
+                  key={`top-${i}`}
+                  isSpread={isSpread}
+                  index={i}
+                  isTop
+                  spreadStepPx={spreadStepPx}
+                  stackStepPx={stackStepPx}
+                  deckCount={deckCount}
+                  imageSrc={LANDING_MAJOR_ARCANA_FACE_PATHS[i]}
+                />
+              ))}
+            </DeckAnchor>
 
-          <CtaButton href="/tarot/setup">
-            <CtaShine className={CTA_SHINE_CLASS} />
-            무료 타로 시작하기
-          </CtaButton>
-        </HeroCopy>
+            <HeroCopy $visible={showText}>
+              <HeroTitle>
+                타로와 현대 AI 기술이 만나 탄생한{" "}
+                <Highlight>신비로운</Highlight> 타로 서비스
+              </HeroTitle>
+            </HeroCopy>
 
-        <HeroDeckFrame ref={deckFrameRef}>
-          <DeckAnchor $placement="top" aria-hidden>
-            {Array.from({ length: SPREAD_DECK_VISIBLE_COUNT }, (_, i) => (
-              <SpreadTarotCard
-                key={`top-${i}`}
-                isSpread={isSpread}
-                index={i}
-                isTop
-                spreadStepPx={spreadStepPx}
-                stackStepPx={stackStepPx}
-                imageSrc={LANDING_MAJOR_ARCANA_FACE_PATHS[i]}
-              />
-            ))}
-          </DeckAnchor>
-
-          <DeckAnchor $placement="bottom" aria-hidden>
-            {Array.from({ length: SPREAD_DECK_VISIBLE_COUNT }, (_, i) => (
-              <SpreadTarotCard
-                key={`bottom-${i}`}
-                isSpread={isSpread}
-                index={i}
-                isTop={false}
-                spreadStepPx={spreadStepPx}
-                stackStepPx={stackStepPx}
-              />
-            ))}
-          </DeckAnchor>
-        </HeroDeckFrame>
-      </HeroMain>
-    </LandingRoot>
+            <DeckAnchor $placement="bottom" aria-hidden>
+              {Array.from({ length: deckCount }, (_, i) => (
+                <SpreadTarotCard
+                  key={`bottom-${i}`}
+                  isSpread={isSpread}
+                  index={i}
+                  isTop={false}
+                  spreadStepPx={spreadStepPx}
+                  stackStepPx={stackStepPx}
+                  deckCount={deckCount}
+                />
+              ))}
+            </DeckAnchor>
+          </HeroDeckFrame>
+        </HeroMain>
+      </LandingRoot>
+    </>
   );
 }

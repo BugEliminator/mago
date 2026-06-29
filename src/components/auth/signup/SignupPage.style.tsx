@@ -10,7 +10,7 @@ export const OtpRow = styled.div`
   width: 100%;
 `;
 
-/** 한 칸짜리 OTP 인풋 (Signup 전용) */
+/** 한 칸짜리 OTP 인풋 */
 export const OtpCell = styled(AuthTextInput)`
   width: 2.75rem;
   min-width: 2.75rem;
@@ -49,7 +49,7 @@ export const TextButton = styled.button`
   }
 `;
 
-/** 인증 안내 보조 문구 */
+/** 안내 보조 문구 */
 export const CodeHint = styled.p`
   margin: -0.5rem 0 0;
   font-size: 0.8125rem;
@@ -58,7 +58,37 @@ export const CodeHint = styled.p`
   text-align: center;
 `;
 
-/** 남은 입력 시간 안내 (퍼블: 고정 문구, 추후 카운트다운 연동) */
+/** 단계 2 — 스팸·프로모션함 확인 안내 */
+export const SpamFolderHint = styled.p`
+  margin: 0.5rem 0 0;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: #6b7388;
+  text-align: center;
+`;
+
+/** Supabase auth 에러 메시지 */
+export const ErrorBanner = styled.p`
+  margin: 0;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  text-align: center;
+  color: #f5f6fa;
+  background: #c62828;
+  border-radius: 0.75rem;
+`;
+
+/** 재발송 등 안내 메시지 */
+export const InfoBanner = styled.p`
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  text-align: center;
+  color: #8b93a8;
+`;
+
+/** 2단계 OTP 남은 시간 안내 (카운트다운) */
 export const TimerHint = styled.p`
   margin: 0;
   font-size: 0.8125rem;

@@ -1,15 +1,16 @@
 import styled from "@emotion/styled";
+import {
+  cosmicBackgroundViewportCss,
+  COSMIC_BACKGROUND_BASE,
+} from "./cosmicBackgroundViewport";
 
 /**
- * 랜딩 전용 워프 캔버스 — `SpaceBackground`와 동일한 슬롯(absolute, z-0, 비포인터)
+ * 랜딩 전용 워프 캔버스 — 뷰포트 전체 고정
  */
 export const WarpLayerRoot = styled.div`
-  position: absolute;
-  inset: 0;
-  z-index: 0;
+  ${cosmicBackgroundViewportCss}
   overflow: hidden;
-  pointer-events: none;
-  background: #05070a;
+  background: ${COSMIC_BACKGROUND_BASE};
 `;
 
 export const WarpCanvas = styled.canvas`

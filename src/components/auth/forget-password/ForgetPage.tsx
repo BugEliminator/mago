@@ -1,7 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 import SpaceBackground from "@/components/common/background/SpaceBackground";
+import AuthMobileBackHeader from "@/components/auth/AuthMobileBackHeader";
+import AuthCardBrandLogo from "@/components/auth/AuthCardBrandLogo";
 import AuthForm from "@/components/common/form/AuthForm";
 import { AuthField, Input } from "@/components/common/input/Input";
 import {
@@ -9,13 +12,13 @@ import {
   AuthContentLayer,
   AuthCard,
   CardHeader,
-  CardBrand,
   CardTitle,
   CardSubtitle,
   SubmitButton,
   CardFooter,
   FooterLink,
 } from "@/components/auth/AuthScreen.style";
+import { supabase } from "@/lib/supabaseClient";
 
 /** 카드 진입 애니메이션 — Login/Signup과 동일 easing */
 const cardVariants = {
@@ -27,16 +30,36 @@ const cardVariants = {
   },
 };
 
+function getPasswordResetRedirectTo(): string {
+  return `${window.location.origin}/reset-password`;
+}
+
 /**
- * 비밀번호 찾기 — 가입 이메일 입력 후 재설정 메일 발송(퍼블)
- * 이후 Supabase `resetPasswordForEmail` 등으로 연동 예정.
+ * 비밀번호 찾기 — 재설정 메일 발송 후 사용자가 링크로 `/reset-password` 이동
  */
 export default function ForgetPage() {
   const [email, setEmail] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // TODO: Supabase 비밀번호 재설정 메일 발송 + 리다이렉트 URL 설정
+    setIsSubmitting(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(
+      email.trim(),
+      {
+        redirectTo: getPasswordResetRedirectTo(),
+      }
+    );
+    setIsSubmitting(false);
+
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+
+    toast.success("재설정 링크를 보냈습니다.", {
+      description: "메일함을 확인해 주세요. 스팸함도 함께 확인해 보세요.",
+    });
   };
 
   const isValid = email.trim() !== "";
@@ -44,6 +67,8 @@ export default function ForgetPage() {
   return (
     <AuthPageRoot>
       <SpaceBackground />
+      <AuthMobileBackHeader backHref="/login" backAriaLabel="로그인으로" />
+
       <AuthContentLayer>
         <AuthCard
           variants={cardVariants}
@@ -51,7 +76,7 @@ export default function ForgetPage() {
           animate="visible"
         >
           <CardHeader>
-            <CardBrand>MAGO</CardBrand>
+            <AuthCardBrandLogo />
             <CardTitle>비밀번호 찾기</CardTitle>
             <CardSubtitle>
               가입 시 사용한 이메일을 입력해 주세요.
@@ -67,7 +92,7 @@ export default function ForgetPage() {
                 type="email"
                 placeholder="your@email.com"
                 name="forget-email"
-                autoComplete="off"
+                autoComplete="email"
                 autoCorrect="off"
                 spellCheck={false}
                 value={email}
@@ -77,11 +102,11 @@ export default function ForgetPage() {
 
             <SubmitButton
               type="submit"
-              disabled={!isValid}
-              whileHover={isValid ? { scale: 1.015 } : {}}
-              whileTap={isValid ? { scale: 0.985 } : {}}
+              disabled={!isValid || isSubmitting}
+              whileHover={isValid && !isSubmitting ? { scale: 1.015 } : {}}
+              whileTap={isValid && !isSubmitting ? { scale: 0.985 } : {}}
             >
-              재설정 메일 보내기
+              {isSubmitting ? "전송 중…" : "재설정 메일 보내기"}
             </SubmitButton>
           </AuthForm>
 

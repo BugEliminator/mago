@@ -1,26 +1,39 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import SpaceBackground from "@/components/common/background/SpaceBackground";
+import AuthMobileBackHeader from "@/components/auth/AuthMobileBackHeader";
 import AuthForm from "@/components/common/form/AuthForm";
 import {
   AuthField,
   Input,
   PasswordInput,
 } from "@/components/common/input/Input";
+import AuthCardBrandLogo from "@/components/auth/AuthCardBrandLogo";
 import {
   AuthPageRoot,
   AuthContentLayer,
   AuthCard,
   CardHeader,
-  CardBrand,
   CardTitle,
   CardSubtitle,
   SubmitButton,
   CardFooter,
   FooterLink,
 } from "@/components/auth/AuthScreen.style";
-import { AssistRow, ForgotLink, SocialDivider } from "./LoginPage.style";
+import { preloadLandingDeckImages } from "@/lib/preloadLandingDeckImages";
+import { supabase } from "@/lib/supabaseClient";
+import {
+  AssistRow,
+  ForgotLink,
+  SocialDivider,
+} from "./LoginPage.style";
+
+/** 잘못된 이메일/비밀번호 시 노출 문구 */
+const LOGIN_INVALID_CREDS_TOAST =
+  "이메일 또는 비밀번호가 일치하지 않습니다.";
 
 /** 카드 진입 애니메이션 */
 const cardVariants = {
@@ -32,12 +45,30 @@ const cardVariants = {
   },
 };
 
+function isInvalidLoginCredentialsMessage(message: string): boolean {
+  return (
+    message === "Invalid login credentials" ||
+    /invalid login credentials/i.test(message)
+  );
+}
+
+/** 로그인 실패 토스트 아이콘 — `public/icon/lock-keyhole.svg` */
+function LoginErrorToastIcon() {
+  return (
+    <span className="mago-toast-icon" aria-hidden>
+      <img src="/icon/lock-keyhole.svg" width={22} height={22} alt="" />
+    </span>
+  );
+}
+
 /**
  * 로그인 화면 UI
  * 라우트(`app/(auth)/login/page.tsx`)는 이 컴포넌트를 마운트하는 껍데기만 둡니다.
  */
 export default function LoginPage() {
+  const router = useRouter();
   const [formData, setFormData] = useState({ email: "", password: "" });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange =
     (field: keyof typeof formData) =>
@@ -45,9 +76,29 @@ export default function LoginPage() {
       setFormData((prev) => ({ ...prev, [field]: e.target.value }));
     };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  /** 이메일·비밀번호 Supabase 세션 로그인 — 실패 시 자물쇠 아이콘 토스트 */
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // TODO: Supabase 이메일/비밀번호 로그인 연결
+    setIsSubmitting(true);
+
+    const { error } = await supabase.auth.signInWithPassword({
+      email: formData.email.trim(),
+      password: formData.password,
+    });
+
+    setIsSubmitting(false);
+
+    if (error) {
+      const msg = isInvalidLoginCredentialsMessage(error.message)
+        ? LOGIN_INVALID_CREDS_TOAST
+        : error.message;
+      toast.error(msg, { icon: <LoginErrorToastIcon /> });
+      return;
+    }
+
+    await preloadLandingDeckImages();
+    router.refresh();
+    router.push("/");
   };
 
   const isFormValid = formData.email.trim() !== "" && formData.password !== "";
@@ -55,6 +106,8 @@ export default function LoginPage() {
   return (
     <AuthPageRoot>
       <SpaceBackground />
+      <AuthMobileBackHeader backHref="/" backAriaLabel="홈으로" />
+
       <AuthContentLayer>
         <AuthCard
           variants={cardVariants}
@@ -62,19 +115,19 @@ export default function LoginPage() {
           animate="visible"
         >
           <CardHeader>
-            <CardBrand>MAGO</CardBrand>
+            <AuthCardBrandLogo />
             <CardTitle>로그인</CardTitle>
             <CardSubtitle>계속하려면 계정에 로그인하세요</CardSubtitle>
           </CardHeader>
 
-          <AuthForm autoComplete="off" onSubmit={handleSubmit}>
+          <AuthForm autoComplete="on" onSubmit={handleSubmit}>
             <AuthField label="이메일" htmlFor="email">
               <Input
                 id="email"
                 type="email"
                 placeholder="your@email.com"
                 name="login-email"
-                autoComplete="off"
+                autoComplete="email"
                 autoCorrect="off"
                 spellCheck={false}
                 value={formData.email}
@@ -100,11 +153,13 @@ export default function LoginPage() {
 
             <SubmitButton
               type="submit"
-              disabled={!isFormValid}
-              whileHover={isFormValid ? { scale: 1.015 } : {}}
-              whileTap={isFormValid ? { scale: 0.985 } : {}}
+              disabled={!isFormValid || isSubmitting}
+              whileHover={
+                isFormValid && !isSubmitting ? { scale: 1.015 } : {}
+              }
+              whileTap={isFormValid && !isSubmitting ? { scale: 0.985 } : {}}
             >
-              로그인
+              {isSubmitting ? "로그인 중…" : "로그인"}
             </SubmitButton>
 
             <SocialDivider>또는</SocialDivider>

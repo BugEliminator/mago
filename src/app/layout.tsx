@@ -1,11 +1,18 @@
 import EmotionRegistry from "@/lib/registry";
 import ThemeProvider from "@/components/providers/ThemeProvider";
+import QueryProvider from "@/components/providers/QueryProvider";
 import type { Metadata } from "next";
-import ConditionalHeader from "@/components/layout/ConditionalHeader";
+import AppLayoutShell from "@/components/layout/AppLayoutShell";
+import MagoToaster from "@/components/common/toast/MagoToaster";
+import TarotDraftAuthSync from "@/components/tarot/TarotDraftAuthSync";
+import "./globals.css";
 
 export const metadata: Metadata = {
   title: "MAGO - AI 기반 타로 서비스",
   description: "타로와 현대 AI 기술이 만나 탄생한 신비로운 타로 서비스",
+  icons: {
+    icon: [{ url: "/icon/favicon.svg", type: "image/svg+xml" }],
+  },
 };
 
 /**
@@ -33,8 +40,13 @@ export default function RootLayout({
       </head>
       <body>
         <EmotionRegistry>
-          <ConditionalHeader />
-          <ThemeProvider>{children}</ThemeProvider>
+          <QueryProvider>
+            <AppLayoutShell>
+              <TarotDraftAuthSync />
+              <ThemeProvider>{children}</ThemeProvider>
+            </AppLayoutShell>
+            <MagoToaster />
+          </QueryProvider>
         </EmotionRegistry>
       </body>
     </html>

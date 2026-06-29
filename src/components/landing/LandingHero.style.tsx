@@ -1,55 +1,63 @@
 import styled from "@emotion/styled";
-import Link from "next/link";
-import { LAYOUT_CONTENT_MAX_WIDTH } from "@/lib/layout";
+import {
+  DESKTOP_MIN_WIDTH,
+  LAYOUT_CONTENT_MAX_WIDTH,
+  LAYOUT_PAGE_HORIZONTAL_PADDING,
+} from "@/lib/layout";
 
-/**
- * `Header` 와 동일한 가로 콘텐츠 폭 (`LAYOUT_CONTENT_MAX_WIDTH`)
- * — 카드 덱이 이 박스 좌/우 끝에 맞게 퍼짐
- */
-export const HEADER_ALIGNED_FRAME_CSS = {
-  width: "calc(100% - 4rem)",
-  maxWidth: LAYOUT_CONTENT_MAX_WIDTH,
-} as const;
-
-/**
- * CTA 쉬인: component selector 는 @emotion/babel-plugin / swc plugin 없이 쓰면 런타임 에러가 남
- * — 부모에서 `.mago-landing-cta-shine` 으로만 타깃
- */
-/** CTA 쉬인 요소 class — CtaButton 의 &:hover .${…}와 동일한 문자열이어야 함 */
-export const CTA_SHINE_CLASS = "mago-landing-cta-shine" as const;
-
-/** 전체 랜딩 루트 — 배경은 `WarpSpeedBackground` (맨 앞 absolute 레이어) */
+/** 전체 랜딩 루트 — 배경은 `WarpSpeedBackground`가 뷰포트 전체 fixed, 높이는 콘텐츠 기준 */
 export const LandingRoot = styled.div`
   position: relative;
   width: 100%;
-  min-height: 100vh;
   overflow: hidden;
   font-family: ${({ theme }) => theme.typography.fontFamily.primary};
   color: #e2e8f0;
+  z-index: 1;
 `;
 
-/** 메인 콘텐츠 — 워프 배경(z-0) 위에 쌓임 */
+/**
+ * 메인 콘텐츠 — 세로 스택(상단 카드 → 텍스트 → 하단 카드) 래퍼
+ */
 export const HeroMain = styled.main`
   position: relative;
   z-index: 1;
   width: 100%;
-  min-height: 100vh;
+  box-sizing: border-box;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding-top: 7rem;
-  padding-bottom: 2rem;
+  padding: 7rem ${LAYOUT_PAGE_HORIZONTAL_PADDING} 2rem;
+
+  @media (min-width: ${DESKTOP_MIN_WIDTH}) {
+    padding-top: 3rem;
+    padding-bottom: 2.5rem;
+  }
 `;
 
-/** 중앙 카피 + CTA */
-export const HeroCopy = styled.div<{ $visible: boolean }>`
+/**
+ * 헤더와 같은 폭의 세로 열 — 상단 카드 / 텍스트 / 하단 카드 순서
+ */
+export const HeroDeckFrame = styled.div`
   position: relative;
-  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  width: 100%;
+  max-width: ${LAYOUT_CONTENT_MAX_WIDTH};
+  margin: 0 auto;
+
+  @media (min-width: ${DESKTOP_MIN_WIDTH}) {
+    gap: 2.5rem;
+  }
+`;
+
+/** 중앙 카피 */
+export const HeroCopy = styled.div<{ $visible: boolean }>`
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: 0 1rem;
   max-width: 56rem;
   opacity: ${({ $visible }) => ($visible ? 1 : 0)};
   transform: ${({ $visible }) =>
@@ -61,10 +69,18 @@ export const HeroCopy = styled.div<{ $visible: boolean }>`
 
 export const HeroTitle = styled.h2`
   font-family: ${({ theme }) => theme.typography.fontFamily.primary};
-  font-size: clamp(1.5rem, 4.5vw, 3.25rem);
+  /* 모바일: 고정 1.5rem, 데스크톱: 고정 3.25rem — vw 제거로 리사이즈 뭉개짐 방지 */
+  font-size: 1.5rem;
   font-weight: 300;
   line-height: 1.2;
-  margin: 0 0 2rem;
+  margin: 0;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+
+  @media (min-width: 641px) {
+    font-size: 3.25rem;
+    margin-bottom: 0;
+  }
 `;
 
 export const Highlight = styled.span`
@@ -81,77 +97,27 @@ export const Highlight = styled.span`
   filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.3));
 `;
 
-export const CtaButton = styled(Link)`
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem 2rem;
-  border-radius: 9999px;
-  font-size: 1rem;
-  font-weight: 500;
-  letter-spacing: 0.04em;
-  text-decoration: none;
-  color: #ffffff;
-  overflow: hidden;
-  background: linear-gradient(90deg, #d4af37 0%, #b45309 100%);
-  box-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
-  transition:
-    box-shadow 0.3s ease,
-    transform 0.3s ease;
-
-  &:hover {
-    box-shadow: 0 0 30px rgba(212, 175, 55, 0.6);
-    transform: scale(1.05);
-  }
-
-  &:hover .${CTA_SHINE_CLASS} {
-    transform: skewX(-12deg) translateX(100%);
-  }
-`;
-
-export const CtaShine = styled.span`
-  position: absolute;
-  inset: 0;
-  background: rgba(255, 255, 255, 0.2);
-  transform: skewX(-12deg) translateX(-100%);
-  transition: transform 0.7s ease;
-  pointer-events: none;
-`;
-
-/** 덱·피벗 배치: 헤더와 같은 폭의 열 */
-export const HeroDeckFrame = styled.div`
-  position: absolute;
-  left: 50%;
-  top: 0;
-  bottom: 0;
-  width: ${HEADER_ALIGNED_FRAME_CSS.width};
-  max-width: ${HEADER_ALIGNED_FRAME_CSS.maxWidth};
-  transform: translateX(-50%);
-  z-index: 0;
-  pointer-events: none;
-`;
-
-/** 상단·하단 덱 앵커 — 프레임 오른쪽/왼쪽 끝에 붙여 행이 헤더 횡끝에 맞도록 */
+/**
+ * 덱 피벗 — 상단은 프레임 오른쪽, 하단은 왼쪽 끝
+ * 카드 스프레드는 내부 absolute + translateX 유지
+ */
 export const DeckAnchor = styled.div<{ $placement: "top" | "bottom" }>`
-  position: absolute;
-  z-index: 0;
-  width: 5.625rem;
-  height: 9.375rem;
-  pointer-events: auto;
+  position: relative;
+  flex-shrink: 0;
+  width: 8.125rem; /* 130px — 모바일 */
+  height: 13.75rem; /* 220px */
+
+  @media (min-width: ${DESKTOP_MIN_WIDTH}) {
+    width: 9.75rem; /* 156px */
+    height: 16.5rem; /* 264px */
+  }
+
   ${({ $placement }) =>
     $placement === "top"
       ? `
-    top: 20%;
-    right: 0;
+    align-self: flex-end;
   `
       : `
-    bottom: 10%;
-    left: 0;
+    align-self: flex-start;
   `}
-
-  @media (min-width: 640px) {
-    width: 8.125rem;
-    height: 13.75rem;
-  }
 `;

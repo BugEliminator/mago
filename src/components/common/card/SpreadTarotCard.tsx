@@ -2,10 +2,16 @@
 
 import {
   CardRoot,
+  CardFaceFrame,
   CardImageFill,
   CardBackImage,
+  CardFaceImage,
+  CARD_FACE_FRAME_CLASS,
 } from "./SpreadTarotCard.style";
-import { TAROT_CLASSIC_BACK_IMAGE_PATH } from "@/types/tarot";
+import {
+  SPREAD_DECK_VISIBLE_COUNT,
+  TAROT_CLASSIC_BACK_IMAGE_PATH,
+} from "@/types/tarot";
 
 export interface SpreadTarotCardProps {
   /** true면 가로로 펼침 */
@@ -18,6 +24,8 @@ export interface SpreadTarotCardProps {
   spreadStepPx: number;
   /** 겹쳤을 때 index 한 칸당 가로 px */
   stackStepPx: number;
+  /** 현재 덱 총 카드 수 — 스태거 타이밍 계산에 사용 */
+  deckCount?: number;
   /** 없으면 뒷면 — 있으면 이 경로(public)로 카드 면 노출 */
   imageSrc?: string;
 }
@@ -31,28 +39,46 @@ export default function SpreadTarotCard({
   isTop,
   spreadStepPx,
   stackStepPx,
+  deckCount = SPREAD_DECK_VISIBLE_COUNT,
   imageSrc,
 }: SpreadTarotCardProps) {
+  const isFace = imageSrc != null;
   const src = imageSrc ?? TAROT_CLASSIC_BACK_IMAGE_PATH;
 
   return (
     <CardRoot
+      $isFace={isFace}
       $isSpread={isSpread}
       $index={index}
       $isTop={isTop}
       $spreadStepPx={spreadStepPx}
       $stackStepPx={stackStepPx}
+      $deckCount={deckCount}
       role="presentation"
     >
-      <CardImageFill>
-        <CardBackImage
-          src={src}
-          alt=""
-          fill
-          sizes="(max-width: 639px) 90px, 130px"
-          priority={isTop && index < 2}
-        />
-      </CardImageFill>
+      {isFace ? (
+        <CardFaceFrame className={CARD_FACE_FRAME_CLASS}>
+          <CardImageFill>
+            <CardFaceImage
+              src={src}
+              alt=""
+              fill
+              sizes="(min-width: 641px) 156px, 130px"
+              priority={index === deckCount - 1}
+            />
+          </CardImageFill>
+        </CardFaceFrame>
+      ) : (
+        <CardImageFill>
+          <CardBackImage
+            src={src}
+            alt=""
+            fill
+            sizes="(min-width: 641px) 156px, 130px"
+            priority={index === deckCount - 1}
+          />
+        </CardImageFill>
+      )}
     </CardRoot>
   );
 }

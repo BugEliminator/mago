@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { WarpLayerRoot, WarpCanvas } from "./WarpSpeedBackground.style";
+import { MOBILE_MAX_PX } from "@/lib/layout";
 import {
   WARP_CLEAR_COLOR,
   WARP_DPR_MAX,
@@ -9,8 +10,6 @@ import {
   WARP_NUM_STARS_NARROW,
   WARP_SPEED,
 } from "./warpConstants";
-
-const NARROW_BP = 768;
 
 class Star {
   x = 0;
@@ -20,14 +19,9 @@ class Star {
 
   constructor(
     private cw: number,
-    private ch: number
+    private ch: number,
   ) {
     this.reset();
-  }
-
-  setDimensions(cw: number, ch: number) {
-    this.cw = cw;
-    this.ch = ch;
   }
 
   reset() {
@@ -61,74 +55,43 @@ class Star {
   }
 }
 
-function pickStarCount(width: number): number {
-  return width < NARROW_BP ? WARP_NUM_STARS_NARROW : WARP_NUM_STARS_DESKTOP;
+function pickStarCount(viewportWidth: number): number {
+  return viewportWidth <= MOBILE_MAX_PX
+    ? WARP_NUM_STARS_NARROW
+    : WARP_NUM_STARS_DESKTOP;
 }
 
 /**
- * 랜딩 전용: 3D 투영 스타필드(워프) 캔버스 — public `SpaceBackground`는 정적/깜빡임용
+ * 랜딩 전용: 3D 투영 스타필드(워프) 캔버스
+ * — 마운트 시 뷰포트 크기로 1회 초기화, 리사이즈 시 재생성하지 않음
  */
 export default function WarpSpeedBackground() {
-  const wrapRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
-    const wrap = wrapRef.current;
     const canvas = canvasRef.current;
-    if (!wrap || !canvas) return;
+    if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    let stars: Star[] = [];
+    /** 뷰포트 기준 1회 고정 — 너비 변경 시 캔버스·별 재초기화 없음 */
+    const logicalW = Math.max(1, window.innerWidth);
+    const logicalH = Math.max(1, window.innerHeight);
+    const dpr = Math.min(window.devicePixelRatio || 1, WARP_DPR_MAX);
+
+    canvas.width = Math.floor(logicalW * dpr);
+    canvas.height = Math.floor(logicalH * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    const stars: Star[] = [];
+    const starCount = pickStarCount(logicalW);
+    for (let i = 0; i < starCount; i += 1) {
+      stars.push(new Star(logicalW, logicalH));
+    }
+
     let animationId = 0;
-    let logicalW = 0;
-    let logicalH = 0;
-
-    const syncCanvasSize = () => {
-      const w = Math.max(1, wrap.clientWidth);
-      const h = Math.max(1, wrap.clientHeight);
-      const dpr = Math.min(
-        typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1,
-        WARP_DPR_MAX
-      );
-      canvas.width = Math.floor(w * dpr);
-      canvas.height = Math.floor(h * dpr);
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      logicalW = w;
-      logicalH = h;
-    };
-
-    const buildStars = () => {
-      const n = pickStarCount(logicalW);
-      stars = [];
-      for (let i = 0; i < n; i += 1) {
-        const s = new Star(logicalW, logicalH);
-        stars.push(s);
-      }
-    };
-
-    const resize = () => {
-      syncCanvasSize();
-      const target = pickStarCount(logicalW);
-      if (stars.length === 0) {
-        buildStars();
-        return;
-      }
-      if (target !== stars.length) {
-        buildStars();
-        return;
-      }
-      for (const s of stars) {
-        s.setDimensions(logicalW, logicalH);
-        s.reset();
-      }
-    };
 
     const drawFrame = () => {
-      if (logicalW < 1 || logicalH < 1) {
-        animationId = requestAnimationFrame(drawFrame);
-        return;
-      }
       ctx.fillStyle = WARP_CLEAR_COLOR;
       ctx.fillRect(0, 0, logicalW, logicalH);
       for (const star of stars) {
@@ -138,23 +101,15 @@ export default function WarpSpeedBackground() {
       animationId = requestAnimationFrame(drawFrame);
     };
 
-    syncCanvasSize();
-    buildStars();
-    resize();
-    const ro = new ResizeObserver(() => {
-      resize();
-    });
-    ro.observe(wrap);
     drawFrame();
 
     return () => {
-      ro.disconnect();
       cancelAnimationFrame(animationId);
     };
   }, []);
 
   return (
-    <WarpLayerRoot ref={wrapRef} aria-hidden>
+    <WarpLayerRoot aria-hidden>
       <WarpCanvas ref={canvasRef} />
     </WarpLayerRoot>
   );

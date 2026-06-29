@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useState } from "react";
 import {
   SpaceLayerRoot,
   BaseFill,
@@ -32,10 +32,16 @@ function createStarConfig(): StarConfig[] {
 }
 
 /**
- * 야간 우주 풀스크린 배경 — 베이스, 딥 오라, 별(마운트 시 1회 생성 후 고정)
+ * 야간 우주 풀스크린 배경 — 베이스, 딥 오라, 별
+ * `Math.random()`은 클라이언트 마운트 후 1회만 호출해 하이드레이션 불일치를 방지합니다.
  */
 export default function SpaceBackground() {
-  const stars = useMemo(() => createStarConfig(), []);
+  const [stars, setStars] = useState<StarConfig[]>([]);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setStars(createStarConfig());
+  }, []);
 
   return (
     <SpaceLayerRoot aria-hidden>

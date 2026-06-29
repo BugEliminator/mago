@@ -8,6 +8,18 @@ export type { Theme } from "@/lib/theme";
 // 타로 관련 타입 (types/tarot.ts에서 re-export)
 export * from "./tarot";
 
+// 타로 결과 UI 타입
+export type {
+  TarotResultCardDetailProps,
+  TarotResultCardOverviewProps,
+  TarotResultFinalAdviceProps,
+  TarotResultRatingProps,
+  TarotResultSelectionSummaryProps,
+} from "./tarotResult";
+
+// 프로필 / Supabase profiles
+export type { ProfileExtraFields } from "./profile";
+
 // 사용자 타입 (향후 확장 가능)
 export interface User {
   id: string;
