@@ -1,21 +1,27 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { X } from "lucide-react";
 import { toast } from "sonner";
 import { TarotCardToastIcon } from "@/components/common/toast/ToastIcons";
 import { AuthField } from "@/components/common/input/Input";
 import BirthDateField from "@/components/common/date/BirthDateField";
 import BirthTimeField from "@/components/common/date/BirthTimeField";
+import AuthCardBrandLogo from "@/components/auth/AuthCardBrandLogo";
 import {
-  AuthCard,
   CardHeader,
-  CardBrand,
   CardTitle,
   CardSubtitle,
   SubmitButton,
 } from "@/components/auth/AuthScreen.style";
+import { useMobileTouchScroll } from "@/hooks/useMobileTouchScroll";
 import {
   Overlay,
+  ProfileModalCard,
+  ModalCardLayout,
+  ModalCardHeader,
+  ModalScrollBody,
+  CloseButton,
   FieldStack,
   WheelFieldHeader,
   WheelFieldLabel,
@@ -35,9 +41,16 @@ import {
   profileHasAnyExtraInfo,
 } from "@/lib/profileExtraPrompt";
 
-/** 모달 닫을 때 공통 토스트 문구 */
-const PROFILE_EXTRA_CLOSE_TOAST =
-  "추가 정보는 마이페이지에서 언제든 입력·수정할 수 있어요.";
+/** 모달 닫을 때 공통 토스트 — 「입력·수정」 줄바꿈 방지 */
+function ProfileExtraCloseToastMessage() {
+  return (
+    <>
+      추가 정보는 마이페이지에서 언제든{" "}
+      <span style={{ whiteSpace: "nowrap" }}>입력·수정</span>
+      할 수 있어요.
+    </>
+  );
+}
 
 /** 선택 안 함 체크 시 표시 — `public/icon/check.svg` */
 function OptionalCheckMarkIcon() {
@@ -83,7 +96,7 @@ const emptyForm: FormState = {
 
 /**
  * 로그인 사용자에게 성별·생년월일·출생 시각 선택 입력을 유도하는 모달
- * — 메인(`/`)에서만 마운트됨. 설정 완료·다시 보지 않기로만 닫을 수 있음.
+ * — 메인(`/`)에서만 마운트됨
  */
 export default function ProfileExtraPromptModal() {
   const [open, setOpen] = useState(false);
@@ -97,9 +110,15 @@ export default function ProfileExtraPromptModal() {
   /** 체크 해제 시 복원할 마지막 선택값 */
   const lastBirthDateRef = useRef<string>("");
   const lastBornTimeRef = useRef<string>("");
+  const modalScrollRef = useRef<HTMLDivElement>(null);
+
+  /** iOS에서 모달 본문 터치 스크롤 보장 */
+  useMobileTouchScroll(modalScrollRef);
 
   const closeWithToast = useCallback(() => {
-    toast(PROFILE_EXTRA_CLOSE_TOAST, { icon: <TarotCardToastIcon /> });
+    toast(<ProfileExtraCloseToastMessage />, {
+      icon: <TarotCardToastIcon />,
+    });
     setOpen(false);
   }, []);
 
@@ -165,6 +184,26 @@ export default function ProfileExtraPromptModal() {
     };
   }, [syncPromptVisibility]);
 
+  /** 모달 열림 중 배경 스크롤 잠금 + 하단 nav 숨김 */
+  useEffect(() => {
+    if (!open) return;
+
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    document.body.setAttribute("data-profile-extra-modal-open", "");
+
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      document.body.removeAttribute("data-profile-extra-modal-open");
+    };
+  }, [open]);
+
+  /** X 닫기 — 저장 없이 닫고 안내 토스트 */
+  const handleClose = () => {
+    if (saving) return;
+    closeWithToast();
+  };
+
   /** 다시 보지 않기 — 로컬에만 저장 */
   const handleNeverAgain = () => {
     if (!userId) {
@@ -224,160 +263,170 @@ export default function ProfileExtraPromptModal() {
 
   return (
     <Overlay role="presentation">
-      <AuthCard
+      <ProfileModalCard
         role="dialog"
         aria-modal="true"
         aria-labelledby="profile-extra-prompt-title"
-        style={{
-          position: "relative",
-          maxHeight: "calc(100vh - 3rem)",
-          overflowY: "auto",
-        }}
         variants={cardVariants}
         initial="hidden"
         animate="visible"
       >
-        <CardHeader>
-          <CardBrand>MAGO</CardBrand>
-          <CardTitle id="profile-extra-prompt-title">추가 정보</CardTitle>
-          <CardSubtitle>
-            당신만을 위한 정교한 운명 해석을 위해 필요해요. <br />
-            정보가 많을수록 AI 마고가 더 깊은 통찰을 전해드립니다.
-          </CardSubtitle>
-        </CardHeader>
+        <CloseButton
+          type="button"
+          aria-label="닫기"
+          disabled={saving}
+          onClick={handleClose}
+        >
+          <X size={20} strokeWidth={2} aria-hidden />
+        </CloseButton>
 
-        <form onSubmit={handleSubmit} noValidate>
-          <FieldStack>
-            <AuthField label="성별" htmlFor="profile-extra-gender-male">
-              <GenderSegmentRow role="radiogroup" aria-label="성별">
-                {GENDER_SEGMENTS.map((opt) => {
-                  const inputId =
-                    opt.value === ""
-                      ? "profile-extra-gender-none"
-                      : `profile-extra-gender-${opt.value}`;
-                  return (
-                    <GenderSegment
-                      key={opt.value || "none"}
-                      $selected={form.gender === opt.value}
-                    >
+        <ModalCardLayout>
+          <ModalCardHeader>
+            <CardHeader style={{ marginBottom: "1.25rem" }}>
+              <AuthCardBrandLogo />
+              <CardTitle id="profile-extra-prompt-title">추가 정보</CardTitle>
+              <CardSubtitle>
+                당신만을 위한 정교한 운명 해석을 위해 필요해요. <br />
+                정보가 많을수록 AI 마고가 더 깊은 통찰을 전해드립니다.
+              </CardSubtitle>
+            </CardHeader>
+          </ModalCardHeader>
+
+          <ModalScrollBody ref={modalScrollRef}>
+            <form onSubmit={handleSubmit} noValidate>
+              <FieldStack>
+                <AuthField label="성별" htmlFor="profile-extra-gender-male">
+                  <GenderSegmentRow role="radiogroup" aria-label="성별">
+                    {GENDER_SEGMENTS.map((opt) => {
+                      const inputId =
+                        opt.value === ""
+                          ? "profile-extra-gender-none"
+                          : `profile-extra-gender-${opt.value}`;
+                      return (
+                        <GenderSegment
+                          key={opt.value || "none"}
+                          $selected={form.gender === opt.value}
+                        >
+                          <input
+                            type="radio"
+                            name="profile-extra-gender"
+                            id={inputId}
+                            value={opt.value}
+                            checked={form.gender === opt.value}
+                            disabled={saving}
+                            onChange={() =>
+                              setForm((prev) => ({
+                                ...prev,
+                                gender: opt.value,
+                              }))
+                            }
+                          />
+                          <span>{opt.label}</span>
+                        </GenderSegment>
+                      );
+                    })}
+                  </GenderSegmentRow>
+                </AuthField>
+
+                <div>
+                  <WheelFieldHeader>
+                    <WheelFieldLabel>생년월일</WheelFieldLabel>
+                    <OptionalToggle $checked={skipBirthDate} $disabled={saving}>
                       <input
-                        type="radio"
-                        name="profile-extra-gender"
-                        id={inputId}
-                        value={opt.value}
-                        checked={form.gender === opt.value}
+                        type="checkbox"
+                        checked={skipBirthDate}
                         disabled={saving}
-                        onChange={() =>
-                          setForm((prev) => ({
-                            ...prev,
-                            gender: opt.value,
-                          }))
-                        }
+                        onChange={(e) => {
+                          const next = e.target.checked;
+                          setSkipBirthDate(next);
+                          if (next) {
+                            setForm((prev) => ({ ...prev, birthDate: "" }));
+                            return;
+                          }
+                          const restore =
+                            lastBirthDateRef.current ||
+                            String(new Date().getFullYear() - 30) + "-01-01";
+                          setForm((prev) => ({ ...prev, birthDate: restore }));
+                        }}
                       />
-                      <span>{opt.label}</span>
-                    </GenderSegment>
-                  );
-                })}
-              </GenderSegmentRow>
-            </AuthField>
-
-            <div>
-              <WheelFieldHeader>
-                <WheelFieldLabel>생년월일</WheelFieldLabel>
-                <OptionalToggle $checked={skipBirthDate} $disabled={saving}>
-                  <input
-                    type="checkbox"
-                    checked={skipBirthDate}
-                    disabled={saving}
-                    onChange={(e) => {
-                      const next = e.target.checked;
-                      setSkipBirthDate(next);
-                      if (next) {
-                        setForm((prev) => ({ ...prev, birthDate: "" }));
-                        return;
-                      }
-                      const restore =
-                        lastBirthDateRef.current ||
-                        String(new Date().getFullYear() - 30) + "-01-01";
-                      setForm((prev) => ({ ...prev, birthDate: restore }));
+                      <OptionalToggleBox $checked={skipBirthDate}>
+                        {skipBirthDate ? <OptionalCheckMarkIcon /> : null}
+                      </OptionalToggleBox>
+                      <OptionalToggleText $checked={skipBirthDate}>
+                        선택 안 함
+                      </OptionalToggleText>
+                    </OptionalToggle>
+                  </WheelFieldHeader>
+                  <BirthDateField
+                    id="profile-extra-birth"
+                    value={form.birthDate}
+                    onChange={(next) => {
+                      lastBirthDateRef.current = next;
+                      setForm((prev) => ({ ...prev, birthDate: next }));
                     }}
+                    disabled={saving || skipBirthDate}
                   />
-                  <OptionalToggleBox $checked={skipBirthDate}>
-                    {skipBirthDate ? <OptionalCheckMarkIcon /> : null}
-                  </OptionalToggleBox>
-                  <OptionalToggleText $checked={skipBirthDate}>
-                    선택 안 함
-                  </OptionalToggleText>
-                </OptionalToggle>
-              </WheelFieldHeader>
-              <BirthDateField
-                id="profile-extra-birth"
-                value={form.birthDate}
-                onChange={(next) => {
-                  lastBirthDateRef.current = next;
-                  setForm((prev) => ({ ...prev, birthDate: next }));
-                }}
-                disabled={saving || skipBirthDate}
-              />
-            </div>
+                </div>
 
-            <div>
-              <WheelFieldHeader>
-                <WheelFieldLabel>태어난 시간</WheelFieldLabel>
-                <OptionalToggle $checked={skipBornTime} $disabled={saving}>
-                  <input
-                    type="checkbox"
-                    checked={skipBornTime}
-                    disabled={saving}
-                    onChange={(e) => {
-                      const next = e.target.checked;
-                      setSkipBornTime(next);
-                      if (next) {
-                        setForm((prev) => ({ ...prev, bornTime: "" }));
-                        return;
-                      }
-                      const restore = lastBornTimeRef.current || "12:00";
-                      setForm((prev) => ({ ...prev, bornTime: restore }));
+                <div>
+                  <WheelFieldHeader>
+                    <WheelFieldLabel>태어난 시간</WheelFieldLabel>
+                    <OptionalToggle $checked={skipBornTime} $disabled={saving}>
+                      <input
+                        type="checkbox"
+                        checked={skipBornTime}
+                        disabled={saving}
+                        onChange={(e) => {
+                          const next = e.target.checked;
+                          setSkipBornTime(next);
+                          if (next) {
+                            setForm((prev) => ({ ...prev, bornTime: "" }));
+                            return;
+                          }
+                          const restore = lastBornTimeRef.current || "12:00";
+                          setForm((prev) => ({ ...prev, bornTime: restore }));
+                        }}
+                      />
+                      <OptionalToggleBox $checked={skipBornTime}>
+                        {skipBornTime ? <OptionalCheckMarkIcon /> : null}
+                      </OptionalToggleBox>
+                      <OptionalToggleText $checked={skipBornTime}>
+                        선택 안 함
+                      </OptionalToggleText>
+                    </OptionalToggle>
+                  </WheelFieldHeader>
+                  <BirthTimeField
+                    id="profile-extra-time"
+                    value={form.bornTime}
+                    onChange={(next) => {
+                      lastBornTimeRef.current = next;
+                      setForm((prev) => ({ ...prev, bornTime: next }));
                     }}
+                    disabled={saving || skipBornTime}
                   />
-                  <OptionalToggleBox $checked={skipBornTime}>
-                    {skipBornTime ? <OptionalCheckMarkIcon /> : null}
-                  </OptionalToggleBox>
-                  <OptionalToggleText $checked={skipBornTime}>
-                    선택 안 함
-                  </OptionalToggleText>
-                </OptionalToggle>
-              </WheelFieldHeader>
-              <BirthTimeField
-                id="profile-extra-time"
-                value={form.bornTime}
-                onChange={(next) => {
-                  lastBornTimeRef.current = next;
-                  setForm((prev) => ({ ...prev, bornTime: next }));
-                }}
-                disabled={saving || skipBornTime}
-              />
-            </div>
-          </FieldStack>
+                </div>
+              </FieldStack>
 
-          <ButtonRow>
-            <SubmitButton
-              type="submit"
-              disabled={saving}
-              whileTap={{ scale: 0.98 }}
-            >
-              {saving ? "저장 중…" : "설정 완료"}
-            </SubmitButton>
-            <TextActionButton
-              type="button"
-              onClick={handleNeverAgain}
-              disabled={saving || !userId}
-            >
-              다시 보지 않기
-            </TextActionButton>
-          </ButtonRow>
-        </form>
-      </AuthCard>
+              <ButtonRow>
+                <SubmitButton
+                  type="submit"
+                  disabled={saving}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  {saving ? "저장 중…" : "설정 완료"}
+                </SubmitButton>
+                <TextActionButton
+                  type="button"
+                  onClick={handleNeverAgain}
+                  disabled={saving || !userId}
+                >
+                  다시 보지 않기
+                </TextActionButton>
+              </ButtonRow>
+            </form>
+          </ModalScrollBody>
+        </ModalCardLayout>
+      </ProfileModalCard>
     </Overlay>
   );
 }

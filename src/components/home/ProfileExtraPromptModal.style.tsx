@@ -1,7 +1,10 @@
 import styled from "@emotion/styled";
+import { AuthCard } from "@/components/auth/AuthScreen.style";
+
+const MOBILE = "@media (max-width: 640px)";
 
 /**
- * 딤 오버레이 — ::before 로 배경 처리해서 카드 opacity 전파 방지
+ * 딤 오버레이 — 모바일은 여백 안에서 카드가 화면 높이를 채움
  */
 export const Overlay = styled.div`
   position: fixed;
@@ -11,22 +14,98 @@ export const Overlay = styled.div`
   align-items: center;
   justify-content: center;
   padding: 1.5rem;
+  overscroll-behavior: contain;
+
+  ${MOBILE} {
+    padding: 1rem;
+    padding-top: calc(0.75rem + env(safe-area-inset-top, 0px));
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+    align-items: stretch;
+    overflow: hidden;
+  }
 
   &::before {
     content: "";
-    position: absolute;
+    position: fixed;
     inset: 0;
     background: #030407;
     opacity: 0.78;
     z-index: -1;
+
+    ${MOBILE} {
+      opacity: 0.92;
+    }
   }
 `;
 
-/** 우상단 닫기 */
+/** 추가 정보 모달 카드 — 모바일도 AuthCard 기본 둥근 모서리·테두리 유지 */
+export const ProfileModalCard = styled(AuthCard)`
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-sizing: border-box;
+  width: 100%;
+  max-height: calc(100dvh - 3rem);
+
+  ${MOBILE} {
+    flex: 1;
+    min-height: 0;
+    height: 100%;
+    max-height: 100%;
+    padding: 1.25rem 1rem 1.25rem;
+  }
+`;
+
+/** 모달 카드 내부 — 헤더 고정 + 본문 스크롤 */
+export const ModalCardLayout = styled.div`
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+`;
+
+/** 고정 헤더 — 로고·제목 */
+export const ModalCardHeader = styled.div`
+  flex-shrink: 0;
+`;
+
+/** 스크롤 가능 본문 — 필드 + 하단 버튼 포함 */
+export const ModalScrollBody = styled.div`
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  padding-right: 0.125rem;
+  padding-bottom: 0.5rem;
+
+  ${MOBILE} {
+    padding-bottom: 1.25rem;
+  }
+
+  &::-webkit-scrollbar {
+    width: 0.25rem;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #3d455c;
+    border-radius: 999px;
+  }
+`;
+
+/** 좌상단 닫기 */
 export const CloseButton = styled.button`
   position: absolute;
   top: 1rem;
-  right: 1rem;
+  left: 1rem;
+  z-index: 2;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -42,9 +121,19 @@ export const CloseButton = styled.button`
     color 150ms ease,
     background 150ms ease;
 
-  &:hover {
+  &:hover:not(:disabled) {
     color: #e8eaef;
     background: #2a3145;
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  ${MOBILE} {
+    top: 0.75rem;
+    left: 0.75rem;
   }
 `;
 
@@ -226,6 +315,11 @@ export const ButtonRow = styled.div`
   flex-direction: column;
   gap: 0.625rem;
   margin-top: 1.5rem;
+
+  ${MOBILE} {
+    margin-top: 1.25rem;
+    padding-bottom: 0.25rem;
+  }
 `;
 
 export const TextActionButton = styled.button`
