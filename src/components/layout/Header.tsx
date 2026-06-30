@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Home } from "lucide-react";
+import { Home, ChevronLeft } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabaseClient";
@@ -21,6 +21,7 @@ import {
   DesktopOnly,
   MobileOnly,
   HeaderHomeLink,
+  HeaderBackButton,
 } from "./Header.style";
 import HeaderCoinBalance from "./HeaderCoinBalance";
 import { useTarotSetupEntry } from "@/hooks/useTarotSetupEntry";
@@ -41,6 +42,8 @@ export type HeaderProps = {
 
 const HEADER_HOME_ICON_SIZE = 20;
 const HEADER_HOME_ICON_STROKE = 2;
+const HEADER_BACK_ICON_SIZE = 20;
+const HEADER_BACK_ICON_STROKE = 2;
 
 /** 상단 헤더: 세션 유무에 따라 로그인/회원가입 또는 마이페이지/로그아웃 */
 export default function Header({
@@ -145,23 +148,39 @@ export default function Header({
         $smartHidden={smartHidden}
       >
         <HeaderContent>
-          {/* 좌측: 로고 + [데스크톱] 타로 시작하기 */}
+          {/* 좌측: 로고 또는 [결과] 뒤로가기 + [데스크톱] 타로 시작하기 */}
           <LeftSection>
-            <Logo>
-              <Link href="/">
-                <LogoMark src="/icon/favicon.svg" alt="" width={103} height={153} />
-                <LogoWordmark src="/logo.png" alt="MAGO" />
-              </Link>
-            </Logo>
+            {variant === "result" ? (
+              <HeaderBackButton
+                type="button"
+                aria-label="뒤로가기"
+                onClick={() => router.back()}
+              >
+                <ChevronLeft
+                  size={HEADER_BACK_ICON_SIZE}
+                  strokeWidth={HEADER_BACK_ICON_STROKE}
+                  aria-hidden
+                />
+              </HeaderBackButton>
+            ) : (
+              <Logo>
+                <Link href="/">
+                  <LogoMark src="/icon/favicon.svg" alt="" width={103} height={153} />
+                  <LogoWordmark src="/logo.png" alt="MAGO" />
+                </Link>
+              </Logo>
+            )}
 
             {/* 데스크톱 전용 — 타로 시작하기 */}
-            <DesktopOnly>
-              <NavLink>
-                <NavTextButton type="button" onClick={requestTarotSetup}>
-                  타로 시작하기
-                </NavTextButton>
-              </NavLink>
-            </DesktopOnly>
+            {variant === "default" ? (
+              <DesktopOnly>
+                <NavLink>
+                  <NavTextButton type="button" onClick={requestTarotSetup}>
+                    타로 시작하기
+                  </NavTextButton>
+                </NavLink>
+              </DesktopOnly>
+            ) : null}
           </LeftSection>
 
           {/* 우측 */}

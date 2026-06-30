@@ -256,6 +256,35 @@ export const IconButton = styled.button`
   }
 `;
 
+/** 결과 페이지 헤더 — 이전 화면으로 */
+export const HeaderBackButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  background-color: #f5f5f5;
+  border: none;
+  color: #212121;
+  cursor: pointer;
+  border-radius: 0.5rem;
+  transition:
+    background-color 150ms ease-in-out,
+    color 150ms ease-in-out;
+
+  &:hover {
+    background-color: #e8eaf6;
+    color: #1a237e;
+  }
+
+  &:active {
+    background-color: #c5cae9;
+  }
+`;
+
 /** 결과 페이지 헤더 — 메인으로 이동하는 홈 아이콘 (엽전·언어 칩과 동일 2rem) */
 export const HeaderHomeLink = styled(Link)`
   display: flex;
