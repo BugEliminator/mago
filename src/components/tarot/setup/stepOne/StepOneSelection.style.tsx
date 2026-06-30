@@ -1,7 +1,9 @@
 import styled from "@emotion/styled";
 import { motion } from "framer-motion";
 
-/** Step 1: 카드 장수/복채 선택 영역 */
+/** Step 1: 카드 장수/복채 선택 영역
+ * overflow: hidden 제거 — 상위 CardFrontPanel이 이미 클리핑하므로 불필요하며,
+ * iOS 3D 컨텍스트 안에서 중첩 overflow가 터치 스크롤을 막는 원인이 됩니다. */
 export const StepOneRoot = styled.div`
   width: 100%;
   height: 100%;
@@ -9,7 +11,6 @@ export const StepOneRoot = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  overflow: hidden;
 `;
 
 export const CoinOptionList = styled.div`

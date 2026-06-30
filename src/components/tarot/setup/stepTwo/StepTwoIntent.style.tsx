@@ -1,7 +1,9 @@
 import styled from "@emotion/styled";
 import { motion } from "framer-motion";
 
-/** Step 2: 질문/고민 선택 전용 레이아웃 */
+/** Step 2: 질문/고민 선택 전용 레이아웃
+ * overflow: hidden 제거 — 상위 CardFrontPanel이 이미 클리핑하므로 불필요하며,
+ * iOS 3D 컨텍스트 안에서 중첩 overflow가 터치 스크롤을 막는 원인이 됩니다. */
 export const StepTwoRoot = styled.div`
   width: 100%;
   height: 100%;
@@ -9,7 +11,6 @@ export const StepTwoRoot = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  overflow: hidden;
 `;
 
 export const StepTwoScrollArea = styled.div`
@@ -21,6 +22,7 @@ export const StepTwoScrollArea = styled.div`
   overflow-y: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
   padding-right: 0.125rem;
 
   &::-webkit-scrollbar {

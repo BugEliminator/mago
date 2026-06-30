@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef } from "react";
+import { useMobileTouchScroll } from "@/hooks/useMobileTouchScroll";
 import type { TarotCategory, TarotSessionSetup } from "@/types/tarot";
 import {
   CHIPS_BY_CATEGORY,
@@ -57,6 +58,9 @@ export default function StepTwoIntent({
   const hasSelectedDetailTag = selectedDetailTag.trim().length > 0;
   const activeChips = CHIPS_BY_CATEGORY[activeCategory];
   const contentScrollRef = useRef<HTMLDivElement | null>(null);
+
+  /* iOS 3D 컨텍스트 안에서 터치 스크롤이 막히는 버그 우회 */
+  useMobileTouchScroll(contentScrollRef);
 
   /**
    * UI 기본 강조가 연애(love)인데 스토어 category가 null이면

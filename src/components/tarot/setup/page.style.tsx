@@ -93,6 +93,7 @@ const CardFaceBase = styled.div`
   inset: 0;
   border-radius: 1.125rem;
   backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
   padding: 0.75rem;
   border: 1.5px solid #eab865;
   box-sizing: border-box;
@@ -107,8 +108,11 @@ export const CardFaceFront = styled(CardFaceBase)`
   background: #1c2238;
 `;
 
-/** 앞면 실제 패널 — 회색 내부 프레임 */
-export const CardFrontPanel = styled.div`
+/** 앞면 실제 패널 — 회색 내부 프레임
+ * $visible: false일 때 opacity·pointer-events를 즉시 끄고,
+ * true가 되면 플립 중간(330ms 지연)에 맞춰 부드럽게 나타납니다.
+ * iOS backface-visibility 버그로 스텝바가 비치는 현상을 방지합니다. */
+export const CardFrontPanel = styled.div<{ $visible?: boolean }>`
   display: flex;
   align-items: center;
   justify-content: flex-start;
@@ -121,6 +125,10 @@ export const CardFrontPanel = styled.div`
   border-radius: 0.75rem;
   box-sizing: border-box;
   overflow: hidden;
+  opacity: ${({ $visible }) => ($visible ? 1 : 0)};
+  pointer-events: ${({ $visible }) => ($visible ? "auto" : "none")};
+  transition: ${({ $visible }) =>
+    $visible ? "opacity 180ms ease 330ms" : "none"};
 
   @media (max-width: ${SETUP_MOBILE_MAX}) {
     padding: 1.25rem;
@@ -135,6 +143,7 @@ export const SetupStepScrollArea = styled.div`
   overflow-y: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
   padding-right: 0.125rem;
 
   &::-webkit-scrollbar {

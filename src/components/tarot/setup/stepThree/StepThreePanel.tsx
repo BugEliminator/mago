@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef } from "react";
+import { useMobileTouchScroll } from "@/hooks/useMobileTouchScroll";
 import { Heart, HelpCircle, PenLine } from "lucide-react";
 import type { TarotCategory } from "@/types/tarot";
 import {
@@ -98,6 +99,9 @@ export default function StepThreePanel({
   disabled,
 }: StepThreePanelProps) {
   const scrollRef = useRef<HTMLDivElement | null>(null);
+
+  /* iOS 3D 컨텍스트 안에서 터치 스크롤이 막히는 버그 우회 (textarea 중첩 스크롤 포함) */
+  useMobileTouchScroll(scrollRef, { nestedTextarea: true });
 
   const totalLength = situation.length + question.length;
   const canSubmit = totalLength >= MIN_REQUIRED && totalLength <= MAX_COMBINED;

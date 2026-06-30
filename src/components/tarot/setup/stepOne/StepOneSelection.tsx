@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import type { CardSpread } from "@/types/tarot";
 import AncientCoin from "./AncientCoin";
 import {
@@ -12,6 +13,7 @@ import {
   SetupStepFooter,
   SetupStepScrollArea,
 } from "../page.style";
+import { useMobileTouchScroll } from "@/hooks/useMobileTouchScroll";
 import {
   CoinLayer,
   CoinOptionButton,
@@ -121,6 +123,10 @@ export default function StepOneSelection({
   disabled,
 }: StepOneSelectionProps) {
   const hasSelection = selectedCardCount !== null;
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  /* iOS 3D 컨텍스트 안에서 터치 스크롤이 막히는 버그 우회 */
+  useMobileTouchScroll(scrollRef);
 
   return (
     <StepOneRoot>
@@ -141,7 +147,7 @@ export default function StepOneSelection({
         }
       />
 
-      <SetupStepScrollArea>
+      <SetupStepScrollArea ref={scrollRef}>
         <CoinOptionList>
           {COIN_OPTIONS.map((option) => {
             const active = selectedCardCount === option.id;

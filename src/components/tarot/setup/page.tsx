@@ -336,7 +336,7 @@ export default function TarotSetupPage({
               transition={{ duration: FLIP_MS / 1000, ease: "easeInOut" }}
             >
               <CardFaceFront aria-label={`설정 ${step}단계 앞면`}>
-                <CardFrontPanel>
+                <CardFrontPanel $visible={isFaceUp}>
                   {step === 1 ? (
                     <StepOneSelection
                       selectedCardCount={formData.cardCount}
