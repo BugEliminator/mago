@@ -41,6 +41,8 @@ export const WheelPickerShell = styled.div`
   border: 1px solid #1d2040;
   border-radius: 0.75rem;
   overflow: hidden;
+  touch-action: none;
+  overscroll-behavior: contain;
 
   /* 가운데 골드 가이드 바 (상단 경계) */
   &::before {
