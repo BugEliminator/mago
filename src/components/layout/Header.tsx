@@ -151,17 +151,29 @@ export default function Header({
           {/* 좌측: 로고 또는 [결과] 뒤로가기 + [데스크톱] 타로 시작하기 */}
           <LeftSection>
             {variant === "result" ? (
-              <HeaderBackButton
-                type="button"
-                aria-label="뒤로가기"
-                onClick={() => router.back()}
-              >
-                <ChevronLeft
-                  size={HEADER_BACK_ICON_SIZE}
-                  strokeWidth={HEADER_BACK_ICON_STROKE}
-                  aria-hidden
-                />
-              </HeaderBackButton>
+              <>
+                <MobileOnly>
+                  <HeaderBackButton
+                    type="button"
+                    aria-label="뒤로가기"
+                    onClick={() => router.back()}
+                  >
+                    <ChevronLeft
+                      size={HEADER_BACK_ICON_SIZE}
+                      strokeWidth={HEADER_BACK_ICON_STROKE}
+                      aria-hidden
+                    />
+                  </HeaderBackButton>
+                </MobileOnly>
+                <DesktopOnly>
+                  <Logo>
+                    <Link href="/">
+                      <LogoMark src="/icon/favicon.svg" alt="" width={103} height={153} />
+                      <LogoWordmark src="/logo.png" alt="MAGO" />
+                    </Link>
+                  </Logo>
+                </DesktopOnly>
+              </>
             ) : (
               <Logo>
                 <Link href="/">
