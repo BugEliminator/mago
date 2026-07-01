@@ -6,6 +6,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { CircleDollarSign, Star } from "lucide-react";
 import { toast } from "sonner";
 import { requestSubmitTarotSessionReviewFromClient } from "@/lib/requestSubmitTarotSessionReviewFromClient";
+import { COIN_REWARD_REVIEW } from "@/lib/coinRewards";
+import { useCoinStore } from "@/stores/coinStore";
 import { supabase } from "@/lib/supabaseClient";
 import { tarotReadingQueryKey, type TarotReadingQueryData } from "@/lib/tarotReadingQuery";
 import type { TarotResultRatingProps } from "@/types/tarotResult";
@@ -164,6 +166,11 @@ export default function ResultRating({
         };
       },
     );
+
+    const { balance, setBalance } = useCoinStore.getState();
+    if (balance != null) {
+      setBalance(balance + COIN_REWARD_REVIEW);
+    }
 
     triggerCoinBurst();
     setIsSubmitting(false);

@@ -35,6 +35,7 @@ import SetupExitConfirmModal from "./SetupExitConfirmModal";
 import SetupInsufficientCoinModal from "./SetupInsufficientCoinModal";
 import { getTarotCoinCost } from "@/lib/tarotCoinCost";
 import { requestSpendTarotCoinFromClient } from "@/lib/requestSpendTarotCoinFromClient";
+import { useCoinStore } from "@/stores/coinStore";
 import { supabase } from "@/lib/supabaseClient";
 import { toast } from "sonner";
 import type { CardSpread } from "@/types/tarot";
@@ -259,6 +260,7 @@ export default function TarotSetupPage({
       return;
     }
 
+    useCoinStore.getState().setBalance(result.newBalance);
     exitToReading(userId);
   }, [exitToReading, formData.cardCount, isSpendingCoin, isTransitioning]);
 

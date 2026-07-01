@@ -216,8 +216,7 @@ export const RightSection = styled.div`
   }
 `;
 
-/** 헤더 우측 칩 — LanguageSwitcher 트리거와 동일 톤(표시 전용) */
-export const HeaderCoinChip = styled.div`
+const coinChipBase = `
   display: flex;
   align-items: center;
   gap: 0.375rem;
@@ -232,6 +231,18 @@ export const HeaderCoinChip = styled.div`
   font-family: inherit;
   flex-shrink: 0;
   box-sizing: border-box;
+`;
+
+/** 헤더 우측 칩 — 표시 전용(비로그인 등) */
+export const HeaderCoinChip = styled.div`
+  ${coinChipBase}
+`;
+
+/** 헤더 우측 칩 — 클릭 가능 Link 버전 (엽전보관함 이동) */
+export const HeaderCoinChipLink = styled(Link)`
+  ${coinChipBase}
+  text-decoration: none;
+  cursor: pointer;
 `;
 
 export const IconButton = styled.button`

@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabaseClient";
 import { requestClaimAttendanceFromClient } from "@/lib/requestClaimAttendanceFromClient";
+import { useCoinStore } from "@/stores/coinStore";
 import type { CoinPageInitialData } from "@/types/coin";
 import {
   CircleDollarSign,
@@ -127,6 +128,8 @@ type CoinsPageClientProps = {
 
 export default function CoinsPageClient({ initialData }: CoinsPageClientProps) {
   const router = useRouter();
+  const setCoinBalance = useCoinStore((s) => s.setBalance);
+  const setCoinHasCheckedIn = useCoinStore((s) => s.setHasCheckedInToday);
   const [activeTab, setActiveTab] = useState<CoinsMobileTab>("pay");
   const [isLocked, setIsLocked] = useState(true);
   const [balance, setBalance] = useState(initialData.balance);
@@ -141,6 +144,17 @@ export default function CoinsPageClient({ initialData }: CoinsPageClientProps) {
   const [demoTransactions, setDemoTransactions] = useState<CoinTransaction[]>(
     [],
   );
+
+  /** 서버 prefetch → coinStore 동기화 (헤더 등과 공유) */
+  useEffect(() => {
+    setCoinBalance(initialData.balance);
+    setCoinHasCheckedIn(initialData.hasCheckedInToday);
+  }, [
+    initialData.balance,
+    initialData.hasCheckedInToday,
+    setCoinBalance,
+    setCoinHasCheckedIn,
+  ]);
 
   /** 데모 이용 내역 맨 앞에 추가 */
   const addDemoTransaction = (tx: Omit<CoinTransaction, "id" | "date">) => {
@@ -171,6 +185,7 @@ export default function CoinsPageClient({ initialData }: CoinsPageClientProps) {
     if (!result.ok) {
       if (result.code === "ALREADY_CHECKED_IN") {
         setHasCheckedIn(true);
+        setCoinHasCheckedIn(true);
       }
       toast.error(result.error);
       return;
@@ -178,6 +193,8 @@ export default function CoinsPageClient({ initialData }: CoinsPageClientProps) {
 
     setBalance(result.newBalance);
     setHasCheckedIn(true);
+    setCoinBalance(result.newBalance);
+    setCoinHasCheckedIn(true);
     setHistories((prev) => [result.history, ...prev]);
     toast.success(`출석 완료! +${CHECKIN_REWARD}냥 적립`);
   };
@@ -187,7 +204,11 @@ export default function CoinsPageClient({ initialData }: CoinsPageClientProps) {
     if (adCount >= AD_MAX_COUNT) return;
     const next = adCount + 1;
     setAdCount(next);
-    setBalance((b) => b + AD_REWARD);
+    setBalance((b) => {
+      const nextBalance = b + AD_REWARD;
+      setCoinBalance(nextBalance);
+      return nextBalance;
+    });
     addDemoTransaction({
       type: "charge_ad",
       amount: AD_REWARD,
@@ -208,7 +229,11 @@ export default function CoinsPageClient({ initialData }: CoinsPageClientProps) {
     priceLabel: string,
     coinsLabel: string,
   ) => {
-    setBalance((b) => b + amount);
+    setBalance((b) => {
+      const nextBalance = b + amount;
+      setCoinBalance(nextBalance);
+      return nextBalance;
+    });
     addDemoTransaction({
       type: "charge_pay",
       amount,
