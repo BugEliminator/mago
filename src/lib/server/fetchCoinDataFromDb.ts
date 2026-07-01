@@ -1,6 +1,7 @@
-import { formatCoinHistoryDateLabel, getKstDayBoundsUtc } from "@/lib/coinKst";
+import { formatCoinHistoryDateLabel } from "@/lib/coinKst";
 import { isCoinHistoryType } from "@/lib/coinRewards";
 import { createSupabaseAdmin } from "@/lib/supabaseAdmin";
+import { hasCheckedInTodayForUser } from "@/lib/server/hasCheckedInTodayForUser";
 import type { CoinHistoryItem, CoinPageInitialData } from "@/types/coin";
 
 type CoinHistoryRow = {
@@ -73,22 +74,11 @@ export async function fetchCoinDataFromDb(
     .map((row) => mapHistoryRow(row as CoinHistoryRow))
     .filter((item): item is CoinHistoryItem => item != null);
 
-  const { startIso, endIso } = getKstDayBoundsUtc();
-  const { count, error: checkinError } = await admin
-    .from("coin_histories")
-    .select("id", { count: "exact", head: true })
-    .eq("user_id", userId)
-    .eq("type", "EARN_ATTENDANCE")
-    .gte("created_at", startIso)
-    .lt("created_at", endIso);
-
-  if (checkinError != null) {
-    console.error("[fetchCoinDataFromDb] checkin", checkinError.message);
-  }
+  const hasCheckedInToday = await hasCheckedInTodayForUser(userId);
 
   return {
     balance,
     histories,
-    hasCheckedInToday: (count ?? 0) > 0,
+    hasCheckedInToday,
   };
 }
