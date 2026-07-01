@@ -29,8 +29,7 @@ export const HeroMain = styled.main`
   padding: 7rem ${LAYOUT_PAGE_HORIZONTAL_PADDING} 2rem;
 
   @media (min-width: ${DESKTOP_MIN_WIDTH}) {
-    padding-top: 3rem;
-    padding-bottom: 2.5rem;
+    padding: 3rem 0 2.5rem;
   }
 `;
 
