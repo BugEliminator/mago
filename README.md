@@ -83,10 +83,11 @@ yarn dev
 
 ### Git 워크플로우
 
-- `main`: 프로덕션 브랜치
-- `feature/*`: 기능 개발 브랜치
-- `refactor/*`: 리팩토링 브랜치
-- `style/*`: 스타일링 관련 브랜치
+- `main`: 프로덕션 브랜치 (사용자 배포)
+- `dev`: 통합·검증 브랜치 (main 반영 전 확인)
+- `feature/*`, `fix/*`, `refactor/*`, `style/*`: 작업 브랜치 (`dev`에서 분기 → `dev`로 병합)
+
+작업 흐름: `dev`에서 분기 → 작업 → `dev` 병합 → 검증 → `dev` → `main` 배포
 
 자세한 내용은 `.cursorrules` 파일을 참고하세요.
 
