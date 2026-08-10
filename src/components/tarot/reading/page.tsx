@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import NebulaBackground from "@/components/common/background/NebulaBackground";
 import { clearTarotReadingLocalDraft } from "@/lib/clearTarotReadingLocalDraft";
 import { readTarotReadingSetupForUser } from "@/lib/tarotLocalDraft";
+import { generateUuid } from "@/lib/generateUuid";
 import { preloadImage } from "@/lib/preloadImage";
 import { preloadResultCardImages } from "@/lib/preloadResultCardImages";
 import { requestSaveTarotSessionFromClient } from "@/lib/requestSaveTarotSessionFromClient";
@@ -177,11 +178,7 @@ export default function TarotReadingPage() {
 
   /** 스프레드 매수만큼 카드 확정 완료 → 해석 중 오버레이 표시 */
   const handleAllSlotsPicked = useCallback(() => {
-    pendingResultIdRef.current =
-      typeof crypto !== "undefined" &&
-      typeof crypto.randomUUID === "function"
-        ? crypto.randomUUID()
-        : `reading-${Date.now()}`;
+    pendingResultIdRef.current = generateUuid();
     overlayShownAtRef.current = Date.now();
     setInterpretOverlayVisible(true);
   }, []);
