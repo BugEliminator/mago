@@ -91,26 +91,23 @@
 
 ### 브랜치 전략
 - `main`: 프로덕션 브랜치 (사용자에게 배포되는 브랜치)
-- `dev`: 통합·검증 브랜치 (피처 병합 후 main 반영 전 확인)
 - `feature/*`: 기능 개발 브랜치 (예: `feature/tarot-card-selection`, `feature/user-auth`)
+- `fix/*`: 버그 수정 브랜치 (예: `fix/authentication-error`)
 - `refactor/*`: 리팩토링 브랜치 (예: `refactor/component-structure`)
 - `style/*`: 스타일링 관련 브랜치 (예: `style/responsive-design`)
 
 ### 브랜치 네이밍 규칙
 - 기능 개발: `feature/기능명` (예: `feature/tarot-reading`)
+- 버그 수정: `fix/문제명` (예: `fix/mobile-reading-session-hang`)
 - 리팩토링: `refactor/대상` (예: `refactor/api-structure`)
 - 스타일링: `style/대상` (예: `style/landing-page`)
-- 버그 수정: `fix/문제명` (예: `fix/authentication-error`)
 
 ### 작업 흐름
-1. `dev` 브랜치에서 새 브랜치 생성
+1. `main` 브랜치에서 새 브랜치 생성
 2. 기능/리팩토링/스타일 작업 완료
-3. `dev` 브랜치로 병합 (PR/MR 사용 가능)
-4. `dev`에서 통합 테스트·스테이징 확인
-5. 검증 완료 후 `dev` → `main` 병합 → 프로덕션 배포
-6. 병합 후 해당 작업 브랜치 삭제
+3. PR로 `main`에 병합 (로컬·Preview URL에서 검증)
+4. 병합 후 해당 작업 브랜치 삭제
 
 ### 주의사항
-- `feature/*` 등 작업 브랜치를 `main`에 직접 병합하지 않음
-- 핫픽스는 `main`에서 분기 후 `main`과 `dev` 모두에 반영
-- `dev`는 `main`보다 앞서거나 동일한 상태를 유지 (`main`만 최신이면 안 됨)
+- `main`에 직접 push하기보다 PR merge를 권장 (Preview·리뷰 히스토리 유지)
+- 핫픽스: `main`에서 분기 → PR → `main` 병합
