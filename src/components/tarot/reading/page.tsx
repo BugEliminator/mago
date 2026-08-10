@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import NebulaBackground from "@/components/common/background/NebulaBackground";
 import { clearTarotReadingLocalDraft } from "@/lib/clearTarotReadingLocalDraft";
 import { readTarotReadingSetupForUser } from "@/lib/tarotLocalDraft";
+import { generateUuid } from "@/lib/generateUuid";
 import { preloadImage } from "@/lib/preloadImage";
 import { preloadResultCardImages } from "@/lib/preloadResultCardImages";
 import { requestSaveTarotSessionFromClient } from "@/lib/requestSaveTarotSessionFromClient";
@@ -26,6 +27,9 @@ import {
 
 /** 로띠가 보여야 하는 최소 시간(ms) — 준비가 빨라도 이보다 짧게 끝내지 않습니다. */
 const MIN_READING_BOOT_MS = 3000;
+
+/** 네뷸라 스냅샷 실패 시 부트 오버레이 강제 해제(ms) */
+const NEBULA_BOOT_FALLBACK_MS = 8000;
 
 /** 해석 오버레이 최소 노출 시간(ms) — API가 빨리 끝나도 잠깐은 보여줍니다. */
 const MIN_INTERPRET_OVERLAY_MS = 2000;
@@ -79,7 +83,13 @@ export default function TarotReadingPage() {
     void preloadImage(TAROT_CLASSIC_BACK_IMAGE_PATH).finally(() => {
       setDeckAssetReady(true);
     });
-    return () => window.clearTimeout(timerId);
+    const nebulaFallbackId = window.setTimeout(() => {
+      setNebulaReady(true);
+    }, NEBULA_BOOT_FALLBACK_MS);
+    return () => {
+      window.clearTimeout(timerId);
+      window.clearTimeout(nebulaFallbackId);
+    };
   }, [setup]);
 
   useEffect(() => {
@@ -168,11 +178,7 @@ export default function TarotReadingPage() {
 
   /** 스프레드 매수만큼 카드 확정 완료 → 해석 중 오버레이 표시 */
   const handleAllSlotsPicked = useCallback(() => {
-    pendingResultIdRef.current =
-      typeof crypto !== "undefined" &&
-      typeof crypto.randomUUID === "function"
-        ? crypto.randomUUID()
-        : `reading-${Date.now()}`;
+    pendingResultIdRef.current = generateUuid();
     overlayShownAtRef.current = Date.now();
     setInterpretOverlayVisible(true);
   }, []);

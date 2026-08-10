@@ -28,6 +28,18 @@ export default function TarotReadingBootOverlay({
     setFadeOut(true);
   }, [dismissRequested, fadeOut]);
 
+  /** 모바일 Safari 등에서 onAnimationComplete 미호출 시 페이드 후 강제 해제 */
+  useEffect(() => {
+    if (!fadeOut) return;
+    const fallbackMs = Math.ceil(FADE_S * 1000) + 150;
+    const timerId = window.setTimeout(() => {
+      if (dismissedRef.current) return;
+      dismissedRef.current = true;
+      onDismissed();
+    }, fallbackMs);
+    return () => window.clearTimeout(timerId);
+  }, [fadeOut, onDismissed]);
+
   const handleAnimationComplete = () => {
     if (!fadeOut || dismissedRef.current) return;
     dismissedRef.current = true;
