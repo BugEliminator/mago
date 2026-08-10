@@ -254,8 +254,12 @@ export default function NebulaBackground({
 
     let cancelled = false;
     let rafId = 0;
+    let layoutAttempts = 0;
+    let readyNotified = false;
 
-    const notifyReady = () => {
+    const notifyReadyOnce = () => {
+      if (readyNotified || cancelled) return;
+      readyNotified = true;
       queueMicrotask(() => {
         if (!cancelled) onReadyRef.current?.();
       });
@@ -265,13 +269,21 @@ export default function NebulaBackground({
       const cssW = wrap.clientWidth;
       const cssH = wrap.clientHeight;
       if (cssW < 1 || cssH < 1) {
+        layoutAttempts += 1;
+        if (layoutAttempts >= 120) {
+          notifyReadyOnce();
+          return;
+        }
         rafId = window.requestAnimationFrame(renderSnapshotToCssBackground);
         return;
       }
 
       const off = document.createElement("canvas");
       const ctx = off.getContext("2d");
-      if (!ctx) return;
+      if (!ctx) {
+        notifyReadyOnce();
+        return;
+      }
 
       const dpr = Math.min(window.devicePixelRatio ?? 1, DPR_MAX);
       const pixelW = Math.max(1, Math.ceil(cssW * dpr * SNAPSHOT_SUPER_SAMPLE));
@@ -296,16 +308,17 @@ export default function NebulaBackground({
       for (const star of stars) star.draw(ctx);
 
       off.toBlob((blob) => {
-        if (cancelled || !blob) return;
-        if (blobUrlRef.current) {
-          URL.revokeObjectURL(blobUrlRef.current);
-          blobUrlRef.current = null;
+        if (cancelled) return;
+        if (blob != null) {
+          if (blobUrlRef.current) {
+            URL.revokeObjectURL(blobUrlRef.current);
+            blobUrlRef.current = null;
+          }
+          const url = URL.createObjectURL(blob);
+          blobUrlRef.current = url;
+          setBackgroundImage(`url(${url})`);
         }
-        const url = URL.createObjectURL(blob);
-        blobUrlRef.current = url;
-        setBackgroundImage(`url(${url})`);
-
-        notifyReady();
+        notifyReadyOnce();
       }, "image/png");
     };
 
