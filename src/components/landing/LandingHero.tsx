@@ -16,7 +16,7 @@ import {
   HeroDeckFrame,
   DeckAnchor,
 } from "./LandingHero.style";
-import { preloadLandingDeckImages } from "@/lib/preloadLandingDeckImages";
+import { preloadLandingDeckImages } from "@/lib/tarot/preload/preloadLandingDeckImages";
 import {
   SPREAD_DECK_VISIBLE_COUNT,
   SPREAD_DECK_VISIBLE_COUNT_MOBILE,
@@ -28,7 +28,7 @@ import {
   LAYOUT_DESKTOP_SPREAD_STEP_PX,
   LAYOUT_MOBILE_CARD_WIDTH_PX,
   calcLandingSpreadStepPx,
-} from "@/lib/layout";
+} from "@/lib/layout/layout";
 
 const SPREAD_MS = 500;
 const TEXT_REVEAL_MS = 2000;

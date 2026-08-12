@@ -3,7 +3,7 @@ import {
   DESKTOP_MIN_WIDTH,
   LAYOUT_CONTENT_MAX_WIDTH,
   LAYOUT_PAGE_HORIZONTAL_PADDING,
-} from "@/lib/layout";
+} from "@/lib/layout/layout";
 
 /** 전체 랜딩 루트 — 배경은 `WarpSpeedBackground`가 뷰포트 전체 fixed, 높이는 콘텐츠 기준 */
 export const LandingRoot = styled.div`

@@ -1,5 +1,5 @@
 import "@emotion/react";
-import { Theme as CustomTheme } from "@/lib/theme";
+import { Theme as CustomTheme } from "@/lib/ui/theme";
 
 /**
  * Emotion의 테마 타입 확장

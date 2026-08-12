@@ -12,7 +12,7 @@ import {
   SPREAD_SLIDE_DURATION_MS,
   SPREAD_SLIDE_LEAD_PX,
   SPREAD_SLIDE_ROW_START_GAP_MS,
-} from "@/lib/tarotReadingDeckConstants";
+} from "@/lib/tarot/reading/tarotReadingDeckConstants";
 
 export function getBasePose(indexInDeck: number): CardPose {
   return {

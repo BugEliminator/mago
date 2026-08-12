@@ -1,5 +1,5 @@
-import { getTarotCardStoragePublicUrl } from "@/lib/tarotCardStorageUrl";
-import { supabase } from "@/lib/supabaseClient";
+import { getTarotCardStoragePublicUrl } from "@/lib/tarot/map/tarotCardStorageUrl";
+import { supabase } from "@/lib/supabase/supabaseClient";
 import type { MagoLlmReadingItem } from "@/types/magoResult";
 import type { ResultCardThumbSlot } from "@/types/tarotResult";
 

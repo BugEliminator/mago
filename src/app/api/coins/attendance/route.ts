@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import { claimAttendanceReward } from "@/lib/server/claimAttendanceReward";
 import { hasCheckedInTodayForUser } from "@/lib/server/hasCheckedInTodayForUser";
 import { verifySupabaseAccessToken } from "@/lib/server/verifySupabaseAccessToken";
-import { COIN_HISTORY_TITLES, COIN_REWARD_ATTENDANCE } from "@/lib/coinRewards";
-import { formatCoinHistoryDateLabel } from "@/lib/coinKst";
+import { COIN_HISTORY_TITLES, COIN_REWARD_ATTENDANCE } from "@/lib/coin/coinRewards";
+import { formatCoinHistoryDateLabel } from "@/lib/coin/coinKst";
 
 /** GET /api/coins/attendance — 오늘 출석 완료 여부 확인 */
 export async function GET(request: Request) {

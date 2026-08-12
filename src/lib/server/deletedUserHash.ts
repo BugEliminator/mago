@@ -2,8 +2,8 @@ import { createHmac } from "crypto";
 import {
   DELETED_USER_SIGNUP_COOLDOWN_MS,
   normalizeSignupEmail,
-} from "@/lib/deletedUserCooldown";
-import { createSupabaseAdmin } from "@/lib/supabaseAdmin";
+} from "@/lib/auth/deletedUserCooldown";
+import { createSupabaseAdmin } from "@/lib/supabase/supabaseAdmin";
 
 export type SaveDeletedUserHashResult =
   | { ok: true }

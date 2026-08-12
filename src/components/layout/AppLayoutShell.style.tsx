@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { DESKTOP_MIN_WIDTH, LAYOUT_CONTENT_MAX_WIDTH } from "@/lib/layout";
+import { DESKTOP_MIN_WIDTH, LAYOUT_CONTENT_MAX_WIDTH } from "@/lib/layout/layout";
 import { COSMIC_BACKGROUND_BASE } from "@/components/common/background/cosmicBackgroundViewport";
 
 /**

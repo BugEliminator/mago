@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabase/supabaseClient";
 
 /** Supabase Storage — 타로 카드 이미지 버킷 */
 const TAROT_CARDS_BUCKET = "tarot-cards";

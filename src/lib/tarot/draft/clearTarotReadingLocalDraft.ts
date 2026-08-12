@@ -2,4 +2,4 @@
 export {
   TAROT_READING_SETUP_STORAGE_KEY,
   clearTarotReadingLocalDraft,
-} from "@/lib/tarotLocalDraft";
+} from "@/lib/tarot/draft/tarotLocalDraft";

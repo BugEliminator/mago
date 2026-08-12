@@ -1,5 +1,5 @@
 import type { HistoryListItem } from "@/components/mypage/history/historyTypes";
-import { createSupabaseAdmin } from "@/lib/supabaseAdmin";
+import { createSupabaseAdmin } from "@/lib/supabase/supabaseAdmin";
 
 const HISTORY_LIST_SELECT =
   "id, main_category, detail_category, fortune_score, created_at, summary_line, has_reviewed, rating, card_count";

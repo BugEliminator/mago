@@ -3,8 +3,8 @@ import { COSMIC_BACKGROUND_BASE } from "@/components/common/background/cosmicBac
 import {
   HEADER_BAR_HEIGHT_MOBILE,
 } from "@/components/layout/Header.style";
-import { DESKTOP_MIN_WIDTH, LAYOUT_CONTENT_MAX_WIDTH } from "@/lib/layout";
-import { theme } from "@/lib/theme";
+import { DESKTOP_MIN_WIDTH, LAYOUT_CONTENT_MAX_WIDTH } from "@/lib/layout/layout";
+import { theme } from "@/lib/ui/theme";
 
 const { typography, colors } = theme;
 

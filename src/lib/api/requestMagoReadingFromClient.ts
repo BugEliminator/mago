@@ -1,5 +1,5 @@
 import type { MagoLlmResult } from "@/types/magoResult";
-import type { TarotReadingLlmPayload } from "@/lib/tarotReadingLlmPayload";
+import type { TarotReadingLlmPayload } from "@/lib/tarot/reading/tarotReadingLlmPayload";
 
 export type MagoReadingClientResult =
   | { ok: true; result: MagoLlmResult }

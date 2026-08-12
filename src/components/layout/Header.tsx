@@ -6,8 +6,8 @@ import { useRouter } from "next/navigation";
 import { Home, ChevronLeft } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 import { toast } from "sonner";
-import { supabase } from "@/lib/supabaseClient";
-import { syncLanguageOnAuth } from "@/lib/syncLanguageOnAuth";
+import { supabase } from "@/lib/supabase/supabaseClient";
+import { syncLanguageOnAuth } from "@/lib/auth/syncLanguageOnAuth";
 import {
   HeaderContainer,
   HeaderContent,

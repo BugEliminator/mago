@@ -8,12 +8,12 @@ import ResultFinalAdvice from "@/components/tarot/result/ResultFinalAdvice";
 import ResultRating from "@/components/tarot/result/ResultRating";
 import ResultScrollToTopButton from "@/components/tarot/result/ResultScrollToTopButton";
 import ResultSelectionSummary from "@/components/tarot/result/ResultSelectionSummary";
-import { requestFetchTarotSessionFromClient } from "@/lib/requestFetchTarotSessionFromClient";
-import { supabase } from "@/lib/supabaseClient";
+import { requestFetchTarotSessionFromClient } from "@/lib/api/requestFetchTarotSessionFromClient";
+import { supabase } from "@/lib/supabase/supabaseClient";
 import {
   tarotReadingQueryKey,
   type TarotReadingQueryData,
-} from "@/lib/tarotReadingQuery";
+} from "@/lib/tarot/reading/tarotReadingQuery";
 import {
   ContentLayer,
   ContentMax,

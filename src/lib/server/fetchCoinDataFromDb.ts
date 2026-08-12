@@ -1,6 +1,6 @@
-import { formatCoinHistoryDateLabel } from "@/lib/coinKst";
-import { isCoinHistoryType } from "@/lib/coinRewards";
-import { createSupabaseAdmin } from "@/lib/supabaseAdmin";
+import { formatCoinHistoryDateLabel } from "@/lib/coin/coinKst";
+import { isCoinHistoryType } from "@/lib/coin/coinRewards";
+import { createSupabaseAdmin } from "@/lib/supabase/supabaseAdmin";
 import { hasCheckedInTodayForUser } from "@/lib/server/hasCheckedInTodayForUser";
 import type { CoinHistoryItem, CoinPageInitialData } from "@/types/coin";
 

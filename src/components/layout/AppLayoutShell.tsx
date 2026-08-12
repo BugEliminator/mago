@@ -2,8 +2,8 @@
 
 import type { ReactNode } from "react";
 import { usePathname } from "next/navigation";
-import { shouldUseFixedLayoutShell } from "@/lib/layoutShellPaths";
-import { shouldShowBottomNav } from "@/lib/bottomNavPaths";
+import { shouldUseFixedLayoutShell } from "@/lib/layout/layoutShellPaths";
+import { shouldShowBottomNav } from "@/lib/layout/bottomNavPaths";
 import ConditionalHeader from "./ConditionalHeader";
 import ConditionalBottomNav from "./ConditionalBottomNav";
 import { MobilePageBottomInset } from "./BottomNav.style";

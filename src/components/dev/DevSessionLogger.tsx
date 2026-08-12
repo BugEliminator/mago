@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { supabase } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabase/supabaseClient";
 
 /**
  * 로컬 개발 시에만 Supabase 세션·유저 정보를 콘솔에 출력합니다.

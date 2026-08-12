@@ -1,5 +1,5 @@
 import type { CardSpread, TarotCategory } from "@/types/tarot";
-import { TAROT_MASTER_CONFIG } from "@/lib/tarotMasterConfig";
+import { TAROT_MASTER_CONFIG } from "@/lib/tarot/masterConfig";
 import { getIntentCodeForLabel } from "@/components/tarot/setup/setupIntentCatalog";
 
 /** 스프레드 한 위치 — `tarotMasterConfig`와 동형 */

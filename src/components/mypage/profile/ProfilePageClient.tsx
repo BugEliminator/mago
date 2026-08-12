@@ -19,15 +19,15 @@ import BirthDateField from "@/components/common/date/BirthDateField";
 import BirthTimeField from "@/components/common/date/BirthTimeField";
 import LanguageSwitcher from "@/components/common/dropdown/LanguageSwitcher";
 import { TarotCardToastIcon } from "@/components/common/toast/ToastIcons";
-import { supabase } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabase/supabaseClient";
 import { toGenderDb } from "@/lib/server/fetchProfileFromDb";
 import { PROFILE_EMPTY_FORM, type ProfileForm } from "@/types/profileForm";
 import {
   PASSWORD_MIN_LENGTH,
   PASSWORD_POLICY_DESC,
   isPasswordStrong,
-} from "@/lib/passwordPolicy";
-import { writeProfileExtraNeverAgain } from "@/lib/profileExtraPrompt";
+} from "@/lib/utils/passwordPolicy";
+import { writeProfileExtraNeverAgain } from "@/lib/auth/profileExtraPrompt";
 import { useLanguageStore, type LanguageCode } from "@/stores/languageStore";
 import BannerEmailLine from "./BannerEmailLine";
 import { MypageMobileFixedTopBarSpacer } from "@/components/mypage/common/mypageMobileFixedTopBar.style";

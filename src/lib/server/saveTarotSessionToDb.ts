@@ -1,5 +1,5 @@
 import { getIntentCategoryBadgeLabel } from "@/components/tarot/setup/setupIntentCatalog";
-import { createSupabaseAdmin } from "@/lib/supabaseAdmin";
+import { createSupabaseAdmin } from "@/lib/supabase/supabaseAdmin";
 import type { MagoLlmReadingItem } from "@/types/magoResult";
 import type { TarotCategory } from "@/types/tarot";
 import type {

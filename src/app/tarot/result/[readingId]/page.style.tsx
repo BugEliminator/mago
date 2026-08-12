@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
-import { DESKTOP_MIN_WIDTH, LAYOUT_CONTENT_MAX_WIDTH } from "@/lib/layout";
-import { theme } from "@/lib/theme";
+import { DESKTOP_MIN_WIDTH, LAYOUT_CONTENT_MAX_WIDTH } from "@/lib/layout/layout";
+import { theme } from "@/lib/ui/theme";
 
 /**
  * 본문 레이어 — 배경·헤더는 `app/tarot/result/layout.tsx`에서 제공

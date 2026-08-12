@@ -1,8 +1,8 @@
 import {
   getTarotCategoryIdFromBadgeLabel,
 } from "@/components/tarot/setup/setupIntentCatalog";
-import { getTarotCardStoragePublicUrl } from "@/lib/tarotCardStorageUrl";
-import type { TarotReadingQueryData } from "@/lib/tarotReadingQuery";
+import { getTarotCardStoragePublicUrl } from "@/lib/tarot/map/tarotCardStorageUrl";
+import type { TarotReadingQueryData } from "@/lib/tarot/reading/tarotReadingQuery";
 import type {
   TarotSessionCardRow,
   TarotSessionRow,

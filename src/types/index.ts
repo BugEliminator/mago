@@ -3,7 +3,7 @@
  */
 
 // 테마 타입 (lib/theme.ts에서 re-export)
-export type { Theme } from "@/lib/theme";
+export type { Theme } from "@/lib/ui/theme";
 
 // 타로 관련 타입 (types/tarot.ts에서 re-export)
 export * from "./tarot";

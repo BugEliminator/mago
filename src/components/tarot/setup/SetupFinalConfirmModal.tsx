@@ -10,7 +10,7 @@ import {
   NoticeTextWrap,
   NoticeTitle,
 } from "@/components/common/modal/SurfaceModal.style";
-import { getTarotCoinCost } from "@/lib/tarotCoinCost";
+import { getTarotCoinCost } from "@/lib/coin/tarotCoinCost";
 import type { CardSpread } from "@/types/tarot";
 
 type SetupFinalConfirmModalProps = {

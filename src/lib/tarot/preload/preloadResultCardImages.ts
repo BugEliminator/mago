@@ -1,5 +1,5 @@
-import { preloadImage } from "@/lib/preloadImage";
-import { resolveTarotCardThumbs } from "@/lib/resolveTarotCardThumbs";
+import { preloadImage } from "@/lib/utils/preloadImage";
+import { resolveTarotCardThumbs } from "@/lib/tarot/map/resolveTarotCardThumbs";
 import { TAROT_CLASSIC_BACK_IMAGE_PATH } from "@/types/tarot";
 import type { MagoLlmReadingItem } from "@/types/magoResult";
 

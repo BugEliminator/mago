@@ -8,7 +8,7 @@ import {
   readWizardDraftForUser,
   setTarotGuestBrowseActive,
   writeTarotReadingSetupForUser,
-} from "@/lib/tarotLocalDraft";
+} from "@/lib/tarot/draft/tarotLocalDraft";
 import {
   TAROT_WIZARD_INITIAL_FORM,
   useTarotSetupStore,
@@ -33,10 +33,10 @@ import StepThreePanel from "./stepThree/StepThreePanel";
 import SetupFinalConfirmModal from "./SetupFinalConfirmModal";
 import SetupExitConfirmModal from "./SetupExitConfirmModal";
 import SetupInsufficientCoinModal from "./SetupInsufficientCoinModal";
-import { getTarotCoinCost } from "@/lib/tarotCoinCost";
-import { requestSpendTarotCoinFromClient } from "@/lib/requestSpendTarotCoinFromClient";
+import { getTarotCoinCost } from "@/lib/coin/tarotCoinCost";
+import { requestSpendTarotCoinFromClient } from "@/lib/api/requestSpendTarotCoinFromClient";
 import { useCoinStore } from "@/stores/coinStore";
-import { supabase } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabase/supabaseClient";
 import { toast } from "sonner";
 import type { CardSpread } from "@/types/tarot";
 

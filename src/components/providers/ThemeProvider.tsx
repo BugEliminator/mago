@@ -1,8 +1,8 @@
 "use client";
 
 import { ThemeProvider as EmotionThemeProvider } from "@emotion/react";
-import { theme } from "@/lib/theme";
-import { GlobalStyles } from "@/lib/GlobalStyles";
+import { theme } from "@/lib/ui/theme";
+import { GlobalStyles } from "@/lib/ui/GlobalStyles";
 
 /**
  * 테마 프로바이더 컴포넌트

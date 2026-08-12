@@ -19,12 +19,12 @@ import {
   FooterLink,
 } from "@/components/auth/AuthScreen.style";
 import { InfoBanner } from "@/components/auth/signup/SignupPage.style";
-import { supabase } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabase/supabaseClient";
 import {
   PASSWORD_MIN_LENGTH,
   PASSWORD_POLICY_DESC,
   isPasswordStrong,
-} from "@/lib/passwordPolicy";
+} from "@/lib/utils/passwordPolicy";
 
 /** 카드 진입 애니메이션 — Forget/Login과 동일 */
 const cardVariants = {

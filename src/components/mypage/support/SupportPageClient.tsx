@@ -4,9 +4,9 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { clearTarotReadingLocalDraft } from "@/lib/clearTarotReadingLocalDraft";
-import { requestWithdrawFromClient } from "@/lib/requestWithdrawFromClient";
-import { supabase } from "@/lib/supabaseClient";
+import { clearTarotReadingLocalDraft } from "@/lib/tarot/draft/clearTarotReadingLocalDraft";
+import { requestWithdrawFromClient } from "@/lib/api/requestWithdrawFromClient";
+import { supabase } from "@/lib/supabase/supabaseClient";
 import { MypageMobileFixedTopBarSpacer } from "@/components/mypage/common/mypageMobileFixedTopBar.style";
 import {
   FileSpreadsheet,

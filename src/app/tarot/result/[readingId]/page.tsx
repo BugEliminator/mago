@@ -4,8 +4,8 @@ import {
   QueryClient,
 } from "@tanstack/react-query";
 import { getTarotReadingQueryData } from "@/lib/server/fetchTarotSessionFromDb";
-import { getServerAuthUserId } from "@/lib/supabaseServer";
-import { tarotReadingQueryKey } from "@/lib/tarotReadingQuery";
+import { getServerAuthUserId } from "@/lib/supabase/supabaseServer";
+import { tarotReadingQueryKey } from "@/lib/tarot/reading/tarotReadingQuery";
 import ResultPageClient from "./ResultPageClient";
 
 type TarotResultPageProps = {

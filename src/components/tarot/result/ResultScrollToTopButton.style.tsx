@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { DESKTOP_MIN_WIDTH } from "@/lib/layout";
+import { DESKTOP_MIN_WIDTH } from "@/lib/layout/layout";
 
 /** 결과 페이지 — 우하단 맨 위로 이동 FAB */
 export const ScrollToTopButton = styled.button`

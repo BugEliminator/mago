@@ -14,7 +14,7 @@ import type {
   ReadingCardState,
   ReadingViewState,
 } from "@/types/tarotReadingDeck";
-import { buildCardsState } from "@/lib/tarotReadingDeckDeck";
+import { buildCardsState } from "@/lib/tarot/reading/tarotReadingDeckDeck";
 import {
   CARDS_PER_ROW,
   SPREAD_MS_CENTER,
@@ -25,13 +25,13 @@ import {
   SPREAD_SLIDE_DURATION_MS,
   SPREAD_SLIDE_ROW_START_GAP_MS,
   SPREAD_STAGE_VERTICAL_CENTER_DELTA_PX,
-} from "@/lib/tarotReadingDeckConstants";
+} from "@/lib/tarot/reading/tarotReadingDeckConstants";
 import {
   poseAfterSpreadMotionSettled,
   poseSlideToGrid,
   poseSpreadCenterStack,
   poseSpreadRowAnchors,
-} from "@/lib/tarotReadingDeckPose";
+} from "@/lib/tarot/reading/tarotReadingDeckPose";
 
 export type UseTarotSpreadMotionParams = {
   deckReady: boolean;

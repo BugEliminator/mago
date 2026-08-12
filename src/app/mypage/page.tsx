@@ -1,8 +1,8 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { createServerSupabaseClient } from "@/lib/supabaseServer";
+import { createServerSupabaseClient } from "@/lib/supabase/supabaseServer";
 import { fetchProfileFromDb } from "@/lib/server/fetchProfileFromDb";
-import { isMobileUserAgent } from "@/lib/isMobileUserAgent";
+import { isMobileUserAgent } from "@/lib/utils/isMobileUserAgent";
 import MypageHubClient from "@/components/mypage/hub/MypageHubClient";
 
 /**

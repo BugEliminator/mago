@@ -2,7 +2,7 @@ import type { SetupStep } from "@/components/tarot/setup/SetupStepHeader";
 import {
   isTarotGuestBrowseActive,
   setTarotGuestBrowseActive,
-} from "@/lib/tarotGuestBrowse";
+} from "@/lib/tarot/draft/tarotGuestBrowse";
 import {
   LEGACY_TAROT_READING_SETUP_STORAGE_KEY,
   LEGACY_TAROT_SETUP_WIZARD_STORAGE_KEY,
@@ -10,13 +10,13 @@ import {
   tarotWizardStorageKeyForUser,
   TAROT_READING_SETUP_KEY_PREFIX,
   TAROT_WIZARD_STORAGE_KEY_PREFIX,
-} from "@/lib/tarotLocalDraftKeys";
+} from "@/lib/tarot/draft/tarotLocalDraftKeys";
 import {
   isCompleteTarotSessionSetup,
   isFormDataShape,
   isWizardProgressBeyondInitial,
   parseTarotWizardPersistRaw,
-} from "@/lib/tarotSetupWizardDraft";
+} from "@/lib/tarot/draft/tarotSetupWizardDraft";
 import {
   TAROT_SETUP_WIZARD_STORAGE_KEY,
   TAROT_WIZARD_INITIAL_FORM,

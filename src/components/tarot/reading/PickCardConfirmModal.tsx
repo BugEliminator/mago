@@ -12,7 +12,7 @@ import {
   NoticeTitle,
 } from "@/components/common/modal/SurfaceModal.style";
 import { getIntentCategoryOption } from "@/components/tarot/setup/setupIntentCatalog";
-import { tarotPickSlotLabelKr } from "@/lib/tarotPickSlotLabel";
+import { tarotPickSlotLabelKr } from "@/lib/tarot/reading/tarotPickSlotLabel";
 
 type PickCardConfirmModalProps = {
   slotIndex: number;

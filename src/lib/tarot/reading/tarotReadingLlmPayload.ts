@@ -2,14 +2,14 @@ import {
   getIntentCategoryBadgeLabel,
   resolveReadingDetailCategory,
 } from "@/components/tarot/setup/setupIntentCatalog";
-import { getTarotSpreadPositionMeta } from "@/lib/tarotSpreadPositionMeta";
+import { getTarotSpreadPositionMeta } from "@/lib/tarot/spread/tarotSpreadPositionMeta";
 import type { TarotSessionSetup } from "@/types/tarot";
 import type {
   CardMeaningRow,
   CardRow,
   ProfileRowForLlm,
 } from "@/types/tarotReadingDeck";
-import { supabase } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabase/supabaseClient";
 
 /** LLM에 전달하는 readings 배열 항목 */
 export type TarotReadingLlmReadingItem = {

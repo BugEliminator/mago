@@ -1,6 +1,6 @@
 import { applyCoinTransaction } from "@/lib/server/applyCoinTransaction";
-import { getKstDayBoundsUtc } from "@/lib/coinKst";
-import { createSupabaseAdmin } from "@/lib/supabaseAdmin";
+import { getKstDayBoundsUtc } from "@/lib/coin/coinKst";
+import { createSupabaseAdmin } from "@/lib/supabase/supabaseAdmin";
 import type { ApplyCoinTransactionResult } from "@/types/coin";
 
 export type ClaimAttendanceRewardResult =

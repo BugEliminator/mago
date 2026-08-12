@@ -1,4 +1,4 @@
-import { createSupabaseAdmin } from "@/lib/supabaseAdmin";
+import { createSupabaseAdmin } from "@/lib/supabase/supabaseAdmin";
 
 export type DeleteAuthUserResult =
   | { ok: true }

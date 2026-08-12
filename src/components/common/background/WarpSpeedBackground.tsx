@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { WarpLayerRoot, WarpCanvas } from "./WarpSpeedBackground.style";
-import { MOBILE_MAX_PX } from "@/lib/layout";
+import { MOBILE_MAX_PX } from "@/lib/layout/layout";
 import {
   WARP_CLEAR_COLOR,
   WARP_DPR_MAX,

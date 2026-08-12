@@ -1,6 +1,6 @@
 import HistoryPageClient from "@/components/mypage/history/HistoryPageClient";
 import { fetchTarotSessionsListFromDb } from "@/lib/server/fetchTarotSessionsListFromDb";
-import { getServerAuthUserId } from "@/lib/supabaseServer";
+import { getServerAuthUserId } from "@/lib/supabase/supabaseServer";
 
 /**
  * 내 운세 히스토리 페이지 — 서버에서 tarot_sessions 목록 prefetch

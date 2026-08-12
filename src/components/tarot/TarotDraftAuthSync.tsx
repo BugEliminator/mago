@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
-import { syncTarotLocalDraftOnAuthChange } from "@/lib/tarotLocalDraft";
-import { supabase } from "@/lib/supabaseClient";
+import { syncTarotLocalDraftOnAuthChange } from "@/lib/tarot/draft/tarotLocalDraft";
+import { supabase } from "@/lib/supabase/supabaseClient";
 
 /**
  * 로그인·로그아웃·유저 전환 시 타로 wizard 메모리를 localStorage owner와 맞춤

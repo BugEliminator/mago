@@ -7,8 +7,8 @@ import {
   AuthPageRoot,
   AuthContentLayer,
 } from "@/components/auth/AuthScreen.style";
-import { preloadLandingDeckImages } from "@/lib/preloadLandingDeckImages";
-import { supabase } from "@/lib/supabaseClient";
+import { preloadLandingDeckImages } from "@/lib/tarot/preload/preloadLandingDeckImages";
+import { supabase } from "@/lib/supabase/supabaseClient";
 import { CallbackStatus } from "./AuthCallbackPage.style";
 
 function AuthCallbackInner() {
