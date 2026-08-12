@@ -88,7 +88,7 @@ yarn dev
 
 작업 흐름: `main`에서 분기 → 작업 → PR 검증(로컬·Preview) → `main` merge → 배포
 
-자세한 내용은 `.cursorrules` 파일을 참고하세요.
+자세한 내용은 `.cursor/rules/mago-project.mdc` 파일을 참고하세요.
 
 ## 라이선스
 

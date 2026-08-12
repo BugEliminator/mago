@@ -23,6 +23,7 @@
 # misc
 .DS_Store
 *.pem
+기억할일.txt
 
 # debug
 npm-debug.log*
