@@ -1,6 +1,6 @@
 import { createSupabaseAdmin } from "@/lib/supabaseAdmin";
-import { PROFILE_EMPTY_FORM } from "@/components/mypage/profile/profileMockData";
-import type { ProfileForm } from "@/components/mypage/profile/profileMockData";
+import { PROFILE_EMPTY_FORM } from "@/types/profileForm";
+import type { ProfileForm } from "@/types/profileForm";
 import { resolveAvailableLanguage } from "@/lib/languageOptions";
 import type { LanguageCode } from "@/stores/languageStore";
 

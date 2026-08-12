@@ -1,24 +1,6 @@
-/**
- * 보관함 목데이터 — Supabase 연동 전 퍼블리싱용
- */
+import type { OwnedPersona, OwnedSkin } from "@/types/inventory";
 
-export type InventoryTab = "skins" | "personas";
-
-export type OwnedSkin = {
-  id: string;
-  title: string;
-  description: string;
-  badge: string;
-};
-
-export type OwnedPersona = {
-  id: string;
-  title: string;
-  description: string;
-  badge: string;
-  voiceDesc: string;
-};
-
+/** Supabase 연동 전 보관함 기본 제공 목록 */
 export const OWNED_SKINS: OwnedSkin[] = [
   {
     id: "skin_classic",

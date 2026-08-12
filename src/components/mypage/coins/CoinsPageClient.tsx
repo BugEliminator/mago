@@ -19,13 +19,9 @@ import {
   ArrowDownLeft,
   ChevronLeft,
 } from "lucide-react";
-import {
-  CHECKIN_REWARD,
-  AD_REWARD,
-  AD_MAX_COUNT,
-  COIN_PACKAGES,
-} from "./coinsMockData";
-import type { CoinTransaction } from "./coinsMockData";
+import { COIN_REWARD_ATTENDANCE } from "@/lib/coinRewards";
+import { AD_MAX_COUNT, AD_REWARD, COIN_PACKAGES } from "@/lib/coinCatalog";
+import type { CoinDemoTransaction } from "@/types/coinDemo";
 import type { CoinHistoryItem } from "@/types/coin";
 import { MypageMobileFixedTopBarSpacer } from "@/components/mypage/common/mypageMobileFixedTopBar.style";
 import {
@@ -141,7 +137,7 @@ export default function CoinsPageClient({ initialData }: CoinsPageClientProps) {
     initialData.histories,
   );
   /** 데모 잠금 해제 시 광고·유료만 로컬에 쌓는 목 내역 */
-  const [demoTransactions, setDemoTransactions] = useState<CoinTransaction[]>(
+  const [demoTransactions, setDemoTransactions] = useState<CoinDemoTransaction[]>(
     [],
   );
 
@@ -157,7 +153,7 @@ export default function CoinsPageClient({ initialData }: CoinsPageClientProps) {
   ]);
 
   /** 데모 이용 내역 맨 앞에 추가 */
-  const addDemoTransaction = (tx: Omit<CoinTransaction, "id" | "date">) => {
+  const addDemoTransaction = (tx: Omit<CoinDemoTransaction, "id" | "date">) => {
     setDemoTransactions((prev) => [
       { ...tx, id: Date.now(), date: nowLabel() },
       ...prev,
@@ -196,7 +192,7 @@ export default function CoinsPageClient({ initialData }: CoinsPageClientProps) {
     setCoinBalance(result.newBalance);
     setCoinHasCheckedIn(true);
     setHistories((prev) => [result.history, ...prev]);
-    toast.success(`출석 완료! +${CHECKIN_REWARD}냥 적립`);
+    toast.success(`출석 완료! +${COIN_REWARD_ATTENDANCE}냥 적립`);
   };
 
   /** 광고 시청 */
@@ -264,7 +260,7 @@ export default function CoinsPageClient({ initialData }: CoinsPageClientProps) {
             onClick={() => void handleCheckIn()}
           >
             <CalendarCheck size={16} />
-            {hasCheckedIn ? "출석 수령 완료" : `${CHECKIN_REWARD}냥 수령하기`}
+            {hasCheckedIn ? "출석 수령 완료" : `${COIN_REWARD_ATTENDANCE}냥 수령하기`}
           </CheckInBtn>
           <CheckInHint>
             * 매일 한국 표준시(KST) 자정에 초기화됩니다.

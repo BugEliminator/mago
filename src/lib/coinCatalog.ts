@@ -1,22 +1,4 @@
-/**
- * 엽전 충전소 목데이터
- * — Supabase 연동 전 퍼블리싱·데모 확인용
- */
-
-export type CoinTransactionType =
-  | "charge_checkin"
-  | "charge_ad"
-  | "charge_pay"
-  | "use_fortune";
-
-export type CoinTransaction = {
-  id: number;
-  type: CoinTransactionType;
-  amount: number;
-  description: string;
-  date: string;
-};
-
+/** 유료 엽전 패키지 UI 카탈로그 (결제 연동 전) */
 export type CoinPackage = {
   coins: string;
   rate: string;
@@ -25,13 +7,10 @@ export type CoinPackage = {
   amount: number;
 };
 
-/** 출석 체크 보상 냥 수 */
-export const CHECKIN_REWARD = 20;
-
-/** 광고 보상 냥 수 */
+/** 광고 보상 냥 수 (데모) */
 export const AD_REWARD = 5;
 
-/** 하루 광고 시청 최대 횟수 */
+/** 하루 광고 시청 최대 횟수 (데모) */
 export const AD_MAX_COUNT = 3;
 
 /** 유료 패키지 목록 */
@@ -59,4 +38,3 @@ export const COIN_PACKAGES: CoinPackage[] = [
     amount: 250,
   },
 ];
-

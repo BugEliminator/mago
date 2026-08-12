@@ -21,7 +21,7 @@ import LanguageSwitcher from "@/components/common/dropdown/LanguageSwitcher";
 import { TarotCardToastIcon } from "@/components/common/toast/ToastIcons";
 import { supabase } from "@/lib/supabaseClient";
 import { toGenderDb } from "@/lib/server/fetchProfileFromDb";
-import { PROFILE_EMPTY_FORM, type ProfileForm } from "./profileMockData";
+import { PROFILE_EMPTY_FORM, type ProfileForm } from "@/types/profileForm";
 import {
   PASSWORD_MIN_LENGTH,
   PASSWORD_POLICY_DESC,

@@ -18,13 +18,13 @@ import Image from "next/image";
 import { TarotCardToastIcon } from "@/components/common/toast/ToastIcons";
 import { MypageMobileFixedTopBarSpacer } from "@/components/mypage/common/mypageMobileFixedTopBar.style";
 import { TAROT_CLASSIC_BACK_IMAGE_PATH } from "@/types/tarot";
+import type { InventoryTab } from "@/types/inventory";
 import {
-  type InventoryTab,
-  OWNED_SKINS,
-  OWNED_PERSONAS,
-  DEFAULT_EQUIPPED_SKIN_ID,
   DEFAULT_EQUIPPED_PERSONA_ID,
-} from "./inventoryMockData";
+  DEFAULT_EQUIPPED_SKIN_ID,
+  OWNED_PERSONAS,
+  OWNED_SKINS,
+} from "@/lib/inventorySeedData";
 import {
   InventoryRoot,
   InventoryHeader,
