@@ -1,7 +1,6 @@
 import type { SetupStep } from "@/components/tarot/setup/SetupStepHeader";
 import type { TarotSessionSetup } from "@/types/tarot";
 import {
-  TAROT_SETUP_WIZARD_STORAGE_KEY,
   TAROT_WIZARD_INITIAL_FORM,
 } from "@/stores/tarotSetupStore";
 
@@ -71,20 +70,6 @@ export function isWizardProgressBeyondInitial(
   return false;
 }
 
-/** @deprecated userId 스코프 함수 사용 — hasMeaningfulTarotWizardDraftForUser */
-export function hasMeaningfulTarotWizardDraft(): boolean {
-  if (typeof window === "undefined") return false;
-  try {
-    const raw = localStorage.getItem(TAROT_SETUP_WIZARD_STORAGE_KEY);
-    if (!raw) return false;
-    const parsed = parseTarotWizardPersistRaw(raw);
-    if (!parsed || parsed.ownerUserId == null) return false;
-    return isWizardProgressBeyondInitial(parsed.step, parsed.formData);
-  } catch {
-    return false;
-  }
-}
-
 /** localStorage `tarotSetup` JSON → 완료된 세션 설정인지 판별 */
 export function isCompleteTarotSessionSetup(fd: TarotSessionSetup): boolean {
   if (fd.cardCount !== 3 && fd.cardCount !== 5 && fd.cardCount !== 7) {
@@ -97,30 +82,4 @@ export function isCompleteTarotSessionSetup(fd: TarotSessionSetup): boolean {
     step3Total >= TAROT_SETUP_STEP3_MIN_TOTAL_CHARS &&
     step3Total <= TAROT_SETUP_STEP3_MAX_TOTAL_CHARS
   );
-}
-
-/** @deprecated envelope 파서 사용 */
-export function parseTarotSessionSetupRaw(raw: string): TarotSessionSetup | null {
-  try {
-    const parsed: unknown = JSON.parse(raw);
-    if (!isFormDataShape(parsed)) return null;
-    return parsed;
-  } catch {
-    return null;
-  }
-}
-
-/** @deprecated userId 스코프 함수 사용 */
-export function getTarotWizardResumeStep(): SetupStep | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = localStorage.getItem(TAROT_SETUP_WIZARD_STORAGE_KEY);
-    if (!raw) return null;
-    const parsed = parseTarotWizardPersistRaw(raw);
-    if (!parsed || parsed.ownerUserId == null) return null;
-    if (!isWizardProgressBeyondInitial(parsed.step, parsed.formData)) return null;
-    return parsed.step;
-  } catch {
-    return null;
-  }
 }
