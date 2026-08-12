@@ -40,7 +40,7 @@ alwaysApply: true
 ### 파일 구조
 - 페이지: `src/app/`
 - 컴포넌트: `src/components/` (common, tarot, layout로 분류)
-- 유틸리티: `src/lib/`
+- 유틸리티: `src/lib/` (api, auth, coin, layout, server, supabase, tarot, ui, utils 등 도메인별 하위 폴더)
 - 타입: `src/types/`
 - 훅: `src/hooks/`
 
@@ -75,7 +75,7 @@ alwaysApply: true
 - 인라인 스타일 사용 지양 (emotion styled 사용)
 
 ## Supabase
-- 클라이언트는 `src/lib/supabaseClient.ts`에서 import
+- 클라이언트는 `src/lib/supabase/supabaseClient.ts`에서 import
 - 환경 변수는 `.env.local`에 정의
 - 타입은 Supabase에서 자동 생성된 타입 사용 권장
 
