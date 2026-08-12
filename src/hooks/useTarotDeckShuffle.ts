@@ -7,11 +7,11 @@ import {
   buildVisibleDeckCards,
   formatDeckForConsole,
   shuffleDeck,
-} from "@/lib/tarotReadingDeckDeck";
+} from "@/lib/tarot/reading/tarotReadingDeckDeck";
 import {
   poseDiffuseFromCenter,
   poseReturnToCenter,
-} from "@/lib/tarotReadingDeckPose";
+} from "@/lib/tarot/reading/tarotReadingDeckPose";
 
 export type UseTarotDeckShuffleParams = {
   deckReady: boolean;

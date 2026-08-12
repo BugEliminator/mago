@@ -18,7 +18,7 @@ import {
   CardFooter,
   FooterLink,
 } from "@/components/auth/AuthScreen.style";
-import { supabase } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabase/supabaseClient";
 
 /** 카드 진입 애니메이션 — Login/Signup과 동일 easing */
 const cardVariants = {

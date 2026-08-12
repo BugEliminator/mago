@@ -34,12 +34,12 @@ import {
   ButtonRow,
   TextActionButton,
 } from "./ProfileExtraPromptModal.style";
-import { supabase } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabase/supabaseClient";
 import {
   readProfileExtraNeverAgain,
   writeProfileExtraNeverAgain,
   profileHasAnyExtraInfo,
-} from "@/lib/profileExtraPrompt";
+} from "@/lib/auth/profileExtraPrompt";
 
 /** 모달 닫을 때 공통 토스트 — 「입력·수정」 줄바꿈 방지 */
 function ProfileExtraCloseToastMessage() {

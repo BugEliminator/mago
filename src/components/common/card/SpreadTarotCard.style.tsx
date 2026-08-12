@@ -7,7 +7,7 @@ import {
   TarotCardFaceFrame,
   tarotCardFaceOuterCss,
 } from "./TarotCardFaceShell.style";
-import { DESKTOP_MIN_WIDTH } from "@/lib/layout";
+import { DESKTOP_MIN_WIDTH } from "@/lib/layout/layout";
 
 /** z-index(맨 앞) 순과 맞게: 먼저 움직이는 쪽(큰 index)이 짧은 딜레이 */
 const STAGGER_S = 0.1;

@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { TAROT_CARD_BACK_SHELL_WIDTH_DETAIL } from "@/components/tarot/TarotCardBackShell.style";
-import { DESKTOP_MIN_WIDTH } from "@/lib/layout";
+import { DESKTOP_MIN_WIDTH } from "@/lib/layout/layout";
 
 /** 카드 상세 강조색 — theme accent.gold */
 const ACCENT_GOLD = "#f9a825";

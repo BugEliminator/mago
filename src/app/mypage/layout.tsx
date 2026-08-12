@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getServerAuthUserId } from "@/lib/supabaseServer";
+import { getServerAuthUserId } from "@/lib/supabase/supabaseServer";
 import MypageLayoutShell from "@/components/mypage/layout/MypageLayoutShell";
 
 /**

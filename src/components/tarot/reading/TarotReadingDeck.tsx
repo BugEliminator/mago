@@ -19,30 +19,30 @@ import {
   createFreshDeckEntries,
   formatDeckForConsole,
   shuffleDeck,
-} from "@/lib/tarotReadingDeckDeck";
+} from "@/lib/tarot/reading/tarotReadingDeckDeck";
 import {
   SPREAD_STAGE_MIN_HEIGHT_PX,
   SPREAD_STAGE_MIN_WIDTH_PX,
   TAROT_PICK_PROMPT_TOAST_DURATION_MS,
   TAROT_PICK_PROMPT_TOAST_ID,
   TOTAL_CARDS,
-} from "@/lib/tarotReadingDeckConstants";
+} from "@/lib/tarot/reading/tarotReadingDeckConstants";
 import { useTarotDeckShuffle } from "@/hooks/useTarotDeckShuffle";
 import { useTarotReadingDeckTimers } from "@/hooks/useTarotReadingDeckTimers";
 import { useTarotSpreadMotion } from "@/hooks/useTarotSpreadMotion";
 import type {
   BasePickedCardForLlm,
   EnrichedPickedCardForLlm,
-} from "@/lib/tarotReadingLlmPayload";
+} from "@/lib/tarot/reading/tarotReadingLlmPayload";
 import type { MagoLlmResult } from "@/types/magoResult";
 import {
   buildTarotReadingLlmPayload,
   enrichPickedCardsFromSupabase,
-} from "@/lib/tarotReadingLlmPayload";
-import { requestMagoReadingFromClient } from "@/lib/requestMagoReadingFromClient";
-import { tarotPickSlotLabelKr } from "@/lib/tarotPickSlotLabel";
-import { getTarotSpreadPositionMeta } from "@/lib/tarotSpreadPositionMeta";
-import { supabase } from "@/lib/supabaseClient";
+} from "@/lib/tarot/reading/tarotReadingLlmPayload";
+import { requestMagoReadingFromClient } from "@/lib/api/requestMagoReadingFromClient";
+import { tarotPickSlotLabelKr } from "@/lib/tarot/reading/tarotPickSlotLabel";
+import { getTarotSpreadPositionMeta } from "@/lib/tarot/spread/tarotSpreadPositionMeta";
+import { supabase } from "@/lib/supabase/supabaseClient";
 import PickCardConfirmModal from "./PickCardConfirmModal";
 import {
   DeckOuter,

@@ -1,6 +1,6 @@
-import { createSupabaseAdmin } from "@/lib/supabaseAdmin";
-import { mapTarotSessionDbToResultPage } from "@/lib/mapTarotSessionDbToResultPage";
-import type { TarotReadingQueryData } from "@/lib/tarotReadingQuery";
+import { createSupabaseAdmin } from "@/lib/supabase/supabaseAdmin";
+import { mapTarotSessionDbToResultPage } from "@/lib/tarot/map/mapTarotSessionDbToResultPage";
+import type { TarotReadingQueryData } from "@/lib/tarot/reading/tarotReadingQuery";
 import type {
   TarotSessionCardRow,
   TarotSessionRow,

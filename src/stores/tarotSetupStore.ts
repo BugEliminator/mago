@@ -3,8 +3,8 @@
 import { create } from "zustand";
 import { createJSONStorage, persist, type StateStorage } from "zustand/middleware";
 import type { SetupStep } from "@/components/tarot/setup/SetupStepHeader";
-import { isTarotGuestBrowseActive } from "@/lib/tarotGuestBrowse";
-import { tarotWizardStorageKeyForUser } from "@/lib/tarotLocalDraftKeys";
+import { isTarotGuestBrowseActive } from "@/lib/tarot/draft/tarotGuestBrowse";
+import { tarotWizardStorageKeyForUser } from "@/lib/tarot/draft/tarotLocalDraftKeys";
 import type { TarotCategory, TarotSessionSetup } from "@/types/tarot";
 
 /** 타로 설정 마법사 persist 이름(접두사) — 실제 저장은 `:{userId}` 키 */

@@ -1,8 +1,8 @@
 import {
   COIN_HISTORY_TITLES,
   getCoinAmountForType,
-} from "@/lib/coinRewards";
-import { createSupabaseAdmin } from "@/lib/supabaseAdmin";
+} from "@/lib/coin/coinRewards";
+import { createSupabaseAdmin } from "@/lib/supabase/supabaseAdmin";
 import type {
   ApplyCoinTransactionResult,
   CoinHistoryType,

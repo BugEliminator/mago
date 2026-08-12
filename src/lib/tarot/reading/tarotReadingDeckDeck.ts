@@ -3,8 +3,8 @@ import type { ReadingCardState } from "@/types/tarotReadingDeck";
 import {
   TOTAL_CARDS,
   VISIBLE_DECK_COUNT,
-} from "@/lib/tarotReadingDeckConstants";
-import { getBasePose } from "@/lib/tarotReadingDeckPose";
+} from "@/lib/tarot/reading/tarotReadingDeckConstants";
+import { getBasePose } from "@/lib/tarot/reading/tarotReadingDeckPose";
 
 /** 하이드레이션 안정용 결정적 덱(랜덤 없음) */
 export function createDeterministicDeckEntries(): DeckCardEntry[] {

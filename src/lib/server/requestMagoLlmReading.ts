@@ -1,7 +1,7 @@
 import OpenAI from "openai";
 import type { MagoLlmResult } from "@/types/magoResult";
-import type { TarotReadingLlmPayload } from "@/lib/tarotReadingLlmPayload";
-import { parseMagoLlmResult } from "@/lib/magoResultMapper";
+import type { TarotReadingLlmPayload } from "@/lib/tarot/reading/tarotReadingLlmPayload";
+import { parseMagoLlmResult } from "@/lib/tarot/map/magoResultMapper";
 
 export type RequestMagoLlmReadingErrorCode =
   | "ENV_MISSING"

@@ -1,7 +1,7 @@
-import { createSupabaseAdmin } from "@/lib/supabaseAdmin";
+import { createSupabaseAdmin } from "@/lib/supabase/supabaseAdmin";
 import { PROFILE_EMPTY_FORM } from "@/types/profileForm";
 import type { ProfileForm } from "@/types/profileForm";
-import { resolveAvailableLanguage } from "@/lib/languageOptions";
+import { resolveAvailableLanguage } from "@/lib/auth/languageOptions";
 import type { LanguageCode } from "@/stores/languageStore";
 
 const VALID_LANG_CODES: readonly LanguageCode[] = [

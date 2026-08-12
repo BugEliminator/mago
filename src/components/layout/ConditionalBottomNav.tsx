@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
-import { shouldShowBottomNav } from "@/lib/bottomNavPaths";
+import { shouldShowBottomNav } from "@/lib/layout/bottomNavPaths";
 import BottomNav from "./BottomNav";
 
 /**

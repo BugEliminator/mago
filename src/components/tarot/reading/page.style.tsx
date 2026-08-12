@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { MOBILE_MAX_WIDTH } from "@/lib/layout";
+import { MOBILE_MAX_WIDTH } from "@/lib/layout/layout";
 
 export const Container = styled.div`
   position: relative;

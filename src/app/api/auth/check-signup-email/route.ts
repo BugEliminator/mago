@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { normalizeSignupEmail } from "@/lib/deletedUserCooldown";
+import { normalizeSignupEmail } from "@/lib/auth/deletedUserCooldown";
 import { checkDeletedUserSignupCooldown } from "@/lib/server/deletedUserHash";
 
 type CheckSignupEmailBody = {

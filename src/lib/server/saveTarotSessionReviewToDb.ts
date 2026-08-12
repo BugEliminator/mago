@@ -1,5 +1,5 @@
 import { applyCoinTransaction } from "@/lib/server/applyCoinTransaction";
-import { createSupabaseAdmin } from "@/lib/supabaseAdmin";
+import { createSupabaseAdmin } from "@/lib/supabase/supabaseAdmin";
 import type {
   SubmitTarotSessionReviewInput,
   SubmitTarotSessionReviewResult,

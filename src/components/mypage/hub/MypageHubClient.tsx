@@ -16,8 +16,8 @@ import {
   LogOut,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { DESKTOP_MIN_PX } from "@/lib/layout";
-import { supabase } from "@/lib/supabaseClient";
+import { DESKTOP_MIN_PX } from "@/lib/layout/layout";
+import { supabase } from "@/lib/supabase/supabaseClient";
 import BannerEmailLine from "@/components/mypage/profile/BannerEmailLine";
 import {
   BannerCard,

@@ -9,8 +9,8 @@ import {
   hasMeaningfulTarotWizardDraftForUser,
   hasTarotReadingSetupPendingForUser,
   setTarotGuestBrowseActive,
-} from "@/lib/tarotLocalDraft";
-import { supabase } from "@/lib/supabaseClient";
+} from "@/lib/tarot/draft/tarotLocalDraft";
+import { supabase } from "@/lib/supabase/supabaseClient";
 import { useTarotSetupStore } from "@/stores/tarotSetupStore";
 import type { SetupStep } from "@/components/tarot/setup/SetupStepHeader";
 

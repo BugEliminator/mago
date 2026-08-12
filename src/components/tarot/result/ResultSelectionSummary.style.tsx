@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { DESKTOP_MIN_WIDTH } from "@/lib/layout";
+import { DESKTOP_MIN_WIDTH } from "@/lib/layout/layout";
 
 /** 흰 카드 패널 — 상단 그리드 좌측(약 60%)에 들어갈 블록 */
 export const Panel = styled.section`

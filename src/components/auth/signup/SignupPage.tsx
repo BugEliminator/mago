@@ -34,23 +34,23 @@ import {
   TimerHint,
 } from "./SignupPage.style";
 import { toast } from "sonner";
-import { supabase } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabase/supabaseClient";
 import {
   SIGNUP_EMAIL_ALREADY_REGISTERED_TOAST,
   SIGNUP_WITHDRAW_COOLDOWN_TOAST_TITLE,
   formatSignupWithdrawCooldownDescription,
   isSignupObfuscatedExistingUser,
   resolveSignupAuthError,
-} from "@/lib/mapSignupAuthError";
-import { preloadLandingDeckImages } from "@/lib/preloadLandingDeckImages";
-import { requestApplyReferrerFromClient } from "@/lib/requestApplyReferrerFromClient";
-import { requestCheckSignupEmailFromClient } from "@/lib/requestCheckSignupEmailFromClient";
-import { requestCompleteSignupFromClient } from "@/lib/requestCompleteSignupFromClient";
+} from "@/lib/auth/mapSignupAuthError";
+import { preloadLandingDeckImages } from "@/lib/tarot/preload/preloadLandingDeckImages";
+import { requestApplyReferrerFromClient } from "@/lib/api/requestApplyReferrerFromClient";
+import { requestCheckSignupEmailFromClient } from "@/lib/api/requestCheckSignupEmailFromClient";
+import { requestCompleteSignupFromClient } from "@/lib/api/requestCompleteSignupFromClient";
 import {
   PASSWORD_MIN_LENGTH,
   PASSWORD_POLICY_DESC,
   isPasswordStrong,
-} from "@/lib/passwordPolicy";
+} from "@/lib/utils/passwordPolicy";
 
 /** 카드 진입 애니메이션 */
 const cardVariants = {

@@ -5,7 +5,7 @@ import {
   LAYOUT_CONTENT_MAX_WIDTH,
   LAYOUT_PAGE_HORIZONTAL_PADDING,
   MYPAGE_BELOW_HEADER_OFFSET,
-} from "@/lib/layout";
+} from "@/lib/layout/layout";
 
 /** 마이페이지 몰입형 서브페이지 모바일 풀크림 셸 배경 */
 export const MYPAGE_IMMERSIVE_MOBILE_SURFACE = "#fdfcf8";

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { requestMagoLlmReading } from "@/lib/server/requestMagoLlmReading";
-import type { TarotReadingLlmPayload } from "@/lib/tarotReadingLlmPayload";
+import type { TarotReadingLlmPayload } from "@/lib/tarot/reading/tarotReadingLlmPayload";
 
 /** POST /api/tarot/reading — MAGO_v1 Published Prompt 호출 */
 export async function POST(request: Request) {

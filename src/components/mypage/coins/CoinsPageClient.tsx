@@ -3,8 +3,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { supabase } from "@/lib/supabaseClient";
-import { requestClaimAttendanceFromClient } from "@/lib/requestClaimAttendanceFromClient";
+import { supabase } from "@/lib/supabase/supabaseClient";
+import { requestClaimAttendanceFromClient } from "@/lib/api/requestClaimAttendanceFromClient";
 import { useCoinStore } from "@/stores/coinStore";
 import type { CoinPageInitialData } from "@/types/coin";
 import {
@@ -19,8 +19,8 @@ import {
   ArrowDownLeft,
   ChevronLeft,
 } from "lucide-react";
-import { COIN_REWARD_ATTENDANCE } from "@/lib/coinRewards";
-import { AD_MAX_COUNT, AD_REWARD, COIN_PACKAGES } from "@/lib/coinCatalog";
+import { COIN_REWARD_ATTENDANCE } from "@/lib/coin/coinRewards";
+import { AD_MAX_COUNT, AD_REWARD, COIN_PACKAGES } from "@/lib/coin/coinCatalog";
 import type { CoinDemoTransaction } from "@/types/coinDemo";
 import type { CoinHistoryItem } from "@/types/coin";
 import { MypageMobileFixedTopBarSpacer } from "@/components/mypage/common/mypageMobileFixedTopBar.style";

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { parseMagoLlmResult } from "@/lib/magoResultMapper";
+import { parseMagoLlmResult } from "@/lib/tarot/map/magoResultMapper";
 import { saveTarotSessionToDb } from "@/lib/server/saveTarotSessionToDb";
 import { verifySupabaseAccessToken } from "@/lib/server/verifySupabaseAccessToken";
 import type { MagoLlmResult } from "@/types/magoResult";

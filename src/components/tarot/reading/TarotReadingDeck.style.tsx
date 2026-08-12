@@ -2,7 +2,7 @@ import styled from "@emotion/styled";
 import Image from "next/image";
 import { css, keyframes } from "@emotion/react";
 import { RefreshCw } from "lucide-react";
-import { MOBILE_MAX_WIDTH } from "@/lib/layout";
+import { MOBILE_MAX_WIDTH } from "@/lib/layout/layout";
 
 const GOLD = "#EAB865";
 const GOLD_SOFT = "#F2CC88";

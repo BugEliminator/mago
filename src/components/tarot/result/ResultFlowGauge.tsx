@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import { Percent } from "lucide-react";
-import { getFortuneFlowScoreTheme } from "@/lib/fortuneFlowScoreTheme";
+import { getFortuneFlowScoreTheme } from "@/lib/ui/fortuneFlowScoreTheme";
 import {
   DonutCenter,
   DonutScore,

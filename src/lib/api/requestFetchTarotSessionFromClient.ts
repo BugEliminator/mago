@@ -1,4 +1,4 @@
-import type { TarotReadingQueryData } from "@/lib/tarotReadingQuery";
+import type { TarotReadingQueryData } from "@/lib/tarot/reading/tarotReadingQuery";
 
 export type FetchTarotSessionClientResult =
   | { ok: true; data: TarotReadingQueryData }

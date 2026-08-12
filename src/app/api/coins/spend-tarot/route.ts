@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { spendTarotCoin } from "@/lib/server/spendTarotCoin";
 import { verifySupabaseAccessToken } from "@/lib/server/verifySupabaseAccessToken";
-import { getTarotSpendCoinType, COIN_HISTORY_TITLES } from "@/lib/coinRewards";
-import { getCoinAmountForType } from "@/lib/coinRewards";
-import { formatCoinHistoryDateLabel } from "@/lib/coinKst";
+import { getTarotSpendCoinType, COIN_HISTORY_TITLES } from "@/lib/coin/coinRewards";
+import { getCoinAmountForType } from "@/lib/coin/coinRewards";
+import { formatCoinHistoryDateLabel } from "@/lib/coin/coinKst";
 import type { CardSpread } from "@/types/tarot";
 
 type SpendTarotBody = {

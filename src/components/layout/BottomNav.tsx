@@ -6,7 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import type { User } from "@supabase/supabase-js";
 import { BookOpenText, CircleUserRound, Home } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabase/supabaseClient";
 import { TarotCardToastIcon } from "@/components/common/toast/ToastIcons";
 import { useTarotSetupEntry } from "@/hooks/useTarotSetupEntry";
 import TarotDraftResumeModal from "@/components/tarot/TarotDraftResumeModal";

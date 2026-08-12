@@ -24,7 +24,7 @@ import {
   DEFAULT_EQUIPPED_SKIN_ID,
   OWNED_PERSONAS,
   OWNED_SKINS,
-} from "@/lib/inventorySeedData";
+} from "@/lib/inventory/inventorySeedData";
 import {
   InventoryRoot,
   InventoryHeader,

@@ -1,7 +1,7 @@
 import styled from "@emotion/styled";
 import Link from "next/link";
 import { css } from "@emotion/react";
-import { DESKTOP_MIN_WIDTH, LAYOUT_CONTENT_MAX_WIDTH } from "@/lib/layout";
+import { DESKTOP_MIN_WIDTH, LAYOUT_CONTENT_MAX_WIDTH } from "@/lib/layout/layout";
 
 /** 모바일 헤더 바 높이 — padding 0.75rem×2 + 콘텐츠 2rem */
 export const HEADER_BAR_HEIGHT_MOBILE = "3.5rem";

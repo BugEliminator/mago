@@ -5,11 +5,11 @@ import { memo, useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { CircleDollarSign, Star } from "lucide-react";
 import { toast } from "sonner";
-import { requestSubmitTarotSessionReviewFromClient } from "@/lib/requestSubmitTarotSessionReviewFromClient";
-import { COIN_REWARD_REVIEW } from "@/lib/coinRewards";
+import { requestSubmitTarotSessionReviewFromClient } from "@/lib/api/requestSubmitTarotSessionReviewFromClient";
+import { COIN_REWARD_REVIEW } from "@/lib/coin/coinRewards";
 import { useCoinStore } from "@/stores/coinStore";
-import { supabase } from "@/lib/supabaseClient";
-import { tarotReadingQueryKey, type TarotReadingQueryData } from "@/lib/tarotReadingQuery";
+import { supabase } from "@/lib/supabase/supabaseClient";
+import { tarotReadingQueryKey, type TarotReadingQueryData } from "@/lib/tarot/reading/tarotReadingQuery";
 import type { TarotResultRatingProps } from "@/types/tarotResult";
 import {
   CoinBurstFace,

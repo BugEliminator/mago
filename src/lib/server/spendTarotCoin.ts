@@ -1,4 +1,4 @@
-import { getTarotSpendCoinType } from "@/lib/coinRewards";
+import { getTarotSpendCoinType } from "@/lib/coin/coinRewards";
 import { applyCoinTransaction } from "@/lib/server/applyCoinTransaction";
 import type { CardSpread } from "@/types/tarot";
 import type { ApplyCoinTransactionResult } from "@/types/coin";

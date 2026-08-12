@@ -3,13 +3,13 @@
 import { useEffect, useRef, useState } from "react";
 import { ChevronDown, Check, Languages } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabase/supabaseClient";
 import {
   getLanguageDisplayName,
   LANGUAGE_OPTIONS,
   resolveAvailableLanguage,
   type LanguageOption,
-} from "@/lib/languageOptions";
+} from "@/lib/auth/languageOptions";
 import { useLanguageStore, type LanguageCode } from "@/stores/languageStore";
 import {
   LangSwitcherWrap,

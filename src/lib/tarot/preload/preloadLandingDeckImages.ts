@@ -1,4 +1,4 @@
-import { preloadImage } from "@/lib/preloadImage";
+import { preloadImage } from "@/lib/utils/preloadImage";
 import {
   LANDING_MAJOR_ARCANA_FACE_PATHS,
   TAROT_CLASSIC_BACK_IMAGE_PATH,

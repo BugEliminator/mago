@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import Link from "next/link";
-import { DESKTOP_MIN_WIDTH, MYPAGE_BELOW_HEADER_OFFSET } from "@/lib/layout";
+import { DESKTOP_MIN_WIDTH, MYPAGE_BELOW_HEADER_OFFSET } from "@/lib/layout/layout";
 
 /**
  * 사이드바 루트 — 흰 카드, 16.25rem(260px) 고정 너비

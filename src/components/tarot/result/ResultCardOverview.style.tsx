@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { DESKTOP_MIN_WIDTH } from "@/lib/layout";
+import { DESKTOP_MIN_WIDTH } from "@/lib/layout/layout";
 
 /** 리딩 스프레드 호버와 비슷한 금테 연색 */
 const GOLD_SOFT = "#f2cc88";

@@ -1,4 +1,4 @@
-import EmotionRegistry from "@/lib/registry";
+import EmotionRegistry from "@/lib/ui/registry";
 import ThemeProvider from "@/components/providers/ThemeProvider";
 import QueryProvider from "@/components/providers/QueryProvider";
 import type { Metadata } from "next";

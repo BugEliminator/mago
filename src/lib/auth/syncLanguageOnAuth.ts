@@ -1,10 +1,10 @@
-import { supabase } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabase/supabaseClient";
 import {
   LANGUAGE_STORE_KEY,
   useLanguageStore,
   type LanguageCode,
 } from "@/stores/languageStore";
-import { resolveAvailableLanguage } from "@/lib/languageOptions";
+import { resolveAvailableLanguage } from "@/lib/auth/languageOptions";
 
 const VALID_LANG_CODES: readonly LanguageCode[] = [
   "ko",

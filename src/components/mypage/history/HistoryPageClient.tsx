@@ -15,7 +15,7 @@ import {
 import type { LucideIcon } from "lucide-react";
 import type { HistoryListItem } from "./historyTypes";
 import MiniCardStack from "./MiniCardStack";
-import { getFortuneFlowScoreTheme } from "@/lib/fortuneFlowScoreTheme";
+import { getFortuneFlowScoreTheme } from "@/lib/ui/fortuneFlowScoreTheme";
 import { MypageMobileFixedTopBarSpacer } from "@/components/mypage/common/mypageMobileFixedTopBar.style";
 import {
   getIntentCategoryOption,

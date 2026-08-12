@@ -23,11 +23,16 @@ mago/
 │   │   ├── layout/       # 레이아웃 컴포넌트 (Header, Footer)
 │   │   └── providers/    # Context Provider 컴포넌트
 │   ├── hooks/            # 커스텀 훅
-│   ├── lib/              # 유틸리티 및 설정
-│   │   ├── registry.tsx  # Emotion SSR 레지스트리
-│   │   ├── theme.ts      # 테마 정의 (오방색 기반)
-│   │   ├── GlobalStyles.ts # 글로벌 스타일
-│   │   └── supabaseClient.ts # Supabase 클라이언트
+│   ├── lib/              # 공용 비-UI 로직
+│   │   ├── api/          # 클라이언트 API fetch 래퍼
+│   │   ├── auth/         # 인증·언어·프로필 프롬프트
+│   │   ├── coin/         # 엽전 보상·카탈로그
+│   │   ├── layout/       # 레이아웃 상수·경로
+│   │   ├── server/       # 서버 전용 (DB·API)
+│   │   ├── supabase/     # Supabase 클라이언트
+│   │   ├── tarot/        # 타로 도메인 (draft·reading·map 등)
+│   │   ├── ui/           # theme, GlobalStyles, registry
+│   │   └── utils/        # 순수 유틸
 │   └── types/            # TypeScript 타입 정의
 ├── .env.local            # 환경 변수 (gitignore에 포함됨)
 └── package.json

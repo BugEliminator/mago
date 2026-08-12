@@ -1,5 +1,5 @@
-import { getKstDayBoundsUtc } from "@/lib/coinKst";
-import { createSupabaseAdmin } from "@/lib/supabaseAdmin";
+import { getKstDayBoundsUtc } from "@/lib/coin/coinKst";
+import { createSupabaseAdmin } from "@/lib/supabase/supabaseAdmin";
 
 /**
  * KST 기준 당일 EARN_ATTENDANCE 여부 — GET status API + fetchCoinDataFromDb 공용

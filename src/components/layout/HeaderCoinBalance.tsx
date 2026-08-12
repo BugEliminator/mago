@@ -2,9 +2,9 @@
 
 import { Coins } from "lucide-react";
 import { useEffect } from "react";
-import { supabase } from "@/lib/supabaseClient";
-import { fetchAttendanceStatusFromClient } from "@/lib/fetchAttendanceStatusFromClient";
-import { COIN_REWARD_ATTENDANCE } from "@/lib/coinRewards";
+import { supabase } from "@/lib/supabase/supabaseClient";
+import { fetchAttendanceStatusFromClient } from "@/lib/api/fetchAttendanceStatusFromClient";
+import { COIN_REWARD_ATTENDANCE } from "@/lib/coin/coinRewards";
 import { useCoinStore } from "@/stores/coinStore";
 import { HeaderCoinChipLink } from "./Header.style";
 import AttendancePrompt from "@/components/common/tooltip/AttendancePrompt";
