@@ -10,9 +10,6 @@ import {
 /** 마이페이지 몰입형 서브페이지 모바일 풀크림 셸 배경 */
 export const MYPAGE_IMMERSIVE_MOBILE_SURFACE = "#fdfcf8";
 
-/** @deprecated MYPAGE_IMMERSIVE_MOBILE_SURFACE 사용 */
-export const MYPAGE_HISTORY_MOBILE_SURFACE = MYPAGE_IMMERSIVE_MOBILE_SURFACE;
-
 /**
  * 마이페이지 루트 — SpaceBackground가 뷰포트 전체 fixed
  */
