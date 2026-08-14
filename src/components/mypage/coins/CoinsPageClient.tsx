@@ -120,14 +120,21 @@ function CoinsPageSubtitle() {
 
 type CoinsPageClientProps = {
   initialData: CoinPageInitialData;
+  /** true — 로컬 dev, 데모 잠금 토글 노출 */
+  showDemoToggle: boolean;
 };
 
-export default function CoinsPageClient({ initialData }: CoinsPageClientProps) {
+export default function CoinsPageClient({
+  initialData,
+  showDemoToggle,
+}: CoinsPageClientProps) {
   const router = useRouter();
   const setCoinBalance = useCoinStore((s) => s.setBalance);
   const setCoinHasCheckedIn = useCoinStore((s) => s.setHasCheckedInToday);
   const [activeTab, setActiveTab] = useState<CoinsMobileTab>("pay");
   const [isLocked, setIsLocked] = useState(true);
+  /** 배포 — 항상 잠금 / dev — 토글로 해제 가능 */
+  const effectiveLocked = showDemoToggle ? isLocked : true;
   const [balance, setBalance] = useState(initialData.balance);
   const [hasCheckedIn, setHasCheckedIn] = useState(
     initialData.hasCheckedInToday,
@@ -302,7 +309,7 @@ export default function CoinsPageClient({ initialData }: CoinsPageClientProps) {
           </PackageCard>
         ))}
 
-        {isLocked && (
+        {effectiveLocked && (
           <LockOverlay>
             <LockIconWrap>
               <Lock size={16} color="#f87171" />
@@ -355,7 +362,7 @@ export default function CoinsPageClient({ initialData }: CoinsPageClientProps) {
           </AdRight>
         </AdCard>
 
-        {isLocked && (
+        {effectiveLocked && (
           <LockOverlay $compact>
             <LockIconWrap>
               <Lock size={16} color="#f87171" />
@@ -390,7 +397,7 @@ export default function CoinsPageClient({ initialData }: CoinsPageClientProps) {
           </HistoryItem>
         );
       })}
-      {!isLocked &&
+      {!effectiveLocked &&
         demoTransactions.map((tx) => {
           const isPlus = tx.amount > 0;
           return (
@@ -481,24 +488,25 @@ export default function CoinsPageClient({ initialData }: CoinsPageClientProps) {
           </CoinsSubtitle>
         </TitleGroup>
 
-        {/* 데모 잠금/해제 토글 */}
-        <DemoToggleBtn
-          type="button"
-          $locked={isLocked}
-          onClick={() => setIsLocked((v) => !v)}
-        >
-          {isLocked ? (
-            <>
-              <Lock size={11} />
-              데모 잠금 상태 (클릭시 해제)
-            </>
-          ) : (
-            <>
-              <Unlock size={11} />
-              데모 해제 상태 (클릭시 잠금)
-            </>
-          )}
-        </DemoToggleBtn>
+        {showDemoToggle ? (
+          <DemoToggleBtn
+            type="button"
+            $locked={isLocked}
+            onClick={() => setIsLocked((v) => !v)}
+          >
+            {isLocked ? (
+              <>
+                <Lock size={11} />
+                데모 잠금 상태 (클릭시 해제)
+              </>
+            ) : (
+              <>
+                <Unlock size={11} />
+                데모 해제 상태 (클릭시 잠금)
+              </>
+            )}
+          </DemoToggleBtn>
+        ) : null}
       </CoinsHeader>
 
       {/* 데스크톱 2:1 그리드 — 고정 높이 40rem, 이용 내역은 내부 스크롤 */}
