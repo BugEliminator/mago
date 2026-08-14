@@ -10,7 +10,12 @@ export default async function CoinsPage() {
   const initialData =
     userId != null
       ? await fetchCoinDataFromDb(userId)
-      : { balance: 0, histories: [], hasCheckedInToday: false };
+      : {
+          balance: 0,
+          histories: [],
+          historyTotalCount: 0,
+          hasCheckedInToday: false,
+        };
 
   /** 유·무료 복채 데모 잠금 토글 — 로컬 dev 전용 */
   const showDemoToggle = process.env.NODE_ENV === "development";

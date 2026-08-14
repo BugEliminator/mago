@@ -1,8 +1,16 @@
 import { formatCoinHistoryDateLabel } from "@/lib/coin/coinKst";
 import { isCoinHistoryType } from "@/lib/coin/coinRewards";
-import { createSupabaseAdmin } from "@/lib/supabase/supabaseAdmin";
+import {
+  COIN_HISTORY_API_MAX_LIMIT,
+  COIN_HISTORY_INITIAL_SERVER_LIMIT,
+} from "@/lib/mypage/coins/coinHistoryPaginationConstants";
 import { hasCheckedInTodayForUser } from "@/lib/server/hasCheckedInTodayForUser";
-import type { CoinHistoryItem, CoinPageInitialData } from "@/types/coin";
+import { createSupabaseAdmin } from "@/lib/supabase/supabaseAdmin";
+import type {
+  CoinHistoriesPageData,
+  CoinHistoryItem,
+  CoinPageInitialData,
+} from "@/types/coin";
 
 type CoinHistoryRow = {
   id: string;
@@ -12,7 +20,17 @@ type CoinHistoryRow = {
   created_at: string;
 };
 
-const HISTORY_LIMIT = 50;
+export type FetchCoinHistoriesPageOptions = {
+  offset: number;
+  limit: number;
+};
+
+const COIN_HISTORY_SELECT = "id, title, amount, type, created_at";
+
+const EMPTY_HISTORIES_PAGE: CoinHistoriesPageData = {
+  histories: [],
+  totalCount: 0,
+};
 
 function mapHistoryRow(row: CoinHistoryRow): CoinHistoryItem | null {
   if (!isCoinHistoryType(row.type)) return null;
@@ -26,8 +44,87 @@ function mapHistoryRow(row: CoinHistoryRow): CoinHistoryItem | null {
   };
 }
 
+/** offset·limit 유효성 — API·서버 공용 */
+export function normalizeCoinHistoriesPagination(
+  offsetRaw: unknown,
+  limitRaw: unknown,
+): { ok: true; offset: number; limit: number } | { ok: false; message: string } {
+  const offset =
+    typeof offsetRaw === "number"
+      ? offsetRaw
+      : typeof offsetRaw === "string"
+        ? Number.parseInt(offsetRaw, 10)
+        : Number.NaN;
+  const limit =
+    typeof limitRaw === "number"
+      ? limitRaw
+      : typeof limitRaw === "string"
+        ? Number.parseInt(limitRaw, 10)
+        : Number.NaN;
+
+  if (!Number.isFinite(offset) || offset < 0) {
+    return { ok: false, message: "offset은 0 이상의 정수여야 합니다." };
+  }
+  if (!Number.isFinite(limit) || limit < 1 || limit > COIN_HISTORY_API_MAX_LIMIT) {
+    return {
+      ok: false,
+      message: `limit은 1~${COIN_HISTORY_API_MAX_LIMIT} 사이 정수여야 합니다.`,
+    };
+  }
+
+  return { ok: true, offset: Math.floor(offset), limit: Math.floor(limit) };
+}
+
 /**
- * 엽전 충전소 — profiles.coin + coin_histories 목록 + 오늘 출석 여부
+ * coin_histories 목록 페이지 조회 (최신순)
+ * 엽전 충전소·GET /api/coins/histories 공용
+ */
+export async function fetchCoinHistoriesPageFromDb(
+  userId: string,
+  options: FetchCoinHistoriesPageOptions,
+): Promise<CoinHistoriesPageData> {
+  const normalized = normalizeCoinHistoriesPagination(
+    options.offset,
+    options.limit,
+  );
+  if (!normalized.ok) {
+    return EMPTY_HISTORIES_PAGE;
+  }
+
+  let admin;
+  try {
+    admin = createSupabaseAdmin();
+  } catch {
+    return EMPTY_HISTORIES_PAGE;
+  }
+
+  const { offset, limit } = normalized;
+  const rangeEnd = offset + limit - 1;
+
+  const { data, error, count } = await admin
+    .from("coin_histories")
+    .select(COIN_HISTORY_SELECT, { count: "exact" })
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .range(offset, rangeEnd);
+
+  if (error != null) {
+    console.error("[fetchCoinHistoriesPageFromDb]", error.message);
+    return EMPTY_HISTORIES_PAGE;
+  }
+
+  const histories = (data ?? [])
+    .map((row) => mapHistoryRow(row as CoinHistoryRow))
+    .filter((item): item is CoinHistoryItem => item != null);
+
+  return {
+    histories,
+    totalCount: count ?? 0,
+  };
+}
+
+/**
+ * 엽전 충전소 — profiles.coin + coin_histories 초기 목록 + 오늘 출석 여부
  * profile / histories / 출석 조회를 Promise.all로 병렬 실행
  */
 export async function fetchCoinDataFromDb(
@@ -36,6 +133,7 @@ export async function fetchCoinDataFromDb(
   const empty: CoinPageInitialData = {
     balance: 0,
     histories: [],
+    historyTotalCount: 0,
     hasCheckedInToday: false,
   };
 
@@ -46,14 +144,12 @@ export async function fetchCoinDataFromDb(
     return empty;
   }
 
-  const [profileResult, historyResult, hasCheckedInToday] = await Promise.all([
+  const [profileResult, historiesPage, hasCheckedInToday] = await Promise.all([
     admin.from("profiles").select("coin").eq("id", userId).maybeSingle(),
-    admin
-      .from("coin_histories")
-      .select("id, title, amount, type, created_at")
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false })
-      .limit(HISTORY_LIMIT),
+    fetchCoinHistoriesPageFromDb(userId, {
+      offset: 0,
+      limit: COIN_HISTORY_INITIAL_SERVER_LIMIT,
+    }),
     hasCheckedInTodayForUser(userId),
   ]);
 
@@ -67,19 +163,10 @@ export async function fetchCoinDataFromDb(
   const balance =
     typeof profile.coin === "number" ? profile.coin : Number(profile.coin ?? 0);
 
-  const { data: historyRows, error: historyError } = historyResult;
-
-  if (historyError != null) {
-    console.error("[fetchCoinDataFromDb] histories", historyError.message);
-  }
-
-  const histories = (historyRows ?? [])
-    .map((row) => mapHistoryRow(row as CoinHistoryRow))
-    .filter((item): item is CoinHistoryItem => item != null);
-
   return {
     balance,
-    histories,
+    histories: historiesPage.histories,
+    historyTotalCount: historiesPage.totalCount,
     hasCheckedInToday,
   };
 }
