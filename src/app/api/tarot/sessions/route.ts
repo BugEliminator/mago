@@ -1,4 +1,8 @@
 import { NextResponse } from "next/server";
+import {
+  fetchTarotSessionsListPageFromDb,
+  normalizeHistorySessionsPagination,
+} from "@/lib/server/fetchTarotSessionsListFromDb";
 import { parseMagoLlmResult } from "@/lib/tarot/map/magoResultMapper";
 import { saveTarotSessionToDb } from "@/lib/server/saveTarotSessionToDb";
 import { verifySupabaseAccessToken } from "@/lib/server/verifySupabaseAccessToken";
@@ -12,31 +16,36 @@ type CreateTarotSessionBody = {
   llm?: unknown;
 };
 
+type VerifiedAuth =
+  | { ok: true; userId: string }
+  | { ok: false; response: NextResponse };
+
+/** GET /api/tarot/sessions?offset=&limit= — 본인 tarot_sessions 히스토리 목록 페이지 */
+export async function GET(request: Request) {
+  const auth = await verifyRequestAuth(request);
+  if (!auth.ok) return auth.response;
+
+  const { searchParams } = new URL(request.url);
+  const pagination = normalizeHistorySessionsPagination(
+    searchParams.get("offset") ?? "0",
+    searchParams.get("limit") ?? "10",
+  );
+
+  if (!pagination.ok) {
+    return NextResponse.json(
+      { ok: false, error: pagination.message, code: "BAD_REQUEST" },
+      { status: 400 },
+    );
+  }
+
+  const data = await fetchTarotSessionsListPageFromDb(auth.userId, pagination);
+  return NextResponse.json({ ok: true, data });
+}
+
 /** POST /api/tarot/sessions — LLM 결과 + setup을 tarot_sessions / tarot_session_cards에 저장 */
 export async function POST(request: Request) {
-  const authHeader = request.headers.get("authorization");
-  const accessToken = authHeader?.startsWith("Bearer ")
-    ? authHeader.slice("Bearer ".length)
-    : null;
-
-  if (accessToken == null) {
-    return NextResponse.json(
-      { ok: false, error: "로그인이 필요합니다.", code: "UNAUTHORIZED" },
-      { status: 401 },
-    );
-  }
-
-  const verified = await verifySupabaseAccessToken(accessToken);
-  if (verified == null) {
-    return NextResponse.json(
-      {
-        ok: false,
-        error: "유효하지 않은 인증 토큰입니다.",
-        code: "UNAUTHORIZED",
-      },
-      { status: 401 },
-    );
-  }
+  const auth = await verifyRequestAuth(request);
+  if (!auth.ok) return auth.response;
 
   let body: unknown;
   try {
@@ -62,7 +71,7 @@ export async function POST(request: Request) {
 
   const result = await saveTarotSessionToDb({
     sessionId: parsed.sessionId,
-    userId: verified.userId,
+    userId: auth.userId,
     setup: parsed.setup,
     llm: parsed.llm,
   });
@@ -75,6 +84,40 @@ export async function POST(request: Request) {
   }
 
   return NextResponse.json({ ok: true, sessionId: result.sessionId });
+}
+
+async function verifyRequestAuth(request: Request): Promise<VerifiedAuth> {
+  const authHeader = request.headers.get("authorization");
+  const accessToken = authHeader?.startsWith("Bearer ")
+    ? authHeader.slice("Bearer ".length)
+    : null;
+
+  if (accessToken == null) {
+    return {
+      ok: false,
+      response: NextResponse.json(
+        { ok: false, error: "로그인이 필요합니다.", code: "UNAUTHORIZED" },
+        { status: 401 },
+      ),
+    };
+  }
+
+  const verified = await verifySupabaseAccessToken(accessToken);
+  if (verified == null) {
+    return {
+      ok: false,
+      response: NextResponse.json(
+        {
+          ok: false,
+          error: "유효하지 않은 인증 토큰입니다.",
+          code: "UNAUTHORIZED",
+        },
+        { status: 401 },
+      ),
+    };
+  }
+
+  return { ok: true, userId: verified.userId };
 }
 
 function parseCreateTarotSessionBody(

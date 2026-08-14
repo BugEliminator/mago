@@ -16,6 +16,10 @@ import type { LucideIcon } from "lucide-react";
 import type { HistoryListItem } from "./historyTypes";
 import MiniCardStack from "./MiniCardStack";
 import { getFortuneFlowScoreTheme } from "@/lib/ui/fortuneFlowScoreTheme";
+import { requestFetchHistorySessionsFromClient } from "@/lib/api/requestFetchHistorySessionsFromClient";
+import { mergeHistorySessions } from "@/lib/mypage/history/mergeHistorySessions";
+import { HISTORY_SESSIONS_API_MAX_LIMIT } from "@/lib/mypage/history/historyPaginationConstants";
+import { supabase } from "@/lib/supabase/supabaseClient";
 import { MypageMobileFixedTopBarSpacer } from "@/components/mypage/common/mypageMobileFixedTopBar.style";
 import {
   getIntentCategoryOption,
@@ -141,16 +145,29 @@ function formatDate(dateString: string): string {
 
 type HistoryPageClientProps = {
   initialSessions: HistoryListItem[];
+  totalCount: number;
 };
+
+/** Supabase access token — 히스토리 추가 로드 API용 */
+async function getClientAccessToken(): Promise<string | null> {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  return session?.access_token ?? null;
+}
 
 /**
  * 내 운세 히스토리 — tarot_sessions 목록 기반 UI
  * 데스크톱: 페이지네이션 / 모바일: 무한스크롤
+ * 초기 20건은 RSC, 이후 GET /api/tarot/sessions
  */
 export default function HistoryPageClient({
   initialSessions,
+  totalCount: initialTotalCount,
 }: HistoryPageClientProps) {
   const router = useRouter();
+  const [sessions, setSessions] = useState(initialSessions);
+  const [totalCount, setTotalCount] = useState(initialTotalCount);
   const [selectedCategory, setSelectedCategory] = useState("전체");
   const [searchInput, setSearchInput] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
@@ -159,10 +176,25 @@ export default function HistoryPageClient({
   /** 모바일 무한스크롤 표시 개수 */
   const [mobileVisibleCount, setMobileVisibleCount] =
     useState(MOBILE_PAGE_SIZE);
-  const [isMobileLoadingMore, setIsMobileLoadingMore] = useState(false);
+  const [isFetchingMore, setIsFetchingMore] = useState(false);
+
+  /** 추가 로드 offset 계산용 — state와 동기화 */
+  const sessionsRef = useRef(initialSessions);
+  const totalCountRef = useRef(initialTotalCount);
 
   /** 무한스크롤 센티넬 ref */
   const sentinelRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    sessionsRef.current = sessions;
+  }, [sessions]);
+
+  useEffect(() => {
+    totalCountRef.current = totalCount;
+  }, [totalCount]);
+
+  const hasActiveFilter =
+    selectedCategory !== "전체" || debouncedSearchTerm.length > 0;
 
   /** summary_line 검색 — 300ms 디바운스 */
   useEffect(() => {
@@ -178,9 +210,9 @@ export default function HistoryPageClient({
     setMobileVisibleCount(MOBILE_PAGE_SIZE);
   }, [debouncedSearchTerm, selectedCategory]);
 
-  /** 필터링 + 최신순 정렬 (서버 fetch는 이미 최신순) */
+  /** 필터링 + 최신순 정렬 (서버 fetch는 이미 최신순) — 로드된 sessions 기준 */
   const filteredData = useMemo(() => {
-    return initialSessions.filter((item) => {
+    return sessions.filter((item) => {
       if (
         selectedCategory !== "전체" &&
         item.main_category !== selectedCategory
@@ -193,12 +225,15 @@ export default function HistoryPageClient({
       }
       return true;
     });
-  }, [initialSessions, selectedCategory, debouncedSearchTerm]);
+  }, [sessions, selectedCategory, debouncedSearchTerm]);
 
-  /** 전체 리딩 수 — 필터·검색과 무관 */
-  const totalSessionCount = initialSessions.length;
+  /** 전체 리딩 수 — 필터·검색과 무관 (서버 count) */
+  const totalSessionCount = totalCount;
 
-  const totalPages = Math.ceil(filteredData.length / PAGE_SIZE);
+  const totalPages = hasActiveFilter
+    ? Math.ceil(filteredData.length / PAGE_SIZE)
+    : Math.ceil(totalCount / PAGE_SIZE);
+
   const paginatedData = filteredData.slice(
     (currentPage - 1) * PAGE_SIZE,
     currentPage * PAGE_SIZE,
@@ -206,31 +241,126 @@ export default function HistoryPageClient({
 
   /** 모바일 표시 데이터 */
   const mobileData = filteredData.slice(0, mobileVisibleCount);
-  const hasMobileMore = mobileVisibleCount < filteredData.length;
+  const hasMobileMore = hasActiveFilter
+    ? mobileVisibleCount < filteredData.length
+    : mobileVisibleCount < totalCount;
+
+  /** GET /api/tarot/sessions — offset부터 limit건 추가 로드 */
+  const fetchMoreSessions = useCallback(async (offset: number, limit: number) => {
+    const accessToken = await getClientAccessToken();
+    if (accessToken == null) return false;
+
+    const result = await requestFetchHistorySessionsFromClient(accessToken, {
+      offset,
+      limit,
+    });
+
+    if (!result.ok || result.data.sessions.length === 0) return false;
+
+    setSessions((prev) => {
+      const merged = mergeHistorySessions(prev, result.data.sessions);
+      sessionsRef.current = merged;
+      return merged;
+    });
+    setTotalCount(result.data.totalCount);
+    totalCountRef.current = result.data.totalCount;
+    return true;
+  }, []);
+
+  /** 데스크톱 페이지 — 필요 index까지 sessions 확보 */
+  const ensureSessionsLoaded = useCallback(
+    async (requiredCount: number) => {
+      if (hasActiveFilter || isFetchingMore) return;
+
+      if (
+        sessionsRef.current.length >= requiredCount ||
+        sessionsRef.current.length >= totalCountRef.current
+      ) {
+        return;
+      }
+
+      setIsFetchingMore(true);
+      try {
+        while (
+          sessionsRef.current.length < requiredCount &&
+          sessionsRef.current.length < totalCountRef.current
+        ) {
+          const currentLength = sessionsRef.current.length;
+          const remaining = requiredCount - currentLength;
+          const limit = Math.min(
+            HISTORY_SESSIONS_API_MAX_LIMIT,
+            Math.max(remaining, PAGE_SIZE),
+          );
+          const fetched = await fetchMoreSessions(currentLength, limit);
+          if (!fetched) break;
+        }
+      } finally {
+        setIsFetchingMore(false);
+      }
+    },
+    [fetchMoreSessions, hasActiveFilter, isFetchingMore],
+  );
+
+  useEffect(() => {
+    if (hasActiveFilter) return;
+    void ensureSessionsLoaded(currentPage * PAGE_SIZE);
+  }, [currentPage, hasActiveFilter, ensureSessionsLoaded]);
 
   /** IntersectionObserver — 센티넬 노출 시 다음 배치 로드 */
-  const loadMore = useCallback(() => {
-    if (!hasMobileMore || isMobileLoadingMore) return;
-    setIsMobileLoadingMore(true);
-    // 데이터가 이미 클라이언트에 있으므로 setTimeout으로 UX 딜레이만 부여
-    setTimeout(() => {
+  const loadMore = useCallback(async () => {
+    if (isFetchingMore) return;
+
+    if (hasActiveFilter) {
+      if (mobileVisibleCount >= filteredData.length) return;
       setMobileVisibleCount((prev) => prev + MOBILE_PAGE_SIZE);
-      setIsMobileLoadingMore(false);
-    }, 400);
-  }, [hasMobileMore, isMobileLoadingMore]);
+      return;
+    }
+
+    const nextVisible = mobileVisibleCount + MOBILE_PAGE_SIZE;
+    const loadedCount = sessionsRef.current.length;
+    const total = totalCountRef.current;
+
+    if (nextVisible <= loadedCount) {
+      setMobileVisibleCount(nextVisible);
+      return;
+    }
+
+    if (loadedCount >= total) {
+      setMobileVisibleCount(Math.min(nextVisible, loadedCount));
+      return;
+    }
+
+    setIsFetchingMore(true);
+    try {
+      const fetched = await fetchMoreSessions(loadedCount, MOBILE_PAGE_SIZE);
+      if (fetched) {
+        setMobileVisibleCount((prev) => prev + MOBILE_PAGE_SIZE);
+      }
+    } finally {
+      setIsFetchingMore(false);
+    }
+  }, [
+    fetchMoreSessions,
+    filteredData.length,
+    hasActiveFilter,
+    isFetchingMore,
+    mobileVisibleCount,
+  ]);
 
   useEffect(() => {
     const el = sentinelRef.current;
     if (!el) return;
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting) loadMore();
+        if (entries[0].isIntersecting && hasMobileMore) {
+          void loadMore();
+        }
       },
       { rootMargin: "200px" },
     );
     observer.observe(el);
     return () => observer.disconnect();
-  }, [loadMore]);
+  }, [loadMore, hasMobileMore]);
 
   const renderFilterChip = (cat: string) => {
     const isActive = cat === selectedCategory;
@@ -490,7 +620,7 @@ export default function HistoryPageClient({
 
           {/* 무한스크롤 센티넬 + 로딩 인디케이터 */}
           <InfiniteScrollSentinel ref={sentinelRef} />
-          {isMobileLoadingMore && (
+          {isFetchingMore && (
             <LoadingMore>
               <Loader2
                 size={16}
