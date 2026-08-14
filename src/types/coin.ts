@@ -22,7 +22,14 @@ export type CoinHistoryItem = {
 export type CoinPageInitialData = {
   balance: number;
   histories: CoinHistoryItem[];
+  historyTotalCount: number;
   hasCheckedInToday: boolean;
+};
+
+/** coin_histories 목록 페이지 API·RSC 공용 */
+export type CoinHistoriesPageData = {
+  histories: CoinHistoryItem[];
+  totalCount: number;
 };
 
 export type ApplyCoinTransactionErrorCode =

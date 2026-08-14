@@ -1,10 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback, type RefObject } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase/supabaseClient";
 import { requestClaimAttendanceFromClient } from "@/lib/api/requestClaimAttendanceFromClient";
+import { requestFetchCoinHistoriesFromClient } from "@/lib/api/requestFetchCoinHistoriesFromClient";
+import { COIN_HISTORY_SCROLL_PAGE_SIZE } from "@/lib/mypage/coins/coinHistoryPaginationConstants";
+import { mergeCoinHistories } from "@/lib/mypage/coins/mergeCoinHistories";
 import { useCoinStore } from "@/stores/coinStore";
 import type { CoinPageInitialData } from "@/types/coin";
 import {
@@ -18,6 +21,7 @@ import {
   ArrowUpRight,
   ArrowDownLeft,
   ChevronLeft,
+  Loader2,
 } from "lucide-react";
 import { COIN_REWARD_ATTENDANCE } from "@/lib/coin/coinRewards";
 import { AD_MAX_COUNT, AD_REWARD, COIN_PACKAGES } from "@/lib/coin/coinCatalog";
@@ -90,6 +94,8 @@ import {
   HistoryItemDesc,
   HistoryItemDate,
   HistoryItemAmount,
+  HistoryScrollSentinel,
+  HistoryLoadingMore,
 } from "./CoinsPageClient.style";
 
 /** 현재 시각을 "YYYY.MM.DD HH:MM" 형태로 반환 — 데모 광고/유료 내역용 */
@@ -120,14 +126,21 @@ function CoinsPageSubtitle() {
 
 type CoinsPageClientProps = {
   initialData: CoinPageInitialData;
+  /** true — 로컬 dev, 데모 잠금 토글 노출 */
+  showDemoToggle: boolean;
 };
 
-export default function CoinsPageClient({ initialData }: CoinsPageClientProps) {
+export default function CoinsPageClient({
+  initialData,
+  showDemoToggle,
+}: CoinsPageClientProps) {
   const router = useRouter();
   const setCoinBalance = useCoinStore((s) => s.setBalance);
   const setCoinHasCheckedIn = useCoinStore((s) => s.setHasCheckedInToday);
   const [activeTab, setActiveTab] = useState<CoinsMobileTab>("pay");
   const [isLocked, setIsLocked] = useState(true);
+  /** 배포 — 항상 잠금 / dev — 토글로 해제 가능 */
+  const effectiveLocked = showDemoToggle ? isLocked : true;
   const [balance, setBalance] = useState(initialData.balance);
   const [hasCheckedIn, setHasCheckedIn] = useState(
     initialData.hasCheckedInToday,
@@ -136,6 +149,15 @@ export default function CoinsPageClient({ initialData }: CoinsPageClientProps) {
   const [histories, setHistories] = useState<CoinHistoryItem[]>(
     initialData.histories,
   );
+  const [historyTotalCount, setHistoryTotalCount] = useState(
+    initialData.historyTotalCount,
+  );
+  const [isFetchingHistories, setIsFetchingHistories] = useState(false);
+  const historiesRef = useRef(initialData.histories);
+  const historyTotalCountRef = useRef(initialData.historyTotalCount);
+  const historyListRef = useRef<HTMLDivElement | null>(null);
+  const desktopSentinelRef = useRef<HTMLDivElement | null>(null);
+  const mobileSentinelRef = useRef<HTMLDivElement | null>(null);
   /** 데모 잠금 해제 시 광고·유료만 로컬에 쌓는 목 내역 */
   const [demoTransactions, setDemoTransactions] = useState<CoinDemoTransaction[]>(
     [],
@@ -151,6 +173,52 @@ export default function CoinsPageClient({ initialData }: CoinsPageClientProps) {
     setCoinBalance,
     setCoinHasCheckedIn,
   ]);
+
+  useEffect(() => {
+    historiesRef.current = histories;
+  }, [histories]);
+
+  useEffect(() => {
+    historyTotalCountRef.current = historyTotalCount;
+  }, [historyTotalCount]);
+
+  const hasMoreHistories = histories.length < historyTotalCount;
+
+  /** GET /api/coins/histories — 10건씩 추가 로드 */
+  const fetchMoreHistories = useCallback(async () => {
+    if (isFetchingHistories) return;
+    if (historiesRef.current.length >= historyTotalCountRef.current) return;
+
+    setIsFetchingHistories(true);
+    try {
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
+
+      if (sessionError != null || session?.access_token == null) return;
+
+      const result = await requestFetchCoinHistoriesFromClient(
+        session.access_token,
+        {
+          offset: historiesRef.current.length,
+          limit: COIN_HISTORY_SCROLL_PAGE_SIZE,
+        },
+      );
+
+      if (!result.ok || result.data.histories.length === 0) return;
+
+      setHistories((prev) => {
+        const merged = mergeCoinHistories(prev, result.data.histories);
+        historiesRef.current = merged;
+        return merged;
+      });
+      setHistoryTotalCount(result.data.totalCount);
+      historyTotalCountRef.current = result.data.totalCount;
+    } finally {
+      setIsFetchingHistories(false);
+    }
+  }, [isFetchingHistories]);
 
   /** 데모 이용 내역 맨 앞에 추가 */
   const addDemoTransaction = (tx: Omit<CoinDemoTransaction, "id" | "date">) => {
@@ -192,6 +260,7 @@ export default function CoinsPageClient({ initialData }: CoinsPageClientProps) {
     setCoinBalance(result.newBalance);
     setCoinHasCheckedIn(true);
     setHistories((prev) => [result.history, ...prev]);
+    setHistoryTotalCount((count) => count + 1);
     toast.success(`출석 완료! +${COIN_REWARD_ATTENDANCE}냥 적립`);
   };
 
@@ -302,7 +371,7 @@ export default function CoinsPageClient({ initialData }: CoinsPageClientProps) {
           </PackageCard>
         ))}
 
-        {isLocked && (
+        {effectiveLocked && (
           <LockOverlay>
             <LockIconWrap>
               <Lock size={16} color="#f87171" />
@@ -355,7 +424,7 @@ export default function CoinsPageClient({ initialData }: CoinsPageClientProps) {
           </AdRight>
         </AdCard>
 
-        {isLocked && (
+        {effectiveLocked && (
           <LockOverlay $compact>
             <LockIconWrap>
               <Lock size={16} color="#f87171" />
@@ -372,8 +441,30 @@ export default function CoinsPageClient({ initialData }: CoinsPageClientProps) {
     </AdSection>
   );
 
+  /** 이용 내역 무한 스크롤 — 센티넬·로딩 */
+  const renderHistoryScrollFooter = (
+    sentinelRef: RefObject<HTMLDivElement | null>,
+  ) => (
+    <>
+      {hasMoreHistories ? (
+        <HistoryScrollSentinel ref={sentinelRef} aria-hidden />
+      ) : null}
+      {isFetchingHistories ? (
+        <HistoryLoadingMore>
+          <Loader2
+            size={14}
+            style={{ animation: "spin 1s linear infinite" }}
+          />
+          불러오는 중...
+        </HistoryLoadingMore>
+      ) : null}
+    </>
+  );
+
   /** 이용 내역 아이템 목록 */
-  const renderHistoryItems = () => (
+  const renderHistoryItems = (
+    sentinelRef: RefObject<HTMLDivElement | null>,
+  ) => (
     <>
       {histories.map((tx) => {
         const isPlus = tx.amount > 0;
@@ -390,7 +481,7 @@ export default function CoinsPageClient({ initialData }: CoinsPageClientProps) {
           </HistoryItem>
         );
       })}
-      {!isLocked &&
+      {!effectiveLocked &&
         demoTransactions.map((tx) => {
           const isPlus = tx.amount > 0;
           return (
@@ -412,14 +503,51 @@ export default function CoinsPageClient({ initialData }: CoinsPageClientProps) {
             </HistoryItem>
           );
         })}
+      {renderHistoryScrollFooter(sentinelRef)}
     </>
   );
+
+  /** 데스크톱 — HistoryList 내부 스크롤 기준 무한 로드 */
+  useEffect(() => {
+    const root = historyListRef.current;
+    const el = desktopSentinelRef.current;
+    if (!root || !el || !hasMoreHistories) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) void fetchMoreHistories();
+      },
+      { root, rootMargin: "80px" },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [fetchMoreHistories, hasMoreHistories, histories.length]);
+
+  /** 모바일 history 탭 — 뷰포트 기준 무한 로드 */
+  useEffect(() => {
+    if (activeTab !== "history") return;
+    const el = mobileSentinelRef.current;
+    if (!el || !hasMoreHistories) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) void fetchMoreHistories();
+      },
+      { rootMargin: "200px" },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [activeTab, fetchMoreHistories, hasMoreHistories, histories.length]);
 
   /** 모바일 탭 패널 콘텐츠 */
   const renderMobileTabContent = () => {
     if (activeTab === "pay") return renderPaySection(false);
     if (activeTab === "ad") return renderAdSection(false);
-    return <MobileHistoryList>{renderHistoryItems()}</MobileHistoryList>;
+    return (
+      <MobileHistoryList>
+        {renderHistoryItems(mobileSentinelRef)}
+      </MobileHistoryList>
+    );
   };
 
   return (
@@ -481,24 +609,25 @@ export default function CoinsPageClient({ initialData }: CoinsPageClientProps) {
           </CoinsSubtitle>
         </TitleGroup>
 
-        {/* 데모 잠금/해제 토글 */}
-        <DemoToggleBtn
-          type="button"
-          $locked={isLocked}
-          onClick={() => setIsLocked((v) => !v)}
-        >
-          {isLocked ? (
-            <>
-              <Lock size={11} />
-              데모 잠금 상태 (클릭시 해제)
-            </>
-          ) : (
-            <>
-              <Unlock size={11} />
-              데모 해제 상태 (클릭시 잠금)
-            </>
-          )}
-        </DemoToggleBtn>
+        {showDemoToggle ? (
+          <DemoToggleBtn
+            type="button"
+            $locked={isLocked}
+            onClick={() => setIsLocked((v) => !v)}
+          >
+            {isLocked ? (
+              <>
+                <Lock size={11} />
+                데모 잠금 상태 (클릭시 해제)
+              </>
+            ) : (
+              <>
+                <Unlock size={11} />
+                데모 해제 상태 (클릭시 잠금)
+              </>
+            )}
+          </DemoToggleBtn>
+        ) : null}
       </CoinsHeader>
 
       {/* 데스크톱 2:1 그리드 — 고정 높이 40rem, 이용 내역은 내부 스크롤 */}
@@ -515,7 +644,9 @@ export default function CoinsPageClient({ initialData }: CoinsPageClientProps) {
               <History size={13} color="#3949ab" />
               최근 이용 내역
             </HistoryPanelTitle>
-            <HistoryList>{renderHistoryItems()}</HistoryList>
+            <HistoryList ref={historyListRef}>
+              {renderHistoryItems(desktopSentinelRef)}
+            </HistoryList>
           </HistoryPanel>
         </CoinsGrid>
       </CoinsBody>

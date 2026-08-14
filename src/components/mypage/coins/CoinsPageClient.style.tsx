@@ -768,3 +768,22 @@ export const HistoryItemAmount = styled.span<{ $plus: boolean }>`
   background: ${({ $plus }) => ($plus ? "#14532d20" : "#7f1d1d20")};
   border: 1px solid ${({ $plus }) => ($plus ? "#4ade8030" : "#f8717130")};
 `;
+
+/** 이용 내역 무한 스크롤 센티넬 */
+export const HistoryScrollSentinel = styled.div`
+  width: 100%;
+  height: 1px;
+  flex-shrink: 0;
+`;
+
+/** 이용 내역 추가 로드 인디케이터 */
+export const HistoryLoadingMore = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 0;
+  font-size: 0.75rem;
+  color: #64688a;
+  flex-shrink: 0;
+`;
