@@ -28,6 +28,7 @@ function mapHistoryRow(row: CoinHistoryRow): CoinHistoryItem | null {
 
 /**
  * 엽전 충전소 — profiles.coin + coin_histories 목록 + 오늘 출석 여부
+ * profile / histories / 출석 조회를 Promise.all로 병렬 실행
  */
 export async function fetchCoinDataFromDb(
   userId: string,
@@ -45,11 +46,18 @@ export async function fetchCoinDataFromDb(
     return empty;
   }
 
-  const { data: profile, error: profileError } = await admin
-    .from("profiles")
-    .select("coin")
-    .eq("id", userId)
-    .maybeSingle();
+  const [profileResult, historyResult, hasCheckedInToday] = await Promise.all([
+    admin.from("profiles").select("coin").eq("id", userId).maybeSingle(),
+    admin
+      .from("coin_histories")
+      .select("id, title, amount, type, created_at")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(HISTORY_LIMIT),
+    hasCheckedInTodayForUser(userId),
+  ]);
+
+  const { data: profile, error: profileError } = profileResult;
 
   if (profileError != null || profile == null) {
     console.error("[fetchCoinDataFromDb] profile", profileError?.message);
@@ -59,12 +67,7 @@ export async function fetchCoinDataFromDb(
   const balance =
     typeof profile.coin === "number" ? profile.coin : Number(profile.coin ?? 0);
 
-  const { data: historyRows, error: historyError } = await admin
-    .from("coin_histories")
-    .select("id, title, amount, type, created_at")
-    .eq("user_id", userId)
-    .order("created_at", { ascending: false })
-    .limit(HISTORY_LIMIT);
+  const { data: historyRows, error: historyError } = historyResult;
 
   if (historyError != null) {
     console.error("[fetchCoinDataFromDb] histories", historyError.message);
@@ -73,8 +76,6 @@ export async function fetchCoinDataFromDb(
   const histories = (historyRows ?? [])
     .map((row) => mapHistoryRow(row as CoinHistoryRow))
     .filter((item): item is CoinHistoryItem => item != null);
-
-  const hasCheckedInToday = await hasCheckedInTodayForUser(userId);
 
   return {
     balance,
