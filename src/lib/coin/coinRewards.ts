@@ -2,7 +2,7 @@ import type { CardSpread } from "@/types/tarot";
 import type { CoinHistoryType } from "@/types/coin";
 
 /** MVP 프로모션 보상 냥 수 (7~8월 점진 조정 예정) */
-export const COIN_REWARD_SIGNUP = 150;
+export const COIN_REWARD_SIGNUP = 50;
 export const COIN_REWARD_ATTENDANCE = 20;
 export const COIN_REWARD_REFERRER = 20;
 export const COIN_REWARD_REVIEW = 30;
