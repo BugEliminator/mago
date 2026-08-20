@@ -16,4 +16,6 @@ export type TarotReadingQueryData = {
   viewData: ResultPageViewData;
   thumbSlots: readonly ResultCardThumbSlot[];
   review: TarotReadingReviewData;
+  /** 현재 조회자가 세션 소유자인지 — 후기 UI 노출용 */
+  isOwner: boolean;
 };

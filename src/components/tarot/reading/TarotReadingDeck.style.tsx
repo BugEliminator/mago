@@ -298,12 +298,16 @@ export const CardBackImage = styled(Image)`
   object-fit: cover;
 `;
 
-export const CardBackSurface = styled.div`
+export const CardBackSurface = styled("div", {
+  shouldForwardProp: (prop) => prop !== "$faceSrc" && prop !== "$isReversed",
+})<{ $faceSrc?: string; $isReversed?: boolean }>`
   position: absolute;
   inset: 0;
-  background-image: url(/image/cards/classic/back.png);
+  background-image: ${({ $faceSrc }) =>
+    `url("${$faceSrc ?? "/image/cards/classic/back.png"}")`};
   background-size: cover;
   background-position: center;
+  transform: ${({ $isReversed }) => ($isReversed ? "rotate(180deg)" : "none")};
 `;
 
 /** Lucide 아이콘은 알 수 없는 prop을 svg로 그대로 넘기므로 `$isShuffling`은 DOM으로 전달되면 안 됨 */

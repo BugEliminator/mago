@@ -30,6 +30,7 @@ import TarotReadingResumeModal from "@/components/tarot/TarotReadingResumeModal"
 import TarotGuestEntryModal from "@/components/tarot/TarotGuestEntryModal";
 import LanguageSwitcher from "@/components/common/dropdown/LanguageSwitcher";
 import useSmartHeaderScroll from "@/hooks/useSmartHeaderScroll";
+import { isTarotDevRevealAllowed } from "@/lib/tarot/devReveal";
 
 export type HeaderProps = {
   /** false면 고정 해제(타로 결과 등 스크롤과 함께 이동) */
@@ -183,14 +184,24 @@ export default function Header({
               </Logo>
             )}
 
-            {/* 데스크톱 전용 — 타로 시작하기 */}
+            {/* 데스크톱 전용 — 타로 시작하기 / (로컬) 타로 해석해주기 */}
             {variant === "default" ? (
               <DesktopOnly>
                 <NavLink>
-                  <NavTextButton type="button" onClick={requestTarotSetup}>
+                  <NavTextButton type="button" onClick={() => requestTarotSetup()}>
                     타로 시작하기
                   </NavTextButton>
                 </NavLink>
+                {isTarotDevRevealAllowed() ? (
+                  <NavLink>
+                    <NavTextButton
+                      type="button"
+                      onClick={() => requestTarotSetup({ reveal: true })}
+                    >
+                      타로 해석해주기
+                    </NavTextButton>
+                  </NavLink>
+                ) : null}
               </DesktopOnly>
             ) : null}
           </LeftSection>

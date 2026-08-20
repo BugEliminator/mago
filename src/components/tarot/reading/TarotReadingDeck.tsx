@@ -5,6 +5,7 @@ import { LayoutGrid } from "lucide-react";
 import { toast } from "sonner";
 import type { TarotSessionSetup } from "@/types/tarot";
 import { TAROT_CLASSIC_BACK_IMAGE_PATH } from "@/types/tarot";
+import { getTarotCardStoragePublicUrl } from "@/lib/tarot/map/tarotCardStorageUrl";
 import type {
   PickModalState,
   PickedSlotEntry,
@@ -14,18 +15,20 @@ import type {
 } from "@/types/tarotReadingDeck";
 import { TarotCardToastIcon } from "@/components/common/toast/ToastIcons";
 import {
+  buildInterpretCatalogCards,
   buildVisibleDeckCards,
   createDeterministicDeckEntries,
   createFreshDeckEntries,
+  createInterpretCatalogEntries,
   formatDeckForConsole,
   shuffleDeck,
 } from "@/lib/tarot/reading/tarotReadingDeckDeck";
 import {
+  INTERPRET_SPREAD_STAGE_MIN_HEIGHT_PX,
   SPREAD_STAGE_MIN_HEIGHT_PX,
   SPREAD_STAGE_MIN_WIDTH_PX,
   TAROT_PICK_PROMPT_TOAST_DURATION_MS,
   TAROT_PICK_PROMPT_TOAST_ID,
-  TOTAL_CARDS,
 } from "@/lib/tarot/reading/tarotReadingDeckConstants";
 import { useTarotDeckShuffle } from "@/hooks/useTarotDeckShuffle";
 import { useTarotReadingDeckTimers } from "@/hooks/useTarotReadingDeckTimers";
@@ -70,6 +73,8 @@ export type TarotReadingCompletePayload = {
 
 export interface TarotReadingDeckProps {
   setup: TarotSessionSetup;
+  /** 로컬 dev 전용 — 뒷면 대신 앞면 이미지 표시 */
+  showFaces?: boolean;
   /** 스프레드 장 수만큼 카드를 모두 확정했을 때 한 번 호출 (해석 오버레이 표시용) */
   onAllSlotsPicked?: () => void;
   /** LLM 해석 완료 시 호출 */
@@ -83,17 +88,26 @@ export interface TarotReadingDeckProps {
  */
 export default function TarotReadingDeck({
   setup,
+  showFaces = false,
   onAllSlotsPicked,
   onReadingComplete,
   onReadingFailed,
 }: TarotReadingDeckProps) {
   const desiredPickCount = setup.cardCount ?? 0;
   const pickSlotCount = Math.max(0, desiredPickCount);
-  const [viewState, setViewState] = useState<ReadingViewState>("deck");
+  const [viewState, setViewState] = useState<ReadingViewState>(
+    showFaces ? "spread" : "deck",
+  );
   const [isShuffling, setIsShuffling] = useState(false);
   const [isSpreading, setIsSpreading] = useState(false);
 
-  const initialDeck = useMemo(() => createDeterministicDeckEntries(), []);
+  const initialDeck = useMemo(
+    () =>
+      showFaces
+        ? createInterpretCatalogEntries()
+        : createDeterministicDeckEntries(),
+    [showFaces],
+  );
 
   /**
    * 단일 진실: 78장 물리적 순서(아래→위). index가 클수록 위. isReversed는 셔플마다 갱신
@@ -109,11 +123,11 @@ export default function TarotReadingDeck({
     buildVisibleDeckCards(initialDeck),
   );
   const [spreadCards, setSpreadCards] = useState<ReadingCardState[] | null>(
-    null,
+    () => (showFaces ? buildInterpretCatalogCards(initialDeck) : null),
   );
 
   const [pickedSlots, setPickedSlots] = useState<(PickedSlotEntry | null)[]>(
-    [],
+    () => (showFaces ? Array.from({ length: pickSlotCount }, () => null) : []),
   );
   const [pickModal, setPickModal] = useState<PickModalState | null>(null);
 
@@ -222,9 +236,15 @@ export default function TarotReadingDeck({
     };
   }, []);
 
-  /** 최초 1회: 마운트 후 덱을 한 번 셔플 */
+  /** 일반 리딩: 마운트 후 한 번 셔플. 해석 모드는 카탈로그를 그대로 씁니다. */
   useEffect(() => {
     if (deckReady) return;
+    if (showFaces) {
+      window.requestAnimationFrame(() => {
+        setDeckReady(true);
+      });
+      return;
+    }
     const id = window.requestAnimationFrame(() => {
       const shuffled = shuffleDeck(createFreshDeckEntries());
       setDeck(shuffled);
@@ -232,7 +252,7 @@ export default function TarotReadingDeck({
       setDeckReady(true);
     });
     return () => window.cancelAnimationFrame(id);
-  }, [deckReady]);
+  }, [deckReady, showFaces]);
 
   useEffect(() => {
     return () => {
@@ -317,8 +337,11 @@ export default function TarotReadingDeck({
   const handleConfirmPickModal = useCallback(() => {
     setPickModal((m) => {
       if (!m) return null;
-      const deckIndex = deckRef.current.findIndex((e) => e.id === m.cardId);
-      const fromTopIndex = deckIndex >= 0 ? TOTAL_CARDS - 1 - deckIndex : null;
+      const deckIndex = deckRef.current.findIndex(
+        (e) => e.id === m.cardId && e.isReversed === m.isReversed,
+      );
+      const fromTopIndex =
+        deckIndex >= 0 ? deckRef.current.length - 1 - deckIndex : null;
 
       console.log("[MAGO][타로 리딩] 카드 확정", {
         카드번호: m.cardId,
@@ -347,13 +370,7 @@ export default function TarotReadingDeck({
     if (didNotifyAllPickedRef.current) return;
     didNotifyAllPickedRef.current = true;
     onAllSlotsPicked?.();
-  }, [
-    viewState,
-    isSpreading,
-    pickSlotCount,
-    pickedSlots,
-    onAllSlotsPicked,
-  ]);
+  }, [viewState, isSpreading, pickSlotCount, pickedSlots, onAllSlotsPicked]);
 
   const didLogLlmPayloadRef = useRef(false);
   const onReadingCompleteRef = useRef(onReadingComplete);
@@ -462,8 +479,11 @@ export default function TarotReadingDeck({
       const slotIndex = pickedSlots.findIndex((s) => s === null);
       if (slotIndex < 0) return;
 
-      const deckIndex = deckRef.current.findIndex((e) => e.id === cardId);
-      const fromTopIndex = deckIndex >= 0 ? TOTAL_CARDS - 1 - deckIndex : null;
+      const deckIndex = deckRef.current.findIndex(
+        (e) => e.id === cardId && e.isReversed === isReversed,
+      );
+      const fromTopIndex =
+        deckIndex >= 0 ? deckRef.current.length - 1 - deckIndex : null;
 
       console.log("[MAGO][타로 리딩] 카드 클릭", {
         카드번호: cardId,
@@ -482,7 +502,7 @@ export default function TarotReadingDeck({
       viewState !== "deck" && committedPickIds.has(c.cardId);
     return (
       <CardSlot
-        key={c.cardId}
+        key={`${c.cardId}-${c.isReversed ? "rev" : "up"}`}
         type="button"
         onClick={() => handleCardClick(c.cardId, c.isReversed)}
         disabled={!canInteractCards || committedPick}
@@ -500,7 +520,12 @@ export default function TarotReadingDeck({
         $spreadPanScroll={viewState !== "deck"}
       >
         <CardInner>
-          {viewState === "deck" ? (
+          {showFaces ? (
+            <CardBackSurface
+              $faceSrc={getTarotCardStoragePublicUrl(c.cardId)}
+              $isReversed={c.isReversed}
+            />
+          ) : viewState === "deck" ? (
             <CardBackImage
               src={TAROT_CLASSIC_BACK_IMAGE_PATH}
               alt=""
@@ -538,6 +563,9 @@ export default function TarotReadingDeck({
   }, [pickModal, setup.category, setup.cardCount, setup.detailTag]);
 
   const isDeckMode = viewState === "deck";
+  const spreadMinHeightPx = showFaces
+    ? INTERPRET_SPREAD_STAGE_MIN_HEIGHT_PX
+    : SPREAD_STAGE_MIN_HEIGHT_PX;
 
   return (
     <DeckOuter $spreadViewportFill={!isDeckMode}>
@@ -555,7 +583,7 @@ export default function TarotReadingDeck({
         <DeckStage
           aria-label="타로 카드 덱"
           $isDeckMode={true}
-          $spreadMinHeightPx={SPREAD_STAGE_MIN_HEIGHT_PX}
+          $spreadMinHeightPx={spreadMinHeightPx}
           $spreadMinWidthPx={SPREAD_STAGE_MIN_WIDTH_PX}
         >
           <CardsLayer $spreadLiftPx={0} $spreadLiftMotion={false}>
@@ -572,7 +600,7 @@ export default function TarotReadingDeck({
               <DeckStage
                 aria-label="타로 카드 덱"
                 $isDeckMode={false}
-                $spreadMinHeightPx={SPREAD_STAGE_MIN_HEIGHT_PX}
+                $spreadMinHeightPx={spreadMinHeightPx}
                 $spreadMinWidthPx={SPREAD_STAGE_MIN_WIDTH_PX}
               >
                 <CardsLayer

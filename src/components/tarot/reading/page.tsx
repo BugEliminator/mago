@@ -13,6 +13,7 @@ import { requestSaveTarotSessionFromClient } from "@/lib/api/requestSaveTarotSes
 import { supabase } from "@/lib/supabase/supabaseClient";
 import { TAROT_CLASSIC_BACK_IMAGE_PATH } from "@/types/tarot";
 import type { TarotSessionSetup } from "@/types/tarot";
+import { withTarotDevReveal } from "@/lib/tarot/devReveal";
 import TarotReadingBootOverlay from "./TarotReadingBootOverlay";
 import TarotReadingInterpretOverlay from "./TarotReadingInterpretOverlay";
 import TarotReadingDeck, {
@@ -42,7 +43,12 @@ type PendingNavigation = {
 /**
  * 타로 카드 선택 페이지 — 설정에 따라 카드를 선택하는 화면
  */
-export default function TarotReadingPage() {
+export default function TarotReadingPage({
+  showFaces = false,
+}: {
+  /** 로컬 dev 전용 — 덱/스프레드 카드를 앞면으로 표시 */
+  showFaces?: boolean;
+}) {
   const router = useRouter();
   const [setup, setSetup] = useState<TarotSessionSetup | null>(null);
   const [setupReady, setSetupReady] = useState(false);
@@ -72,8 +78,8 @@ export default function TarotReadingPage() {
   useEffect(() => {
     if (!setupReady) return;
     if (setup) return;
-    router.push("/tarot/setup");
-  }, [router, setup, setupReady]);
+    router.push(withTarotDevReveal("/tarot/setup", showFaces));
+  }, [router, setup, setupReady, showFaces]);
 
   useEffect(() => {
     if (!setup) return;
@@ -217,6 +223,7 @@ export default function TarotReadingPage() {
         <ReadingStretchCardsWrap>
           <TarotReadingDeck
             setup={setup}
+            showFaces={showFaces}
             onAllSlotsPicked={handleAllSlotsPicked}
             onReadingComplete={handleReadingComplete}
             onReadingFailed={handleReadingFailed}

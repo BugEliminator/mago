@@ -1,10 +1,12 @@
 import TarotSetupPage from "@/components/tarot/setup/page";
 import type { SetupStep } from "@/components/tarot/setup/SetupStepHeader";
+import { isTarotDevRevealQuery } from "@/lib/tarot/devReveal";
 
 type TarotSetupRoutePageProps = {
   searchParams?: Promise<{
     step?: string;
     browse?: string;
+    reveal?: string;
   }>;
 };
 
@@ -24,6 +26,7 @@ export default async function TarotSetupRoutePage({
     <TarotSetupPage
       initialStep={parseInitialStep(params?.step)}
       initialBrowse={params?.browse === "1"}
+      initialReveal={isTarotDevRevealQuery(params?.reveal)}
     />
   );
 }

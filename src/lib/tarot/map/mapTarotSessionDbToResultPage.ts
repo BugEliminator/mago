@@ -32,7 +32,7 @@ function normalizeParagraphs(
 export function mapTarotSessionDbToResultPage(
   session: TarotSessionRow,
   cards: readonly TarotSessionCardRow[],
-): TarotReadingQueryData {
+): Omit<TarotReadingQueryData, "isOwner"> {
   const categoryId = getTarotCategoryIdFromBadgeLabel(session.main_category);
 
   const sortedCards = [...cards].sort(
