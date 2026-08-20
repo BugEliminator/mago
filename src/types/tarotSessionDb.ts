@@ -17,6 +17,8 @@ export interface TarotSessionRow {
   rating: number | null;
   review_content: string | null;
   created_at?: string;
+  /** 소프트 삭제 시각 — 컬럼이 없으면 조회에서 생략될 수 있음 */
+  deleted_at?: string | null;
 }
 
 /** tarot_sessions 후기 UPDATE payload */
