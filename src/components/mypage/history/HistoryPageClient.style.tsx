@@ -7,6 +7,7 @@ const MOBILE = "@media (max-width: 640px)";
 /** 호버 오버레이·버튼 — component selector 미사용을 위해 class name으로 타깃 */
 export const HISTORY_OVERLAY_CLASS = "mago-history-overlay";
 export const HISTORY_OVERLAY_BTN_CLASS = "mago-history-overlay-btn";
+export const HISTORY_DELETE_BTN_CLASS = "mago-history-delete-btn";
 
 /* ────────────────────────────────────────────────────────
    외부 흰 카드 컨테이너
@@ -332,6 +333,11 @@ export const SessionCard = styled.div`
     transform: translateY(0);
   }
 
+  /** 호버 시 우상단 삭제 버튼 */
+  &:hover .${HISTORY_DELETE_BTN_CLASS} {
+    opacity: 1;
+  }
+
   ${MOBILE} {
     /* 모바일: 탭(터치) 기반 — 호버 대신 카드 전체 클릭 처리 */
     &:hover {
@@ -340,6 +346,10 @@ export const SessionCard = styled.div`
     &:active {
       background: #13162d;
       border-color: #3a4070;
+    }
+
+    .${HISTORY_DELETE_BTN_CLASS} {
+      opacity: 1;
     }
   }
 `;
@@ -379,6 +389,42 @@ export const DateLabel = styled.span`
   color: #a4a8be;
   flex-shrink: 0;
   font-variant-numeric: tabular-nums;
+`;
+
+/** 날짜 + 삭제 — 우상단 */
+export const SessionCardHeaderEnd = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-shrink: 0;
+`;
+
+/** 소프트 삭제 — 데스크톱은 호버 시에만, 모바일은 항상 */
+export const DeleteButton = styled.button`
+  position: relative;
+  z-index: 11;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  border: none;
+  border-radius: 0.375rem;
+  background: #1a1d35;
+  color: #a4a8be;
+  cursor: pointer;
+  font-family: inherit;
+  opacity: 0;
+  transition:
+    opacity 200ms ease-in-out,
+    color 150ms ease-in-out,
+    background 150ms ease-in-out;
+
+  &:hover {
+    color: #ffffff;
+    background: #c62828;
+  }
 `;
 
 /** 핵심 요약 — 1줄 고정, 넘치면 말줄임 */

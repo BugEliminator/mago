@@ -35,6 +35,7 @@ export async function saveTarotSessionReviewToDb(
     .select("id, has_reviewed")
     .eq("id", readingId)
     .eq("user_id", userId)
+    .is("deleted_at", null)
     .maybeSingle();
 
   if (fetchError != null) {
@@ -69,7 +70,8 @@ export async function saveTarotSessionReviewToDb(
       review_content: reviewContent,
     })
     .eq("id", readingId)
-    .eq("user_id", userId);
+    .eq("user_id", userId)
+    .is("deleted_at", null);
 
   if (updateError != null) {
     return {

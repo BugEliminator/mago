@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect, useRef, useCallback } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback, type MouseEvent } from "react";
 import { useRouter } from "next/navigation";
 import {
   FolderClock,
@@ -11,12 +11,16 @@ import {
   ChevronLeft,
   ChevronRight,
   Loader2,
+  X,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { toast } from "sonner";
 import type { HistoryListItem } from "./historyTypes";
 import MiniCardStack from "./MiniCardStack";
+import HistoryDeleteConfirmModal from "./HistoryDeleteConfirmModal";
 import { getFortuneFlowScoreTheme } from "@/lib/ui/fortuneFlowScoreTheme";
 import { requestFetchHistorySessionsFromClient } from "@/lib/api/requestFetchHistorySessionsFromClient";
+import { requestSoftDeleteTarotSessionFromClient } from "@/lib/api/requestSoftDeleteTarotSessionFromClient";
 import { mergeHistorySessions } from "@/lib/mypage/history/mergeHistorySessions";
 import { HISTORY_SESSIONS_API_MAX_LIMIT } from "@/lib/mypage/history/historyPaginationConstants";
 import { supabase } from "@/lib/supabase/supabaseClient";
@@ -30,6 +34,7 @@ import type { TarotCategory } from "@/types/tarot";
 import {
   HISTORY_OVERLAY_CLASS,
   HISTORY_OVERLAY_BTN_CLASS,
+  HISTORY_DELETE_BTN_CLASS,
   HistoryRoot,
   HistoryHeader,
   TitleGroup,
@@ -48,6 +53,8 @@ import {
   SessionCardHeader,
   CategoryBadge,
   DateLabel,
+  SessionCardHeaderEnd,
+  DeleteButton,
   SummaryLine,
   SessionFooter,
   FooterGroup,
@@ -85,6 +92,7 @@ import {
 const PAGE_SIZE = 6;
 const MOBILE_PAGE_SIZE = 10;
 const SEARCH_DEBOUNCE_MS = 300;
+const HISTORY_DELETE_ICON_SIZE = 14;
 
 /** 히스토리 페이지 부제 — 데스크톱·모바일 공통 */
 const HISTORY_PAGE_SUBTITLE =
@@ -172,6 +180,8 @@ export default function HistoryPageClient({
   const [searchInput, setSearchInput] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   /** 모바일 무한스크롤 표시 개수 */
   const [mobileVisibleCount, setMobileVisibleCount] =
@@ -238,6 +248,17 @@ export default function HistoryPageClient({
     (currentPage - 1) * PAGE_SIZE,
     currentPage * PAGE_SIZE,
   );
+
+  /** 삭제 후 빈 페이지에 남지 않도록 */
+  useEffect(() => {
+    const pages = hasActiveFilter
+      ? Math.ceil(filteredData.length / PAGE_SIZE)
+      : Math.ceil(totalCount / PAGE_SIZE);
+    const maxPage = Math.max(1, pages);
+    if (currentPage > maxPage) {
+      setCurrentPage(maxPage);
+    }
+  }, [currentPage, filteredData.length, hasActiveFilter, totalCount]);
 
   /** 모바일 표시 데이터 */
   const mobileData = filteredData.slice(0, mobileVisibleCount);
@@ -362,6 +383,65 @@ export default function HistoryPageClient({
     return () => observer.disconnect();
   }, [loadMore, hasMobileMore]);
 
+  const handleRequestDelete = (
+    event: MouseEvent<HTMLButtonElement>,
+    sessionId: string,
+  ) => {
+    event.stopPropagation();
+    setPendingDeleteId(sessionId);
+  };
+
+  const handleDismissDelete = () => {
+    if (isDeleting) return;
+    setPendingDeleteId(null);
+  };
+
+  /** 소프트 삭제 확정 — 목록에서 즉시 제거 */
+  const handleConfirmDelete = async () => {
+    if (pendingDeleteId == null || isDeleting) return;
+
+    const accessToken = await getClientAccessToken();
+    if (accessToken == null) {
+      toast.error("로그인이 필요합니다.");
+      return;
+    }
+
+    setIsDeleting(true);
+    const result = await requestSoftDeleteTarotSessionFromClient(
+      pendingDeleteId,
+      accessToken,
+    );
+    setIsDeleting(false);
+
+    if (!result.ok) {
+      toast.error(result.error);
+      return;
+    }
+
+    const deletedId = pendingDeleteId;
+    setPendingDeleteId(null);
+    setSessions((prev) => prev.filter((session) => session.id !== deletedId));
+    setTotalCount((prev) => Math.max(0, prev - 1));
+    toast.success("운세 기록을 삭제했습니다.");
+  };
+
+  const renderSessionHeaderEnd = (session: HistoryListItem) => (
+    <SessionCardHeaderEnd>
+      <DateLabel>
+        <Calendar size={10} />
+        {formatDate(session.created_at)}
+      </DateLabel>
+      <DeleteButton
+        type="button"
+        className={HISTORY_DELETE_BTN_CLASS}
+        aria-label="운세 기록 삭제"
+        onClick={(event) => handleRequestDelete(event, session.id)}
+      >
+        <X size={HISTORY_DELETE_ICON_SIZE} strokeWidth={2} />
+      </DeleteButton>
+    </SessionCardHeaderEnd>
+  );
+
   const renderFilterChip = (cat: string) => {
     const isActive = cat === selectedCategory;
     const accentColor =
@@ -387,7 +467,17 @@ export default function HistoryPageClient({
   };
 
   return (
-    <HistoryRoot>
+    <>
+      {pendingDeleteId != null ? (
+        <HistoryDeleteConfirmModal
+          onConfirm={() => {
+            void handleConfirmDelete();
+          }}
+          onDismiss={handleDismissDelete}
+          disabled={isDeleting}
+        />
+      ) : null}
+      <HistoryRoot>
       {/* 모바일 전용: 뒤로가기 + 검색 */}
       <MobileTopBar>
         <BackButton
@@ -490,10 +580,7 @@ export default function HistoryPageClient({
                     <CategoryBadge accentColor={categoryAccent}>
                       {session.main_category} · {session.detail_category}
                     </CategoryBadge>
-                    <DateLabel>
-                      <Calendar size={10} />
-                      {formatDate(session.created_at)}
-                    </DateLabel>
+                    {renderSessionHeaderEnd(session)}
                   </SessionCardHeader>
 
                   {/* 핵심 요약 */}
@@ -572,10 +659,7 @@ export default function HistoryPageClient({
                     <CategoryBadge accentColor={categoryAccent}>
                       {session.main_category} · {session.detail_category}
                     </CategoryBadge>
-                    <DateLabel>
-                      <Calendar size={10} />
-                      {formatDate(session.created_at)}
-                    </DateLabel>
+                    {renderSessionHeaderEnd(session)}
                   </SessionCardHeader>
                   <SummaryLine>{`"${session.summary_line}"`}</SummaryLine>
                   <SessionFooter>
@@ -689,5 +773,6 @@ export default function HistoryPageClient({
         <PaginationFooterSpacer />
       </PaginationRow>
     </HistoryRoot>
+    </>
   );
 }

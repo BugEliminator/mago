@@ -84,7 +84,7 @@ export function normalizeHistorySessionsPagination(
 }
 
 /**
- * 로그인 유저 tarot_sessions 목록 페이지 조회 (최신순)
+ * 로그인 유저 tarot_sessions 목록 페이지 조회 (최신순, 소프트 삭제 제외)
  * 마이페이지 히스토리·GET /api/tarot/sessions 공용
  */
 export async function fetchTarotSessionsListPageFromDb(
@@ -113,6 +113,7 @@ export async function fetchTarotSessionsListPageFromDb(
     .from("tarot_sessions")
     .select(HISTORY_LIST_SELECT, { count: "exact" })
     .eq("user_id", userId)
+    .is("deleted_at", null)
     .order("created_at", { ascending: false })
     .range(offset, rangeEnd);
 

@@ -50,6 +50,24 @@ export type SubmitTarotSessionReviewResult =
       message: string;
     };
 
+export type SoftDeleteTarotSessionInput = {
+  readingId: string;
+  userId: string;
+};
+
+export type SoftDeleteTarotSessionErrorCode =
+  | "ENV_MISSING"
+  | "NOT_FOUND"
+  | "UPDATE_FAILED";
+
+export type SoftDeleteTarotSessionResult =
+  | { ok: true }
+  | {
+      ok: false;
+      code: SoftDeleteTarotSessionErrorCode;
+      message: string;
+    };
+
 /** public.tarot_session_cards — 세션별 카드 상세 (조회·타입 참조용) */
 export interface TarotSessionCardRow {
   id: number;
