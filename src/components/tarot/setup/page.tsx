@@ -39,6 +39,7 @@ import { useCoinStore } from "@/stores/coinStore";
 import { supabase } from "@/lib/supabase/supabaseClient";
 import { toast } from "sonner";
 import type { CardSpread } from "@/types/tarot";
+import { withTarotDevReveal } from "@/lib/tarot/devReveal";
 
 const SMOOTH_EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
@@ -61,9 +62,12 @@ function replaceStepQuery(step: SetupStep): void {
 export default function TarotSetupPage({
   initialStep,
   initialBrowse = false,
+  initialReveal = false,
 }: {
   initialStep: SetupStep;
   initialBrowse?: boolean;
+  /** 로컬 dev 전용 — 리딩에서 카드 앞면 공개 */
+  initialReveal?: boolean;
 }) {
   const router = useRouter();
   const step = useTarotSetupStore((s) => s.step);
@@ -76,9 +80,8 @@ export default function TarotSetupPage({
   const setQuestion = useTarotSetupStore((s) => s.setQuestion);
 
   const initialStepRef = useRef(initialStep);
-  initialStepRef.current = initialStep;
   const isGuestBrowseRef = useRef(initialBrowse);
-  isGuestBrowseRef.current = initialBrowse;
+  const revealRef = useRef(initialReveal);
 
   const [isFaceUp, setIsFaceUp] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
@@ -188,30 +191,30 @@ export default function TarotSetupPage({
   /** 복채 차감 성공 후 저장하고 카드 뒤집기·퇴장 뒤 리딩 페이지로 이동합니다. */
   const exitToReading = useCallback(
     (userId: string) => {
-    if (isTransitioning || isSpendingCoin) return;
+      if (isTransitioning || isSpendingCoin) return;
 
-    writeTarotReadingSetupForUser(
-      userId,
-      useTarotSetupStore.getState().formData,
-    );
-    setIsFinalConfirmOpen(false);
-    clearTimers();
-    setIsTransitioning(true);
-    setIsFaceUp(false);
+      writeTarotReadingSetupForUser(
+        userId,
+        useTarotSetupStore.getState().formData,
+      );
+      setIsFinalConfirmOpen(false);
+      clearTimers();
+      setIsTransitioning(true);
+      setIsFaceUp(false);
 
-    const leaveTimer = setTimeout(() => {
-      setIsLeaving(true);
-    }, FLIP_MS + EXIT_AFTER_FLIP_PAUSE_MS);
+      const leaveTimer = setTimeout(() => {
+        setIsLeaving(true);
+      }, FLIP_MS + EXIT_AFTER_FLIP_PAUSE_MS);
 
-    const routeTimer = setTimeout(
-      () => {
-        router.push("/tarot/reading");
-      },
-      FLIP_MS + EXIT_AFTER_FLIP_PAUSE_MS + EXIT_MS,
-    );
+      const routeTimer = setTimeout(
+        () => {
+          router.push(withTarotDevReveal("/tarot/reading", revealRef.current));
+        },
+        FLIP_MS + EXIT_AFTER_FLIP_PAUSE_MS + EXIT_MS,
+      );
 
-    timersRef.current = [leaveTimer, routeTimer];
-  },
+      timersRef.current = [leaveTimer, routeTimer];
+    },
     [clearTimers, isSpendingCoin, isTransitioning, router],
   );
 
@@ -227,13 +230,23 @@ export default function TarotSetupPage({
       error: sessionError,
     } = await supabase.auth.getSession();
 
-    if (sessionError != null || session?.access_token == null || session.user == null) {
+    if (
+      sessionError != null ||
+      session?.access_token == null ||
+      session.user == null
+    ) {
       toast.error("로그인이 필요합니다.");
       return;
     }
 
     const userId = session.user.id;
     useTarotSetupStore.getState().setOwnerUserId(userId);
+
+    /** 로컬 해석 모드 — 엽전 차감 없이 리딩 시작 */
+    if (revealRef.current) {
+      exitToReading(userId);
+      return;
+    }
 
     /** 이미 결제된 tarotSetup이 있으면 재차감 없이 리딩으로 */
     if (hasTarotReadingSetupPendingForUser(userId)) {
@@ -271,8 +284,7 @@ export default function TarotSetupPage({
     if (step === 1 && formData.cardCount === null) return;
     if (step === 2 && formData.category === null) return;
     if (step === 2 && formData.detailTag.trim().length === 0) return;
-    const step3Total =
-      formData.situation.length + formData.question.length;
+    const step3Total = formData.situation.length + formData.question.length;
     if (
       step === 3 &&
       (step3Total < MIN_STEP3_CHARS || step3Total > MAX_STEP3_TOTAL)
@@ -284,6 +296,20 @@ export default function TarotSetupPage({
         toast.error("로그인이 필요합니다.", {
           description: "카드를 뽑고 타로를 보려면 로그인해 주세요.",
         });
+        return;
+      }
+      /** 로컬 해석 모드 — 복채 모달·엽전 차감 없이 리딩으로 */
+      if (revealRef.current) {
+        void (async () => {
+          const {
+            data: { session },
+          } = await supabase.auth.getSession();
+          if (session?.user == null) {
+            toast.error("로그인이 필요합니다.");
+            return;
+          }
+          exitToReading(session.user.id);
+        })();
         return;
       }
       setIsFinalConfirmOpen(true);

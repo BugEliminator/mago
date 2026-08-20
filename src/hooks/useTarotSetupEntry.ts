@@ -13,6 +13,15 @@ import {
 import { supabase } from "@/lib/supabase/supabaseClient";
 import { useTarotSetupStore } from "@/stores/tarotSetupStore";
 import type { SetupStep } from "@/components/tarot/setup/SetupStepHeader";
+import {
+  isTarotDevRevealAllowed,
+  withTarotDevReveal,
+} from "@/lib/tarot/devReveal";
+
+export type TarotSetupEntryOptions = {
+  /** 로컬 dev 전용 — 리딩에서 카드 앞면 공개 */
+  reveal?: boolean;
+};
 
 /**
  * 타로 설정 진입
@@ -24,8 +33,12 @@ export function useTarotSetupEntry() {
   const [readingResumeOpen, setReadingResumeOpen] = useState(false);
   const [resumeOpen, setResumeOpen] = useState(false);
   const resumeStepRef = useRef<SetupStep>(1);
+  /** 이번 진입이 로컬 앞면 공개 플로우인지 */
+  const revealRef = useRef(false);
 
-  const requestTarotSetup = useCallback(() => {
+  const requestTarotSetup = useCallback((options?: TarotSetupEntryOptions) => {
+    revealRef.current = Boolean(options?.reveal) && isTarotDevRevealAllowed();
+
     void (async () => {
       const {
         data: { session },
@@ -49,7 +62,7 @@ export function useTarotSetupEntry() {
         setResumeOpen(true);
         return;
       }
-      router.push("/tarot/setup");
+      router.push(withTarotDevReveal("/tarot/setup", revealRef.current));
     })();
   }, [router]);
 
@@ -58,7 +71,9 @@ export function useTarotSetupEntry() {
     setTarotGuestBrowseActive(true);
     useTarotSetupStore.getState().resetWizard();
     useTarotSetupStore.setState({ ownerUserId: null });
-    router.push("/tarot/setup?browse=1&step=1");
+    router.push(
+      withTarotDevReveal("/tarot/setup?browse=1&step=1", revealRef.current),
+    );
   }, [router]);
 
   const handleGuestLogin = useCallback(() => {
@@ -72,7 +87,7 @@ export function useTarotSetupEntry() {
 
   const handleResumeReading = useCallback(() => {
     setReadingResumeOpen(false);
-    router.push("/tarot/reading");
+    router.push(withTarotDevReveal("/tarot/reading", revealRef.current));
   }, [router]);
 
   const handleStartFreshFromReading = useCallback(() => {
@@ -84,7 +99,7 @@ export function useTarotSetupEntry() {
         clearTarotReadingLocalDraft(session.user.id);
       }
       setReadingResumeOpen(false);
-      router.push("/tarot/setup?step=1");
+      router.push(withTarotDevReveal("/tarot/setup?step=1", revealRef.current));
     })();
   }, [router]);
 
@@ -94,13 +109,18 @@ export function useTarotSetupEntry() {
 
   const handleResume = useCallback(() => {
     setResumeOpen(false);
-    router.push(`/tarot/setup?step=${resumeStepRef.current}`);
+    router.push(
+      withTarotDevReveal(
+        `/tarot/setup?step=${resumeStepRef.current}`,
+        revealRef.current,
+      ),
+    );
   }, [router]);
 
   const handleStartFresh = useCallback(() => {
     useTarotSetupStore.getState().resetWizard();
     setResumeOpen(false);
-    router.push("/tarot/setup?step=1");
+    router.push(withTarotDevReveal("/tarot/setup?step=1", revealRef.current));
   }, [router]);
 
   const handleDismissResume = useCallback(() => {

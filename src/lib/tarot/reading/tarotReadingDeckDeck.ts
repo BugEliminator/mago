@@ -4,7 +4,34 @@ import {
   TOTAL_CARDS,
   VISIBLE_DECK_COUNT,
 } from "@/lib/tarot/reading/tarotReadingDeckConstants";
-import { getBasePose } from "@/lib/tarot/reading/tarotReadingDeckPose";
+import {
+  getBasePose,
+  poseInterpretCatalogGrid,
+} from "@/lib/tarot/reading/tarotReadingDeckPose";
+
+/** 로컬 해석용 — 정방향 0〜77 다음 역방향 0〜77, 셔플 없음 */
+export function createInterpretCatalogEntries(): DeckCardEntry[] {
+  const upright = Array.from({ length: TOTAL_CARDS }, (_, i) => ({
+    id: i,
+    isReversed: false,
+  }));
+  const reversed = Array.from({ length: TOTAL_CARDS }, (_, i) => ({
+    id: i,
+    isReversed: true,
+  }));
+  return [...upright, ...reversed];
+}
+
+/** 해석 카탈로그를 16열 그리드 포즈로 펼칩니다. */
+export function buildInterpretCatalogCards(
+  entries: readonly DeckCardEntry[],
+): ReadingCardState[] {
+  return entries.map((entry, index) => ({
+    cardId: entry.id,
+    isReversed: entry.isReversed,
+    pose: poseInterpretCatalogGrid(index),
+  }));
+}
 
 /** 하이드레이션 안정용 결정적 덱(랜덤 없음) */
 export function createDeterministicDeckEntries(): DeckCardEntry[] {
