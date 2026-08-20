@@ -1,6 +1,7 @@
 "use client";
 
-import { BookOpen } from "lucide-react";
+import { BookOpen, Share2 } from "lucide-react";
+import { toast } from "sonner";
 import { getIntentCategoryOption } from "@/components/tarot/setup/setupIntentCatalog";
 import type { TarotResultSelectionSummaryProps } from "@/types/tarotResult";
 import ResultFlowGauge from "./ResultFlowGauge";
@@ -10,17 +11,21 @@ import {
   CategoryValueWrap,
   FieldLabel,
   FieldValue,
+  HeadingRow,
   IntentTag,
   Panel,
   PanelHeading,
   QuestionBox,
   InfoRow,
   ScrollBody,
+  ShareButton,
   SituationBox,
   SummaryGaugeColumn,
   SummaryInfoStack,
   SummaryMetaRow,
 } from "./ResultSelectionSummary.style";
+
+const SHARE_BUTTON_ICON_SIZE = 14;
 
 /**
  * 결과 상단 — 사용자가 설정·입력한 운세 요약(내가 선택한 운세)
@@ -38,12 +43,28 @@ export default function ResultSelectionSummary({
   const categoryAccentColor =
     getIntentCategoryOption(categoryId)?.accentColor ?? "#d4af37";
 
+  /** 현재 결과 URL을 클립보드에 복사합니다. */
+  const handleShare = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      toast.success("링크가 복사되었습니다.");
+    } catch {
+      toast.error("링크 복사에 실패했습니다.");
+    }
+  };
+
   return (
     <Panel aria-labelledby="tarot-result-selection-heading">
-      <PanelHeading id="tarot-result-selection-heading">
-        <BookOpen size={16} aria-hidden />
-        내가 선택한 운세
-      </PanelHeading>
+      <HeadingRow>
+        <PanelHeading id="tarot-result-selection-heading">
+          <BookOpen size={16} aria-hidden />
+          내가 선택한 운세
+        </PanelHeading>
+        <ShareButton type="button" onClick={() => void handleShare()}>
+          <Share2 size={SHARE_BUTTON_ICON_SIZE} aria-hidden />
+          공유하기
+        </ShareButton>
+      </HeadingRow>
 
       <SummaryMetaRow>
         <SummaryInfoStack>

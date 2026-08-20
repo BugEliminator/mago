@@ -26,22 +26,17 @@ type ResultPageClientProps = {
   readingId: string;
 };
 
-/** useQuery — Bearer + GET API (서버 prefetch 실패 시 fallback) */
+/** useQuery — GET API (로그인 시 Bearer로 isOwner 판별) */
 async function fetchTarotReadingQueryData(
   readingId: string,
 ): Promise<TarotReadingQueryData> {
   const {
     data: { session },
-    error: sessionError,
   } = await supabase.auth.getSession();
-
-  if (sessionError != null || session?.access_token == null) {
-    throw new Error("로그인이 필요합니다.");
-  }
 
   const result = await requestFetchTarotSessionFromClient(
     readingId,
-    session.access_token,
+    session?.access_token ?? null,
   );
 
   if (!result.ok) {
@@ -90,7 +85,7 @@ export default function ResultPageClient({ readingId }: ResultPageClientProps) {
     );
   }
 
-  const { viewData, thumbSlots, review } = data;
+  const { viewData, thumbSlots, review, isOwner } = data;
 
   return (
     <ContentLayer>
@@ -125,7 +120,9 @@ export default function ResultPageClient({ readingId }: ResultPageClientProps) {
           />
         ))}
         <ResultFinalAdvice adviceText={viewData.finalAdvice} />
-        <ResultRating readingId={readingId} hasReviewed={review.hasReviewed} />
+        {isOwner ? (
+          <ResultRating readingId={readingId} hasReviewed={review.hasReviewed} />
+        ) : null}
       </ContentMax>
       <ResultScrollToTopButton />
     </ContentLayer>

@@ -12,11 +12,11 @@ export type FetchedTarotSession = {
 };
 
 /**
- * readingId + userId로 tarot_sessions / tarot_session_cards 조회 (service role + 소유자 검증)
+ * readingId로 tarot_sessions / tarot_session_cards 조회 (service role)
+ * — UUID를 아는 누구나 결과 본문을 볼 수 있습니다. 소유자 여부는 호출 측에서 판별합니다.
  */
 export async function fetchTarotSessionFromDb(
   readingId: string,
-  userId: string,
 ): Promise<FetchedTarotSession | null> {
   let admin;
   try {
@@ -31,7 +31,6 @@ export async function fetchTarotSessionFromDb(
       "id, user_id, card_count, main_category, detail_category, fortune_score, user_situation, user_question, summary_line, final_advice, has_reviewed, rating, review_content",
     )
     .eq("id", readingId)
-    .eq("user_id", userId)
     .maybeSingle();
 
   if (sessionError != null || sessionData == null) {
@@ -59,9 +58,15 @@ export async function fetchTarotSessionFromDb(
 /** DB 조회 + UI mapper — Server prefetch / GET API 공용 */
 export async function getTarotReadingQueryData(
   readingId: string,
-  userId: string,
+  viewerUserId?: string | null,
 ): Promise<TarotReadingQueryData | null> {
-  const fetched = await fetchTarotSessionFromDb(readingId, userId);
+  const fetched = await fetchTarotSessionFromDb(readingId);
   if (fetched == null) return null;
-  return mapTarotSessionDbToResultPage(fetched.session, fetched.cards);
+
+  const mapped = mapTarotSessionDbToResultPage(fetched.session, fetched.cards);
+  return {
+    ...mapped,
+    isOwner:
+      viewerUserId != null && viewerUserId === fetched.session.user_id,
+  };
 }

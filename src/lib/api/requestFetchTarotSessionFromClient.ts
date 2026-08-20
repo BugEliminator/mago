@@ -7,20 +7,23 @@ export type FetchTarotSessionClientResult =
 /**
  * 클라이언트 → GET /api/tarot/sessions/[readingId]
  * useQuery refetch 및 서버 prefetch 실패 시 fallback
+ * @param accessToken - 있으면 소유자 여부(isOwner) 판별에 사용
  */
 export async function requestFetchTarotSessionFromClient(
   readingId: string,
-  accessToken: string,
+  accessToken?: string | null,
 ): Promise<FetchTarotSessionClientResult> {
   let response: Response;
   try {
+    const headers: HeadersInit = {};
+    if (accessToken != null && accessToken.length > 0) {
+      headers.Authorization = `Bearer ${accessToken}`;
+    }
     response = await fetch(
       `/api/tarot/sessions/${encodeURIComponent(readingId)}`,
       {
         method: "GET",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
+        headers,
       },
     );
   } catch {

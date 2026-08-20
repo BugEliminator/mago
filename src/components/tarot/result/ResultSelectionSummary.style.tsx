@@ -56,15 +56,51 @@ export const SummaryGaugeColumn = styled.div`
   }
 `;
 
+/** 섹션 제목 행 — 좌측 제목, 우측 공유 */
+export const HeadingRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+`;
+
 /** 섹션 제목 행 (아이콘 + 문구) */
 export const PanelHeading = styled.h2`
   display: flex;
   align-items: center;
   gap: 0.5rem;
   margin: 0;
+  min-width: 0;
   font-size: 0.875rem;
   font-weight: ${({ theme }) => theme.typography.fontWeight.bold};
   color: ${({ theme }) => theme.colors.neutral.gray};
+`;
+
+/** 결과 링크 복사 — 제목과 비슷한 무게의 텍스트 버튼 */
+export const ShareButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-shrink: 0;
+  margin: 0;
+  padding: 0.25rem 0.125rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.8125rem;
+  font-weight: ${({ theme }) => theme.typography.fontWeight.bold};
+  color: ${({ theme }) => theme.colors.neutral.gray};
+
+  &:hover {
+    color: ${({ theme }) => theme.colors.neutral.blackLight};
+  }
+
+  &:focus-visible {
+    outline: 2px solid ${({ theme }) => theme.colors.primary.blue};
+    outline-offset: 2px;
+    border-radius: 0.25rem;
+  }
 `;
 
 /** 스크롤 가능한 본문 — 긴 텍스트 대비 */
