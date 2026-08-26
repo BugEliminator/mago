@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/supabaseServer";
 import { fetchProfileFromDb } from "@/lib/server/fetchProfileFromDb";
 import { isMobileUserAgent } from "@/lib/utils/isMobileUserAgent";
+import { userHasEmailIdentity } from "@/lib/auth/socialNickname";
 import MypageHubClient from "@/components/mypage/hub/MypageHubClient";
 
 /**
@@ -23,10 +24,18 @@ export default async function MypagePage() {
   const profile = userId != null ? await fetchProfileFromDb(userId) : null;
 
   const nickname = profile?.nickname ?? "";
-  const email = profile?.email || user?.email || "";
+  const email = profile?.email ?? "";
   const uid = profile?.uid ?? userId ?? "";
+  const emailEmptyLabel = userHasEmailIdentity(user?.identities)
+    ? "이메일 없음"
+    : "카카오 로그인";
 
   return (
-    <MypageHubClient nickname={nickname} email={email} uid={uid} />
+    <MypageHubClient
+      nickname={nickname}
+      email={email}
+      uid={uid}
+      emailEmptyLabel={emailEmptyLabel}
+    />
   );
 }

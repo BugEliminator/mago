@@ -22,6 +22,8 @@ export type ProfileForm = {
   /** 비밀번호 입력 (폼 로컬 전용, DB 저장 안 함) */
   currentPassword: string;
   newPassword: string;
+  /** profiles.referrer_code — 등록되면 수정 불가 */
+  referrerCode: string;
   /** profiles.updated_at 포맷 표시용 */
   lastSync: string;
 };
@@ -42,5 +44,6 @@ export const PROFILE_EMPTY_FORM: ProfileForm = {
   language: "ko",
   currentPassword: "",
   newPassword: "",
+  referrerCode: "",
   lastSync: "",
 };

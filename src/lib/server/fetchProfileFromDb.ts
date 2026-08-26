@@ -70,6 +70,7 @@ type ProfileRow = {
   birth_date: string | null;
   born_time: string | null;
   language: string | null;
+  referrer_code: string | null;
   updated_at: string | null;
 };
 
@@ -89,7 +90,7 @@ export async function fetchProfileFromDb(
 
   const { data, error } = await admin
     .from("profiles")
-    .select("id, nickname, email, gender, birth_date, born_time, language, updated_at")
+    .select("id, nickname, email, gender, birth_date, born_time, language, referrer_code, updated_at")
     .eq("id", userId)
     .maybeSingle();
 
@@ -119,6 +120,7 @@ export async function fetchProfileFromDb(
       : "ko",
     currentPassword: "",
     newPassword: "",
+    referrerCode: row.referrer_code ?? "",
     lastSync: formatLastSync(row.updated_at),
   };
 }
