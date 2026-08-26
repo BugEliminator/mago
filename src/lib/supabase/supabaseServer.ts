@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { cache } from "react";
+import type { User } from "@supabase/supabase-js";
 
 /**
  * Server Component / Route Handler용 Supabase 클라이언트 (쿠키 세션)
@@ -36,10 +37,10 @@ export async function createServerSupabaseClient() {
 }
 
 /**
- * 서버에서 로그인 유저 id — 없으면 null
+ * 서버에서 로그인 유저 — 없으면 null
  * layout·page 등 같은 RSC 요청 안에서 중복 getUser() 방지 (React.cache)
  */
-export const getServerAuthUserId = cache(async (): Promise<string | null> => {
+export const getServerAuthUser = cache(async (): Promise<User | null> => {
   const supabase = await createServerSupabaseClient();
   const {
     data: { user },
@@ -47,5 +48,13 @@ export const getServerAuthUserId = cache(async (): Promise<string | null> => {
   } = await supabase.auth.getUser();
 
   if (error != null || user == null) return null;
-  return user.id;
+  return user;
+});
+
+/**
+ * 서버에서 로그인 유저 id — 없으면 null
+ */
+export const getServerAuthUserId = cache(async (): Promise<string | null> => {
+  const user = await getServerAuthUser();
+  return user?.id ?? null;
 });
