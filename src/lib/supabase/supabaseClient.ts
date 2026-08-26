@@ -13,5 +13,10 @@ if (!supabaseUrl || !supabaseAnonKey) {
   );
 }
 
-/** 애플리케이션 전역 Supabase 클라이언트 */
-export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey);
+/** 애플리케이션 전역 Supabase 클라이언트 — PKCE verifier를 SameSite=Lax 쿠키에 저장 */
+export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey, {
+  cookieOptions: {
+    path: "/",
+    sameSite: "lax",
+  },
+});

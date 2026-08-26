@@ -5,7 +5,7 @@ export type CompleteSignupClientResult =
 /** 클라이언트 → POST /api/auth/complete-signup */
 export async function requestCompleteSignupFromClient(input: {
   accessToken: string;
-  email: string;
+  email?: string | null;
   nickname: string;
 }): Promise<CompleteSignupClientResult> {
   const res = await fetch("/api/auth/complete-signup", {
@@ -15,7 +15,7 @@ export async function requestCompleteSignupFromClient(input: {
       Authorization: `Bearer ${input.accessToken}`,
     },
     body: JSON.stringify({
-      email: input.email,
+      email: input.email ?? "",
       nickname: input.nickname,
     }),
   });

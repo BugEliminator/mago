@@ -28,8 +28,12 @@ import {
   isPasswordStrong,
 } from "@/lib/utils/passwordPolicy";
 import { writeProfileExtraNeverAgain } from "@/lib/auth/profileExtraPrompt";
+import { requestApplyReferrerFromClient } from "@/lib/api/requestApplyReferrerFromClient";
+import { COIN_REWARD_REFERRER } from "@/lib/coin/coinRewards";
+import { useCoinStore } from "@/stores/coinStore";
 import { useLanguageStore, type LanguageCode } from "@/stores/languageStore";
 import BannerEmailLine from "./BannerEmailLine";
+import ProfileSocialLinks from "./ProfileSocialLinks";
 import { MypageMobileFixedTopBarSpacer } from "@/components/mypage/common/mypageMobileFixedTopBar.style";
 import {
   ProfileRoot,
@@ -37,7 +41,6 @@ import {
   TitleGroup,
   ProfileTitle,
   ProfileSubtitle,
-  LastSyncBadge,
   MobileTopBar,
   BackButton,
   MobileHeaderBlock,
@@ -96,6 +99,10 @@ function ProfilePageSubtitle() {
 type ProfilePageClientProps = {
   /** 서버에서 prefetch한 프로필 데이터 — null이면 빈 폼 */
   initialProfile: ProfileForm | null;
+  /** 현재 세션에 카카오 identity가 있는지 */
+  kakaoLinked: boolean;
+  /** 이메일·비밀번호 로그인이 있는지 — 없으면 비밀번호 변경 UI 숨김 */
+  hasEmailLogin: boolean;
 };
 
 /**
@@ -104,6 +111,8 @@ type ProfilePageClientProps = {
  */
 export default function ProfilePageClient({
   initialProfile,
+  kakaoLinked,
+  hasEmailLogin,
 }: ProfilePageClientProps) {
   const router = useRouter();
   const setStoreLanguage = useLanguageStore((s) => s.setLanguage);
@@ -121,6 +130,7 @@ export default function ProfilePageClient({
   const [copied, setCopied] = useState(false);
   const [showCurrentPw, setShowCurrentPw] = useState(false);
   const [showNewPw, setShowNewPw] = useState(false);
+  const referrerLocked = committed.referrerCode.trim().length > 0;
 
   function handleField<K extends keyof ProfileForm>(
     key: K,
@@ -165,8 +175,8 @@ export default function ProfilePageClient({
       return;
     }
 
-    /** 비밀번호 변경 유효성 */
-    if (form.newPassword) {
+    /** 비밀번호 변경 유효성 — 이메일 로그인 계정만 */
+    if (hasEmailLogin && form.newPassword) {
       if (!form.currentPassword) {
         toast.error(
           "비밀번호를 변경하려면 현재 비밀번호를 먼저 입력해 주세요.",
@@ -182,7 +192,7 @@ export default function ProfilePageClient({
     setIsSaving(true);
 
     /** 비밀번호 변경 먼저 처리 */
-    if (form.newPassword && form.currentPassword) {
+    if (hasEmailLogin && form.newPassword && form.currentPassword) {
       const { error: verifyError } = await supabase.auth.signInWithPassword({
         email: form.email,
         password: form.currentPassword,
@@ -235,9 +245,8 @@ export default function ProfilePageClient({
       })
       .eq("id", user.id);
 
-    setIsSaving(false);
-
     if (updateError) {
+      setIsSaving(false);
       toast.error(`저장에 실패했습니다: ${updateError.message}`);
       return;
     }
@@ -248,6 +257,37 @@ export default function ProfilePageClient({
     /** 마이페이지 저장 완료 — 추가 정보 모달 재노출 방지 */
     writeProfileExtraNeverAgain(user.id);
 
+    let nextReferrerCode = committed.referrerCode;
+    const referrerAlreadySet = committed.referrerCode.trim().length > 0;
+    const draftReferrer = form.referrerCode.trim();
+
+    /** 미등록일 때만 추천인 코드 적용 — 잘못된 코드는 프로필 저장은 유지 */
+    if (!referrerAlreadySet && draftReferrer.length > 0) {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const accessToken = session?.access_token;
+      if (accessToken == null) {
+        toast.error("로그인 세션이 만료되었습니다. 다시 로그인해 주세요.");
+      } else {
+        const referrerResult = await requestApplyReferrerFromClient({
+          referrerCode: draftReferrer,
+          accessToken,
+        });
+        if (!referrerResult.ok) {
+          toast.error(referrerResult.error);
+        } else if (!referrerResult.applied) {
+          toast.error("추천인 마고 코드가 올바르지 않습니다.");
+        } else {
+          nextReferrerCode = draftReferrer;
+          if (referrerResult.newBalance != null) {
+            useCoinStore.getState().setBalance(referrerResult.newBalance);
+          }
+          toast.success(`추천인 등록 완료! +${COIN_REWARD_REFERRER}냥`);
+        }
+      }
+    }
+
     /** 저장 성공 — committed 갱신, 비밀번호 필드 초기화 */
     const now = new Date();
     const lastSync = `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, "0")}.${String(now.getDate()).padStart(2, "0")}`;
@@ -255,11 +295,13 @@ export default function ProfilePageClient({
       ...form,
       nickname,
       lastSync,
+      referrerCode: nextReferrerCode,
       currentPassword: "",
       newPassword: "",
     };
     setForm(saved);
     setCommitted(saved);
+    setIsSaving(false);
 
     toast.success("프로필 설정 수정 완료");
   };
@@ -282,9 +324,7 @@ export default function ProfilePageClient({
       <MobileHeaderBlock>
         <MobileTitleRow>
           <MobileTitleText>프로필 설정</MobileTitleText>
-          {committed.lastSync && (
-            <LastSyncBadge>Last Sync: {committed.lastSync}</LastSyncBadge>
-          )}
+          <ProfileSocialLinks kakaoLinked={kakaoLinked} />
         </MobileTitleRow>
         <MobileProfileSubtitle>
           <ProfilePageSubtitle />
@@ -311,7 +351,10 @@ export default function ProfilePageClient({
             <BannerNickname>
               {committed.nickname || "닉네임 없음"}
             </BannerNickname>
-            <BannerEmailLine email={form.email} />
+            <BannerEmailLine
+              email={form.email}
+              emptyLabel={hasEmailLogin ? "이메일 없음" : "카카오 로그인"}
+            />
           </BannerNameBlock>
         </BannerLeft>
 
@@ -349,9 +392,7 @@ export default function ProfilePageClient({
             <ProfilePageSubtitle />
           </ProfileSubtitle>
         </TitleGroup>
-        {committed.lastSync && (
-          <LastSyncBadge>Last Sync: {committed.lastSync}</LastSyncBadge>
-        )}
+        <ProfileSocialLinks kakaoLinked={kakaoLinked} />
       </ProfileHeaderRow>
 
       {/* 본문 폼 */}
@@ -476,6 +517,8 @@ export default function ProfilePageClient({
                 />
               </FieldGroup>
 
+              {hasEmailLogin ? (
+                <>
               {/* 현재 비밀번호 */}
               <FieldGroup>
                 <FieldLabelRow>
@@ -524,6 +567,8 @@ export default function ProfilePageClient({
                   </EyeBtn>
                 </PasswordFieldWrap>
               </FieldGroup>
+                </>
+              ) : null}
 
               {/* 서비스 환경 언어 — draft, 설정 완료 시 저장 */}
               <FieldGroup>
@@ -533,6 +578,32 @@ export default function ProfilePageClient({
                   value={form.language as LanguageCode}
                   onChange={(code) => handleField("language", code)}
                   showToast={false}
+                />
+              </FieldGroup>
+
+              {/* 추천인 마고 코드 — 계정당 1회 */}
+              <FieldGroup>
+                <FieldLabelRow>
+                  <FieldLabel>추천인 마고 코드</FieldLabel>
+                  <FieldHint>
+                    {referrerLocked
+                      ? "추천인 등록은 계정당 1회 가능합니다"
+                      : "선택 · 계정당 1회"}
+                  </FieldHint>
+                </FieldLabelRow>
+                <DarkInput
+                  type="text"
+                  placeholder="친구의 마고 코드를 입력해 주세요"
+                  autoComplete="off"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  $readOnly={referrerLocked}
+                  readOnly={referrerLocked}
+                  disabled={referrerLocked}
+                  value={form.referrerCode}
+                  onChange={(e) =>
+                    handleField("referrerCode", e.target.value)
+                  }
                 />
               </FieldGroup>
 

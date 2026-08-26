@@ -275,7 +275,7 @@ export const CopyButton = styled.button<{ $copied?: boolean }>`
 /* ────────────── 헤더 (히스토리와 동일 패턴) ────────────── */
 export const ProfileHeaderRow = styled.div`
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
   padding-bottom: 1.5rem;
   border-bottom: 1px solid #f0f0f0;
@@ -321,7 +321,7 @@ export const MobileBannerSection = styled.div`
   }
 `;
 
-/** 모바일 제목 행 — 제목 + Last Sync */
+/** 모바일 제목 행 — 제목 + 소셜 연동 */
 export const MobileTitleRow = styled.div`
   display: flex;
   align-items: center;
@@ -367,16 +367,48 @@ export const ProfileSubtitle = styled.p`
   margin: 0;
 `;
 
-export const LastSyncBadge = styled.span`
-  font-size: 0.625rem;
-  font-family: "Courier New", monospace;
-  letter-spacing: 0.02em;
-  color: #9e9e9e;
-  background: #f5f5f5;
-  border: 1px solid #e0e0e0;
-  border-radius: 0.375rem;
-  padding: 0.25rem 0.5rem;
+/** 소셜 연동 버튼 줄 — 제목 오른쪽, 구글·애플 추가 예정 */
+export const SocialLinkRow = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.375rem;
   flex-shrink: 0;
+  max-width: 60%;
+
+  ${MOBILE} {
+    max-width: 70%;
+  }
+`;
+
+export const KakaoLinkButton = styled.button<{ $linked: boolean }>`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3125rem;
+  padding: 0.375rem 0.625rem;
+  border: none;
+  border-radius: 0.375rem;
+  background: #fee500;
+  color: #191919;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: ${(props) => (props.$linked ? 0.7 : 0.5)};
+    cursor: not-allowed;
+  }
+
+  svg {
+    width: 0.875rem;
+    height: 0.875rem;
+    display: block;
+    flex-shrink: 0;
+  }
 `;
 
 /** 운세 맞춤 + 일반 계정 설정 통합 패널 */

@@ -49,6 +49,7 @@ type HubProps = {
   nickname: string;
   email: string;
   uid: string;
+  emailEmptyLabel: string;
 };
 
 type MenuItemConfig = {
@@ -98,7 +99,12 @@ const MENU_GROUPS: MenuGroupConfig[] = [
  * 모바일 마이페이지 허브 — 프로필 배너 + 메뉴 리스트
  * 데스크톱(≥641px)에서는 /mypage/history로 자동 이동
  */
-export default function MypageHubClient({ nickname, email, uid }: HubProps) {
+export default function MypageHubClient({
+  nickname,
+  email,
+  uid,
+  emailEmptyLabel,
+}: HubProps) {
   const router = useRouter();
   const [copied, setCopied] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -173,7 +179,7 @@ export default function MypageHubClient({ nickname, email, uid }: HubProps) {
 
           <BannerNameBlock>
             <HubBannerNickname>{displayName}</HubBannerNickname>
-            <BannerEmailLine email={email} />
+            <BannerEmailLine email={email} emptyLabel={emailEmptyLabel} />
           </BannerNameBlock>
         </BannerLeft>
 

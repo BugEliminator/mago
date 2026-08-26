@@ -7,7 +7,7 @@ type CompleteSignupBody = {
   nickname?: unknown;
 };
 
-/** POST /api/auth/complete-signup — OTP 완료 후 profiles + 가입 보상 생성 */
+/** POST /api/auth/complete-signup — OTP·카카오 첫 로그인 후 profiles + 가입 보상 */
 export async function POST(request: Request) {
   const accessToken = extractBearerToken(request);
   if (accessToken == null) {
@@ -62,17 +62,18 @@ export async function POST(request: Request) {
 function parseCompleteSignupBody(
   body: CompleteSignupBody,
 ):
-  | { ok: true; email: string; nickname: string }
+  | { ok: true; email: string | null; nickname: string }
   | { ok: false; message: string } {
-  if (typeof body.email !== "string" || body.email.trim().length === 0) {
-    return { ok: false, message: "email이 필요합니다." };
-  }
   if (typeof body.nickname !== "string") {
     return { ok: false, message: "nickname이 필요합니다." };
   }
+  const email =
+    typeof body.email === "string" && body.email.trim().length > 0
+      ? body.email.trim()
+      : null;
   return {
     ok: true,
-    email: body.email.trim(),
+    email,
     nickname: body.nickname.trim(),
   };
 }

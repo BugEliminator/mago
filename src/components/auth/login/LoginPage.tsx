@@ -12,6 +12,7 @@ import {
   PasswordInput,
 } from "@/components/common/input/Input";
 import AuthCardBrandLogo from "@/components/auth/AuthCardBrandLogo";
+import KakaoTalkMark from "@/components/auth/KakaoTalkMark";
 import {
   AuthPageRoot,
   AuthContentLayer,
@@ -28,6 +29,8 @@ import { supabase } from "@/lib/supabase/supabaseClient";
 import {
   AssistRow,
   ForgotLink,
+  KakaoLoginButton,
+  KakaoLogoMark,
   SocialDivider,
 } from "./LoginPage.style";
 
@@ -69,6 +72,9 @@ export default function LoginPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isKakaoSubmitting, setIsKakaoSubmitting] = useState(false);
+
+  const isBusy = isSubmitting || isKakaoSubmitting;
 
   const handleChange =
     (field: keyof typeof formData) =>
@@ -99,6 +105,25 @@ export default function LoginPage() {
     await preloadLandingDeckImages();
     router.refresh();
     router.push("/");
+  };
+
+  /** 카카오 OAuth — 동의 후 `/auth/callback`으로 복귀 */
+  const handleKakaoLogin = async () => {
+    setIsKakaoSubmitting(true);
+
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "kakao",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+        /** 카카오 앱에서 켠 동의만 요청 — 이메일·프로필 사진은 KOE205 */
+        scopes: "profile_nickname",
+      },
+    });
+
+    if (error) {
+      setIsKakaoSubmitting(false);
+      toast.error(error.message, { icon: <LoginErrorToastIcon /> });
+    }
   };
 
   const isFormValid = formData.email.trim() !== "" && formData.password !== "";
@@ -153,23 +178,29 @@ export default function LoginPage() {
 
             <SubmitButton
               type="submit"
-              disabled={!isFormValid || isSubmitting}
+              disabled={!isFormValid || isBusy}
               whileHover={
-                isFormValid && !isSubmitting ? { scale: 1.015 } : {}
+                isFormValid && !isBusy ? { scale: 1.015 } : {}
               }
-              whileTap={isFormValid && !isSubmitting ? { scale: 0.985 } : {}}
+              whileTap={isFormValid && !isBusy ? { scale: 0.985 } : {}}
             >
               {isSubmitting ? "로그인 중…" : "로그인"}
             </SubmitButton>
 
             <SocialDivider>또는</SocialDivider>
 
-            {/*
-             * TODO: 소셜 로그인 버튼 (우선순위 순)
-             * 1순위 — 카카오 로그인
-             * 2순위 — 구글 로그인
-             * 3순위 — 애플 로그인
-             */}
+            <KakaoLoginButton
+              type="button"
+              disabled={isBusy}
+              onClick={() => {
+                void handleKakaoLogin();
+              }}
+            >
+              <KakaoLogoMark aria-hidden>
+                <KakaoTalkMark />
+              </KakaoLogoMark>
+              {isKakaoSubmitting ? "카카오 연결 중…" : "카카오 로그인"}
+            </KakaoLoginButton>
           </AuthForm>
 
           <CardFooter>
