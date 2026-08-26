@@ -10,12 +10,15 @@ type AuthMobileBackHeaderProps = {
   backHref: string;
   /** 접근성 라벨 */
   backAriaLabel: string;
+  /** 있으면 기본 이동 대신 호출 (세션 정리 등) */
+  onBack?: () => void;
 };
 
 /** 인증 화면 모바일 — fixed TopBar + 뒤로가기 */
 export default function AuthMobileBackHeader({
   backHref,
   backAriaLabel,
+  onBack,
 }: AuthMobileBackHeaderProps) {
   const router = useRouter();
 
@@ -25,7 +28,13 @@ export default function AuthMobileBackHeader({
         <BackButton
           type="button"
           aria-label={backAriaLabel}
-          onClick={() => router.push(backHref)}
+          onClick={() => {
+            if (onBack != null) {
+              onBack();
+              return;
+            }
+            router.push(backHref);
+          }}
         >
           <ChevronLeft size={18} />
         </BackButton>

@@ -36,3 +36,41 @@ export const SocialDivider = styled.div`
     background: #3e465c;
   }
 `;
+
+/** 카카오 공식 버튼색 — 말풍선 로고 + "카카오 로그인" */
+export const KakaoLoginButton = styled.button`
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.9375rem;
+  margin-top: 0.125rem;
+  background: #fee500;
+  border: none;
+  border-radius: 0.75rem;
+  color: #191919;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
+/** 카카오 말풍선 로고 */
+export const KakaoLogoMark = styled.span`
+  display: inline-flex;
+  width: 1.125rem;
+  height: 1.125rem;
+  flex-shrink: 0;
+
+  svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+`;
