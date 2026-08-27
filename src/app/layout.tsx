@@ -7,8 +7,7 @@ import MagoToaster from "@/components/common/toast/MagoToaster";
 import TarotDraftAuthSync from "@/components/tarot/TarotDraftAuthSync";
 import "./globals.css";
 
-const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL ?? "https://mago-tarot.vercel.app";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://magotarot.kr";
 
 const SITE_TITLE = "MAGO - AI 기반 타로 서비스";
 const SITE_DESCRIPTION =
