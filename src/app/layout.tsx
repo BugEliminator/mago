@@ -5,9 +5,8 @@ import type { Metadata } from "next";
 import AppLayoutShell from "@/components/layout/AppLayoutShell";
 import MagoToaster from "@/components/common/toast/MagoToaster";
 import TarotDraftAuthSync from "@/components/tarot/TarotDraftAuthSync";
+import { SITE_URL } from "@/lib/seo/siteUrl";
 import "./globals.css";
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://magotarot.kr";
 
 const SITE_TITLE = "MAGO - AI 기반 타로 서비스";
 const SITE_DESCRIPTION =
@@ -25,6 +24,9 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: SITE_TITLE,
   description: SITE_DESCRIPTION,
+  alternates: {
+    canonical: SITE_URL,
+  },
   icons: {
     icon: [{ url: "/icon/favicon.svg", type: "image/svg+xml" }],
   },
