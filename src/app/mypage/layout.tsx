@@ -1,6 +1,9 @@
 import { redirect } from "next/navigation";
 import { getServerAuthUserId } from "@/lib/supabase/supabaseServer";
 import MypageLayoutShell from "@/components/mypage/layout/MypageLayoutShell";
+import { NO_INDEX_METADATA } from "@/lib/seo/noIndexMetadata";
+
+export const metadata = NO_INDEX_METADATA;
 
 /**
  * 마이페이지 레이아웃 — 비로그인 시 /login 리다이렉트
