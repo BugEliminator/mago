@@ -42,6 +42,11 @@ export const metadata: Metadata = {
     description: SITE_DESCRIPTION,
     images: [OG_IMAGE.url],
   },
+  verification: {
+    other: {
+      "naver-site-verification": "e05375299fcbb5e20c4516d5ac9239089aa09614",
+    },
+  },
 };
 
 /**
