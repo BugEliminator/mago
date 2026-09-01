@@ -1,9 +1,10 @@
 import LandingHero from "@/components/home/LandingHero";
+import HomeHowToSection from "@/components/home/HomeHowToSection";
 import DevSessionLogger from "@/components/dev/DevSessionLogger";
 import ProfileExtraPromptModal from "@/components/home/ProfileExtraPromptModal";
 
 /**
- * 메인 홈 — 히어로를 조립한다. 페이지 `<main>`은 여기서 둔다.
+ * 메인 홈 — 히어로·사용법 섹션을 조립한다.
  */
 export default function HomePage() {
   return (
@@ -11,6 +12,7 @@ export default function HomePage() {
       <DevSessionLogger />
       <main>
         <LandingHero />
+        <HomeHowToSection />
       </main>
       <ProfileExtraPromptModal />
     </>
