@@ -8,9 +8,9 @@ import TarotDraftAuthSync from "@/components/tarot/TarotDraftAuthSync";
 import { SITE_URL } from "@/lib/seo/siteUrl";
 import "./globals.css";
 
-const SITE_TITLE = "MAGO - AI 기반 타로 서비스";
+const SITE_TITLE = "MAGO | AI 타로로 오늘의 운세 보기";
 const SITE_DESCRIPTION =
-  "타로와 현대 AI 기술이 만나 탄생한 신비로운 타로 서비스";
+  "궁금한 질문을 카드로 묻고 AI가 해석합니다. 오늘의 타로부터 연애·진로 운세까지 MAGO에서 바로 보세요.";
 
 /** OG 썸네일 — public/image/og/thumbnail.png */
 const OG_IMAGE = {
