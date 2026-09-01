@@ -1,16 +1,17 @@
-import LandingHero from "@/components/landing/LandingHero";
+import LandingHero from "@/components/home/LandingHero";
 import DevSessionLogger from "@/components/dev/DevSessionLogger";
 import ProfileExtraPromptModal from "@/components/home/ProfileExtraPromptModal";
 
 /**
- * 메인 랜딩 페이지
- * — 클라이언트 인터랙션은 `LandingHero`에 위임
+ * 메인 홈 — 히어로를 조립한다. 페이지 `<main>`은 여기서 둔다.
  */
 export default function HomePage() {
   return (
     <>
       <DevSessionLogger />
-      <LandingHero />
+      <main>
+        <LandingHero />
+      </main>
       <ProfileExtraPromptModal />
     </>
   );

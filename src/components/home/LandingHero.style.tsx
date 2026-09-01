@@ -16,9 +16,9 @@ export const LandingRoot = styled.div`
 `;
 
 /**
- * 메인 콘텐츠 — 세로 스택(상단 카드 → 텍스트 → 하단 카드) 래퍼
+ * 히어로 콘텐츠 — 세로 스택(상단 카드 → 텍스트 → 하단 카드). 페이지 `<main>`은 `page.tsx`에 둔다.
  */
-export const HeroMain = styled.main`
+export const HeroMain = styled.section`
   position: relative;
   z-index: 1;
   width: 100%;
