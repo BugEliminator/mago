@@ -25,6 +25,7 @@ export const AppFixedFrame = styled.div`
   z-index: 1;
   width: 100%;
   min-width: 0;
+  overflow-x: visible;
 
   @media (min-width: ${DESKTOP_MIN_WIDTH}) {
     width: ${LAYOUT_CONTENT_MAX_WIDTH};

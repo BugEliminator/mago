@@ -23,7 +23,9 @@ export function calcLandingSpreadStepPx(
   deckCount: number,
 ): number {
   if (deckCount <= 1) return 0;
-  return Math.floor(Math.max(0, (frameWidthPx - cardWidthPx) / (deckCount - 1)));
+  return Math.floor(
+    Math.max(0, (frameWidthPx - cardWidthPx) / (deckCount - 1)),
+  );
 }
 
 /** 12장·1240px 프레임 기준 고정 스프레드 step */

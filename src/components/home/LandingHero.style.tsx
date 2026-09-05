@@ -9,7 +9,7 @@ import {
 export const LandingRoot = styled.div`
   position: relative;
   width: 100%;
-  overflow: hidden;
+  overflow: visible;
   font-family: ${({ theme }) => theme.typography.fontFamily.primary};
   color: #e2e8f0;
   z-index: 1;
@@ -27,6 +27,7 @@ export const HeroMain = styled.section`
   flex-direction: column;
   align-items: center;
   padding: 7rem ${LAYOUT_PAGE_HORIZONTAL_PADDING} 2rem;
+  overflow: visible;
 
   @media (min-width: ${DESKTOP_MIN_WIDTH}) {
     padding: 3rem 0 2.5rem;
@@ -45,6 +46,7 @@ export const HeroDeckFrame = styled.div`
   width: 100%;
   max-width: ${LAYOUT_CONTENT_MAX_WIDTH};
   margin: 0 auto;
+  overflow: visible;
 
   @media (min-width: ${DESKTOP_MIN_WIDTH}) {
     gap: 2.5rem;
@@ -105,6 +107,7 @@ export const DeckAnchor = styled.div<{ $placement: "top" | "bottom" }>`
   flex-shrink: 0;
   width: 8.125rem; /* 130px — 모바일 */
   height: 13.75rem; /* 220px */
+  overflow: visible;
 
   @media (min-width: ${DESKTOP_MIN_WIDTH}) {
     width: 9.75rem; /* 156px */
