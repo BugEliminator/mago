@@ -68,7 +68,7 @@ export const HeroCopy = styled.div<{ $visible: boolean }>`
     transform 1.5s cubic-bezier(0.4, 0, 0.2, 1);
 `;
 
-export const HeroTitle = styled.h2`
+export const HeroTitle = styled.h1`
   font-family: ${({ theme }) => theme.typography.fontFamily.primary};
   /* 모바일: 고정 1.5rem, 데스크톱: 고정 3.25rem — vw 제거로 리사이즈 뭉개짐 방지 */
   font-size: 1.5rem;

@@ -166,7 +166,7 @@ export const LogoWordmark = styled.img`
   }
 `;
 
-export const Logo = styled.h1`
+export const Logo = styled.div`
   margin: 0;
   flex-shrink: 0;
 

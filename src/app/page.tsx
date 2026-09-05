@@ -2,6 +2,7 @@ import LandingHero from "@/components/home/LandingHero";
 import HomeHowToSection from "@/components/home/HomeHowToSection";
 import HomeDifferenceSection from "@/components/home/HomeDifferenceSection";
 import HomeFaqSection from "@/components/home/HomeFaqSection";
+import HomeFaqJsonLd from "@/components/seo/HomeFaqJsonLd";
 import Footer from "@/components/layout/Footer";
 import DevSessionLogger from "@/components/dev/DevSessionLogger";
 import ProfileExtraPromptModal from "@/components/home/ProfileExtraPromptModal";
@@ -12,6 +13,7 @@ import ProfileExtraPromptModal from "@/components/home/ProfileExtraPromptModal";
 export default function HomePage() {
   return (
     <>
+      <HomeFaqJsonLd />
       <DevSessionLogger />
       <main>
         <LandingHero />

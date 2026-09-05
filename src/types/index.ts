@@ -20,6 +20,14 @@ export type {
 // 프로필 / Supabase profiles
 export type { ProfileExtraFields } from "./profile";
 
+// 홈 FAQ
+export type {
+  HomeFaqAnswer,
+  HomeFaqItem,
+  HomeFaqStructuredAnswer,
+  HomeFaqTip,
+} from "./homeFaq";
+
 // 사용자 타입 (향후 확장 가능)
 export interface User {
   id: string;
