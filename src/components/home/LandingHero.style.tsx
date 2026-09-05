@@ -9,16 +9,16 @@ import {
 export const LandingRoot = styled.div`
   position: relative;
   width: 100%;
-  overflow: hidden;
+  overflow: visible;
   font-family: ${({ theme }) => theme.typography.fontFamily.primary};
   color: #e2e8f0;
   z-index: 1;
 `;
 
 /**
- * 메인 콘텐츠 — 세로 스택(상단 카드 → 텍스트 → 하단 카드) 래퍼
+ * 히어로 콘텐츠 — 세로 스택(상단 카드 → 텍스트 → 하단 카드). 페이지 `<main>`은 `page.tsx`에 둔다.
  */
-export const HeroMain = styled.main`
+export const HeroMain = styled.section`
   position: relative;
   z-index: 1;
   width: 100%;
@@ -27,6 +27,7 @@ export const HeroMain = styled.main`
   flex-direction: column;
   align-items: center;
   padding: 7rem ${LAYOUT_PAGE_HORIZONTAL_PADDING} 2rem;
+  overflow: visible;
 
   @media (min-width: ${DESKTOP_MIN_WIDTH}) {
     padding: 3rem 0 2.5rem;
@@ -45,6 +46,7 @@ export const HeroDeckFrame = styled.div`
   width: 100%;
   max-width: ${LAYOUT_CONTENT_MAX_WIDTH};
   margin: 0 auto;
+  overflow: visible;
 
   @media (min-width: ${DESKTOP_MIN_WIDTH}) {
     gap: 2.5rem;
@@ -66,7 +68,7 @@ export const HeroCopy = styled.div<{ $visible: boolean }>`
     transform 1.5s cubic-bezier(0.4, 0, 0.2, 1);
 `;
 
-export const HeroTitle = styled.h2`
+export const HeroTitle = styled.h1`
   font-family: ${({ theme }) => theme.typography.fontFamily.primary};
   /* 모바일: 고정 1.5rem, 데스크톱: 고정 3.25rem — vw 제거로 리사이즈 뭉개짐 방지 */
   font-size: 1.5rem;
@@ -105,6 +107,7 @@ export const DeckAnchor = styled.div<{ $placement: "top" | "bottom" }>`
   flex-shrink: 0;
   width: 8.125rem; /* 130px — 모바일 */
   height: 13.75rem; /* 220px */
+  overflow: visible;
 
   @media (min-width: ${DESKTOP_MIN_WIDTH}) {
     width: 9.75rem; /* 156px */

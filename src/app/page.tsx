@@ -1,16 +1,27 @@
-import LandingHero from "@/components/landing/LandingHero";
+import LandingHero from "@/components/home/LandingHero";
+import HomeHowToSection from "@/components/home/HomeHowToSection";
+import HomeDifferenceSection from "@/components/home/HomeDifferenceSection";
+import HomeFaqSection from "@/components/home/HomeFaqSection";
+import HomeFaqJsonLd from "@/components/seo/HomeFaqJsonLd";
+import Footer from "@/components/layout/Footer";
 import DevSessionLogger from "@/components/dev/DevSessionLogger";
 import ProfileExtraPromptModal from "@/components/home/ProfileExtraPromptModal";
 
 /**
- * 메인 랜딩 페이지
- * — 클라이언트 인터랙션은 `LandingHero`에 위임
+ * 메인 홈 — 히어로·사용법·차별점·FAQ·푸터를 조립한다.
  */
 export default function HomePage() {
   return (
     <>
+      <HomeFaqJsonLd />
       <DevSessionLogger />
-      <LandingHero />
+      <main>
+        <LandingHero />
+        <HomeHowToSection />
+        <HomeDifferenceSection />
+        <HomeFaqSection />
+      </main>
+      <Footer />
       <ProfileExtraPromptModal />
     </>
   );

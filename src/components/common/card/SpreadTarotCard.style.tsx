@@ -70,7 +70,7 @@ export const CardRoot = styled.div<{
 
   box-shadow: ${({ $isSpread }) => spreadShadow($isSpread)};
   cursor: pointer;
-  overflow: hidden;
+  overflow: visible;
   transform: ${({ $isSpread, $index, $isTop, $spreadStepPx, $stackStepPx }) => {
     const step = $isSpread ? $spreadStepPx : $stackStepPx;
     const direction = $isTop ? -1 : 1;
@@ -108,6 +108,8 @@ export const CardImageFill = styled.div`
   position: relative;
   width: 100%;
   height: 100%;
+  border-radius: inherit;
+  overflow: hidden;
 `;
 
 export const CardBackImage = styled(Image)`
