@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import AppLayoutShell from "@/components/layout/AppLayoutShell";
 import MagoToaster from "@/components/common/toast/MagoToaster";
 import TarotDraftAuthSync from "@/components/tarot/TarotDraftAuthSync";
+import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
 import { SITE_URL } from "@/lib/seo/siteUrl";
 import "./globals.css";
 
@@ -82,6 +83,7 @@ export default function RootLayout({
             <MagoToaster />
           </QueryProvider>
         </EmotionRegistry>
+        <GoogleAnalytics />
       </body>
     </html>
   );
