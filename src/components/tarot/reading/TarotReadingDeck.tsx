@@ -25,6 +25,7 @@ import {
 } from "@/lib/tarot/reading/tarotReadingDeckDeck";
 import {
   INTERPRET_SPREAD_STAGE_MIN_HEIGHT_PX,
+  INTERPRET_SPREAD_STAGE_MIN_WIDTH_PX,
   SPREAD_STAGE_MIN_HEIGHT_PX,
   SPREAD_STAGE_MIN_WIDTH_PX,
   TAROT_PICK_PROMPT_TOAST_DURATION_MS,
@@ -566,6 +567,9 @@ export default function TarotReadingDeck({
   const spreadMinHeightPx = showFaces
     ? INTERPRET_SPREAD_STAGE_MIN_HEIGHT_PX
     : SPREAD_STAGE_MIN_HEIGHT_PX;
+  const spreadMinWidthPx = showFaces
+    ? INTERPRET_SPREAD_STAGE_MIN_WIDTH_PX
+    : SPREAD_STAGE_MIN_WIDTH_PX;
 
   return (
     <DeckOuter $spreadViewportFill={!isDeckMode}>
@@ -584,7 +588,7 @@ export default function TarotReadingDeck({
           aria-label="타로 카드 덱"
           $isDeckMode={true}
           $spreadMinHeightPx={spreadMinHeightPx}
-          $spreadMinWidthPx={SPREAD_STAGE_MIN_WIDTH_PX}
+          $spreadMinWidthPx={spreadMinWidthPx}
         >
           <CardsLayer $spreadLiftPx={0} $spreadLiftMotion={false}>
             {cardSlotElements}
@@ -601,7 +605,7 @@ export default function TarotReadingDeck({
                 aria-label="타로 카드 덱"
                 $isDeckMode={false}
                 $spreadMinHeightPx={spreadMinHeightPx}
-                $spreadMinWidthPx={SPREAD_STAGE_MIN_WIDTH_PX}
+                $spreadMinWidthPx={spreadMinWidthPx}
               >
                 <CardsLayer
                   $spreadLiftPx={spreadLiftPx}

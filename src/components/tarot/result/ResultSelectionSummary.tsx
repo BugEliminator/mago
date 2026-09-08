@@ -3,6 +3,7 @@
 import { BookOpen, Share2 } from "lucide-react";
 import { toast } from "sonner";
 import { getIntentCategoryOption } from "@/components/tarot/setup/setupIntentCatalog";
+import { toPublicSiteUrl } from "@/lib/seo/siteUrl";
 import type { TarotResultSelectionSummaryProps } from "@/types/tarotResult";
 import ResultFlowGauge from "./ResultFlowGauge";
 import {
@@ -43,10 +44,13 @@ export default function ResultSelectionSummary({
   const categoryAccentColor =
     getIntentCategoryOption(categoryId)?.accentColor ?? "#d4af37";
 
-  /** 현재 결과 URL을 클립보드에 복사합니다. */
+  /** 공식 사이트 결과 URL을 클립보드에 복사합니다. */
   const handleShare = async () => {
     try {
-      await navigator.clipboard.writeText(window.location.href);
+      const shareUrl = toPublicSiteUrl(
+        `${window.location.pathname}${window.location.search}${window.location.hash}`,
+      );
+      await navigator.clipboard.writeText(shareUrl);
       toast.success("링크가 복사되었습니다.");
     } catch {
       toast.error("링크 복사에 실패했습니다.");

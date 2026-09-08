@@ -1,6 +1,10 @@
 import type { CardPose } from "@/types/tarotReadingDeck";
 import {
   CARDS_PER_ROW,
+  INTERPRET_CARDS_PER_ROW,
+  INTERPRET_COL_SPACING,
+  INTERPRET_ORIGIN_X,
+  INTERPRET_SECTION_ROW_COUNT,
   INTERPRET_SPREAD_ROW_CENTER,
   SPREAD_COL_SPACING,
   SPREAD_MS_CENTER,
@@ -13,6 +17,7 @@ import {
   SPREAD_SLIDE_DURATION_MS,
   SPREAD_SLIDE_LEAD_PX,
   SPREAD_SLIDE_ROW_START_GAP_MS,
+  TOTAL_CARDS,
 } from "@/lib/tarot/reading/tarotReadingDeckConstants";
 
 export function getBasePose(indexInDeck: number): CardPose {
@@ -79,12 +84,17 @@ export function poseSpreadRowAnchors(indexFromTop: number): CardPose {
   };
 }
 
-/** 로컬 해석 카탈로그 — 16열 그리드, 애니 없이 즉시 배치 */
+/** 로컬 해석 카탈로그 — 8열, 정방향 다음 행부터 역방향 */
 export function poseInterpretCatalogGrid(index: number): CardPose {
-  const row = Math.floor(index / CARDS_PER_ROW);
-  const col = index % CARDS_PER_ROW;
+  const indexInSection = index % TOTAL_CARDS;
+  const rowInSection = Math.floor(indexInSection / INTERPRET_CARDS_PER_ROW);
+  const col = indexInSection % INTERPRET_CARDS_PER_ROW;
+  const row =
+    index >= TOTAL_CARDS
+      ? INTERPRET_SECTION_ROW_COUNT + rowInSection
+      : rowInSection;
   return {
-    x: SPREAD_ORIGIN_X + col * SPREAD_COL_SPACING,
+    x: INTERPRET_ORIGIN_X + col * INTERPRET_COL_SPACING,
     y: (row - INTERPRET_SPREAD_ROW_CENTER) * SPREAD_ROW_SPACING,
     rotateDeg: 0,
     scale: 1,

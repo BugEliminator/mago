@@ -22,7 +22,7 @@ export function createInterpretCatalogEntries(): DeckCardEntry[] {
   return [...upright, ...reversed];
 }
 
-/** 해석 카탈로그를 16열 그리드 포즈로 펼칩니다. */
+/** 해석 카탈로그를 8열로 펼칩니다. 정방향 다음 행부터 역방향입니다. */
 export function buildInterpretCatalogCards(
   entries: readonly DeckCardEntry[],
 ): ReadingCardState[] {
