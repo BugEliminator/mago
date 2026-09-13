@@ -184,13 +184,16 @@ export default function Header({
               </Logo>
             )}
 
-            {/* 데스크톱 전용 — 타로 시작하기 / (로컬) 타로 해석해주기 */}
+            {/* 데스크톱 전용 — 타로 시작하기 / 타로 백과사전 / (로컬) 타로 해석해주기 */}
             {variant === "default" ? (
               <DesktopOnly>
                 <NavLink>
                   <NavTextButton type="button" onClick={() => requestTarotSetup()}>
                     타로 시작하기
                   </NavTextButton>
+                </NavLink>
+                <NavLink>
+                  <Link href="/encyclopedia">타로 백과사전</Link>
                 </NavLink>
                 {isTarotDevRevealAllowed() ? (
                   <NavLink>
