@@ -12,6 +12,9 @@ import {
 
 type DivMotion = HTMLMotionProps<"div">;
 
+/** 기본 룬 로띠 — 이후 페이지별 다른 json을 `lottiePath`로 넘기면 됨 */
+export const DEFAULT_RUNE_LOADING_LOTTIE_PATH = "/lottie/rune-loading.json";
+
 export type FullscreenRuneLoadingOverlayProps = {
   /** 한 줄 안내 문구 */
   caption: React.ReactNode;
@@ -19,6 +22,8 @@ export type FullscreenRuneLoadingOverlayProps = {
   ariaLabel: string;
   ariaBusy?: boolean;
   zIndex?: number;
+  /** 로띠 JSON 경로 — 미지정 시 기본 룬 */
+  lottiePath?: string;
   initial?: DivMotion["initial"];
   animate?: DivMotion["animate"];
   transition?: DivMotion["transition"];
@@ -33,6 +38,7 @@ export default function FullscreenRuneLoadingOverlay({
   ariaLabel,
   ariaBusy = true,
   zIndex = 50,
+  lottiePath = DEFAULT_RUNE_LOADING_LOTTIE_PATH,
   initial,
   animate,
   transition,
@@ -54,7 +60,7 @@ export default function FullscreenRuneLoadingOverlay({
         <LottieWrap>
           <LottieTint>
             <Lottie
-              path="/lottie/rune-loading.json"
+              path={lottiePath}
               loop
               play
               style={{ width: "100%", height: "100%" }}

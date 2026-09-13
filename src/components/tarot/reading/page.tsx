@@ -14,7 +14,7 @@ import { supabase } from "@/lib/supabase/supabaseClient";
 import { TAROT_CLASSIC_BACK_IMAGE_PATH } from "@/types/tarot";
 import type { TarotSessionSetup } from "@/types/tarot";
 import { withTarotDevReveal } from "@/lib/tarot/devReveal";
-import TarotReadingBootOverlay from "./TarotReadingBootOverlay";
+import DismissibleRuneLoadingOverlay from "@/components/common/fullscreen-rune-loading-overlay/DismissibleRuneLoadingOverlay";
 import TarotReadingInterpretOverlay from "./TarotReadingInterpretOverlay";
 import TarotReadingDeck, {
   type TarotReadingCompletePayload,
@@ -232,7 +232,9 @@ export default function TarotReadingPage({
       </ReadingStretchColumn>
       {interpretOverlayVisible ? <TarotReadingInterpretOverlay /> : null}
       {bootOverlayVisible && (
-        <TarotReadingBootOverlay
+        <DismissibleRuneLoadingOverlay
+          caption="운명의 실타래를 푸는 중..."
+          ariaLabel="운명의 실타래를 푸는 중입니다. 리딩을 준비합니다."
           dismissRequested={dismissBootOverlayRequested}
           onDismissed={handleBootDismissed}
         />
