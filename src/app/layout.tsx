@@ -7,7 +7,7 @@ import MagoToaster from "@/components/common/toast/MagoToaster";
 import TarotDraftAuthSync from "@/components/tarot/TarotDraftAuthSync";
 import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
 import { SITE_URL } from "@/lib/seo/siteUrl";
-import "./globals.css";
+// import "./globals.css";
 
 const SITE_TITLE = "MAGO | AI 타로로 오늘의 운세 보기";
 const SITE_DESCRIPTION =

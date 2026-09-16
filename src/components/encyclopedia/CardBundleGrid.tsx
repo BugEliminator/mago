@@ -12,9 +12,14 @@ import {
   ENCYCLOPEDIA_BUNDLE_GRID_COLUMNS_DESKTOP,
   ENCYCLOPEDIA_BUNDLE_GRID_COLUMNS_MOBILE,
 } from "@/lib/encyclopedia/cardBundleCatalog";
-import type { EncyclopediaCardBundle } from "@/types/encyclopedia";
+import type {
+  EncyclopediaCard,
+  EncyclopediaCardBundle,
+  EncyclopediaCardId,
+} from "@/types/encyclopedia";
 import {
   CardBundleGridCardMotion,
+  CardBundleGridHit,
   CardBundleGridRoot,
   CARD_BUNDLE_GRID_GAP_DESKTOP,
   CARD_BUNDLE_GRID_GAP_MOBILE,
@@ -25,21 +30,27 @@ const GRID_EASE = [0.6, -0.05, 0.01, 0.99] as [number, number, number, number];
 
 type CardBundleGridProps = {
   bundle: EncyclopediaCardBundle;
+  onSelectCard: (cardId: EncyclopediaCardId) => void;
+  hoverSuspended?: boolean;
 };
 
 type CardBundleGridEntryProps = {
-  src: string;
+  card: EncyclopediaCard;
   col: number;
   row: number;
   gap: string;
+  hoverSuspended: boolean;
+  onSelect: () => void;
 };
 
 /** 한 장 — 펼침 애니 위에 데스크톱 틸트를 얹는다 */
 function CardBundleGridEntry({
-  src,
+  card,
   col,
   row,
   gap,
+  hoverSuspended,
+  onSelect,
 }: CardBundleGridEntryProps) {
   const [lifted, setLifted] = useState(false);
 
@@ -58,19 +69,32 @@ function CardBundleGridEntry({
         delay: row * 0.05,
       }}
     >
-      <CardTilt lifted={lifted} onLiftChange={setLifted}>
-        <TarotCardFaceFrame className={CARD_FACE_FRAME_CLASS}>
-          <TarotCardFaceImageFill>
-            <Image
-              src={src}
-              alt=""
-              fill
-              sizes="(max-width: 640px) 25vw, 140px"
-              style={{ objectFit: "cover" }}
-            />
-          </TarotCardFaceImageFill>
-        </TarotCardFaceFrame>
-      </CardTilt>
+      <CardBundleGridHit
+        type="button"
+        aria-label={`${card.name} 상세 보기`}
+        onClick={(event) => {
+          event.currentTarget.blur();
+          onSelect();
+        }}
+      >
+        <CardTilt
+          lifted={lifted}
+          hoverSuspended={hoverSuspended}
+          onLiftChange={setLifted}
+        >
+          <TarotCardFaceFrame className={CARD_FACE_FRAME_CLASS}>
+            <TarotCardFaceImageFill>
+              <Image
+                src={card.src}
+                alt={card.name}
+                fill
+                sizes="(max-width: 640px) 25vw, 140px"
+                style={{ objectFit: "cover" }}
+              />
+            </TarotCardFaceImageFill>
+          </TarotCardFaceFrame>
+        </CardTilt>
+      </CardBundleGridHit>
     </CardBundleGridCardMotion>
   );
 }
@@ -84,7 +108,11 @@ function slideFromX(col: number, gap: string): string {
 /**
  * 선택한 묶음 전체 카드 — 첫 열이 내려오고 나머지 열이 동시에 오른쪽으로 펼쳐진다.
  */
-export default function CardBundleGrid({ bundle }: CardBundleGridProps) {
+export default function CardBundleGrid({
+  bundle,
+  onSelectCard,
+  hoverSuspended = false,
+}: CardBundleGridProps) {
   const [columns, setColumns] = useState<number | null>(null);
 
   useLayoutEffect(() => {
@@ -105,7 +133,7 @@ export default function CardBundleGrid({ bundle }: CardBundleGridProps) {
     <CardBundleGridRoot aria-label={`${bundle.label} 목록`}>
       {columns == null
         ? null
-        : bundle.deckSrcs.map((src, index) => {
+        : bundle.cards.map((card, index) => {
             const col = index % columns;
             const row = Math.floor(index / columns);
             const gap =
@@ -115,11 +143,13 @@ export default function CardBundleGrid({ bundle }: CardBundleGridProps) {
 
             return (
               <CardBundleGridEntry
-                key={`${bundle.id}-${src}`}
-                src={src}
+                key={card.id}
+                card={card}
                 col={col}
                 row={row}
                 gap={gap}
+                hoverSuspended={hoverSuspended}
+                onSelect={() => onSelectCard(card.id)}
               />
             );
           })}

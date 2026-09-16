@@ -1,12 +1,25 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import NebulaBackground from "@/components/common/background/NebulaBackground";
-import { ENCYCLOPEDIA_CARD_BUNDLES } from "@/lib/encyclopedia/cardBundleCatalog";
-import type { EncyclopediaBundleId } from "@/types/encyclopedia";
+import {
+  ENCYCLOPEDIA_CARD_BUNDLES,
+  ENCYCLOPEDIA_PATH,
+  encyclopediaCardPath,
+  findEncyclopediaCard,
+  findEncyclopediaCardBySlug,
+  parseEncyclopediaCardSlugFromPath,
+} from "@/lib/encyclopedia/cardBundleCatalog";
+import type {
+  EncyclopediaBundleId,
+  EncyclopediaCardMeaningById,
+  EncyclopediaCardSlug,
+} from "@/types/encyclopedia";
 import DismissibleRuneLoadingOverlay from "@/components/common/fullscreen-rune-loading-overlay/DismissibleRuneLoadingOverlay";
 import CardBundle from "./CardBundle";
 import CardBundleGrid from "./CardBundleGrid";
+import CardDetailOverlay from "./card-detail/CardDetailOverlay";
 import {
   CardBundleRow,
   EncyclopediaMain,
@@ -23,15 +36,26 @@ const MIN_OVERLAY_MS = 1000;
 /** 네뷸라 스냅샷 실패 시 오버레이 강제 해제(ms) */
 const NEBULA_OVERLAY_FALLBACK_MS = 8000;
 
+type EncyclopediaPageProps = {
+  meanings: EncyclopediaCardMeaningById;
+};
+
 /**
  * 타로 백과사전 — 네뷸라 배경 위 카드 묶음
  */
-export default function EncyclopediaPage() {
+export default function EncyclopediaPage({ meanings }: EncyclopediaPageProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const selectedSlug = parseEncyclopediaCardSlugFromPath(pathname);
+  const selectedCard =
+    selectedSlug == null ? null : findEncyclopediaCardBySlug(selectedSlug);
+
   const [hoverCapable, setHoverCapable] = useState(false);
   const [hoveredBundleId, setHoveredBundleId] =
     useState<EncyclopediaBundleId | null>(null);
-  const [selectedBundleId, setSelectedBundleId] =
-    useState<EncyclopediaBundleId | null>(null);
+  const [manualBundleId, setManualBundleId] =
+    useState<EncyclopediaBundleId | null>(selectedCard?.bundleId ?? null);
+  const selectedBundleId = selectedCard?.bundleId ?? manualBundleId;
   const [nebulaReady, setNebulaReady] = useState(false);
   const [minOverlayElapsed, setMinOverlayElapsed] = useState(false);
   const [overlayVisible, setOverlayVisible] = useState(true);
@@ -67,10 +91,50 @@ export default function EncyclopediaPage() {
     setOverlayVisible(false);
   }, []);
 
+  const setCardPath = useCallback(
+    (slug: EncyclopediaCardSlug | null, mode: "push" | "replace") => {
+      const href = slug == null ? ENCYCLOPEDIA_PATH : encyclopediaCardPath(slug);
+      if (mode === "push") {
+        router.push(href, { scroll: false });
+        return;
+      }
+      router.replace(href, { scroll: false });
+    },
+    [router],
+  );
+
   const selectedBundle =
     ENCYCLOPEDIA_CARD_BUNDLES.find(
       (bundle) => bundle.id === selectedBundleId,
     ) ?? null;
+  const selectedCardIndex =
+    selectedBundle == null || selectedCard == null
+      ? -1
+      : selectedBundle.cards.findIndex((card) => card.id === selectedCard.id);
+  const canStepCard =
+    selectedBundle != null && selectedBundle.cards.length > 1;
+
+  const handleCloseCardDetail = useCallback(() => {
+    setCardPath(null, "replace");
+  }, [setCardPath]);
+
+  const handlePrevCard = useCallback(() => {
+    if (selectedBundle == null || selectedCardIndex < 0) return;
+    const count = selectedBundle.cards.length;
+    const prevIndex = (selectedCardIndex - 1 + count) % count;
+    const prevCard = selectedBundle.cards[prevIndex];
+    if (prevCard == null) return;
+    setCardPath(prevCard.slug, "replace");
+  }, [selectedBundle, selectedCardIndex, setCardPath]);
+
+  const handleNextCard = useCallback(() => {
+    if (selectedBundle == null || selectedCardIndex < 0) return;
+    const count = selectedBundle.cards.length;
+    const nextIndex = (selectedCardIndex + 1) % count;
+    const nextCard = selectedBundle.cards[nextIndex];
+    if (nextCard == null) return;
+    setCardPath(nextCard.slug, "replace");
+  }, [selectedBundle, selectedCardIndex, setCardPath]);
 
   return (
     <>
@@ -102,8 +166,9 @@ export default function EncyclopediaPage() {
                         setHoveredBundleId(open ? bundle.id : null);
                       }}
                       onSelect={() => {
-                        setSelectedBundleId(bundle.id);
+                        setManualBundleId(bundle.id);
                         setHoveredBundleId(null);
+                        setCardPath(null, "replace");
                       }}
                     />
                   );
@@ -114,11 +179,27 @@ export default function EncyclopediaPage() {
               <CardBundleGrid
                 key={selectedBundle.id}
                 bundle={selectedBundle}
+                hoverSuspended={selectedCard != null}
+                onSelectCard={(cardId) => {
+                  const card = findEncyclopediaCard(cardId);
+                  if (card == null) return;
+                  setManualBundleId(card.bundleId);
+                  setCardPath(card.slug, "push");
+                }}
               />
             ) : null}
           </EncyclopediaPanel>
         </EncyclopediaMain>
       </EncyclopediaRoot>
+      {selectedCard != null ? (
+        <CardDetailOverlay
+          card={selectedCard}
+          meaning={meanings[selectedCard.id] ?? null}
+          onClose={handleCloseCardDetail}
+          onPrev={canStepCard ? handlePrevCard : undefined}
+          onNext={canStepCard ? handleNextCard : undefined}
+        />
+      ) : null}
       {overlayVisible ? (
         <DismissibleRuneLoadingOverlay
           portal

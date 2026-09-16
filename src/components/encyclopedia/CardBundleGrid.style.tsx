@@ -60,12 +60,35 @@ export const CardBundleGridCardMotion = styled(motion.div)<{ $lifted?: boolean }
   position: relative;
   z-index: ${({ $lifted }) => ($lifted ? 3 : 1)};
   width: 100%;
+  min-width: 0;
   aspect-ratio: 170 / 287;
   overflow: visible;
 
   .${CARD_FACE_FRAME_CLASS} {
     border-color: ${({ $lifted }) =>
       $lifted ? CARD_BORDER_HOVER : undefined};
+  }
+`;
+
+/** 펼침 애니와 분리된 클릭 영역 */
+export const CardBundleGridHit = styled.button`
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  appearance: none;
+  font: inherit;
+  color: inherit;
+  outline: none;
+
+  &:focus,
+  &:focus-visible {
+    outline: none;
   }
 `;
 
@@ -77,7 +100,10 @@ export const CardTiltScene = styled.div`
 `;
 
 /** 크림 테두리까지 같이 기울도록 안쪽에 카드 외형을 둔다 */
-export const CardTiltInner = styled(motion.div)<{ $lifted?: boolean }>`
+export const CardTiltInner = styled(motion.div)<{
+  $lifted?: boolean;
+  $glow?: boolean;
+}>`
   width: 100%;
   height: 100%;
   transform-style: preserve-3d;
@@ -85,9 +111,10 @@ export const CardTiltInner = styled(motion.div)<{ $lifted?: boolean }>`
   overflow: visible;
   ${tarotCardFaceOuterCss}
   padding: 0.1875rem;
-  box-shadow: ${({ theme, $lifted }) =>
-    $lifted ? GRID_CARD_HOVER_GLOW : theme.shadows.md};
-  filter: ${({ $lifted }) => ($lifted ? "brightness(1.05)" : "none")};
+  box-shadow: ${({ theme, $lifted, $glow }) =>
+    $glow !== false && $lifted ? GRID_CARD_HOVER_GLOW : theme.shadows.md};
+  filter: ${({ $lifted, $glow }) =>
+    $glow !== false && $lifted ? "brightness(1.05)" : "none"};
   transition: box-shadow 0.32s ease, filter 0.32s ease;
 
   @media (min-width: ${DESKTOP_MIN_WIDTH}) {

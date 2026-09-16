@@ -54,7 +54,8 @@ export default function CardBundle({
   onHoverChange,
   onSelect,
 }: CardBundleProps) {
-  const count = bundle.cardSrcs.length;
+  const previewCards = bundle.cards.slice(0, 3);
+  const count = previewCards.length;
 
   return (
     <CardBundleRoot
@@ -72,11 +73,11 @@ export default function CardBundle({
     >
       <CardBundleLabel>{bundle.label}</CardBundleLabel>
       <CardBundleStage $expanded={expanded}>
-        {bundle.cardSrcs.map((src, index) => {
+        {previewCards.map((card, index) => {
           const pose = getFanPose(index, count, expanded);
           return (
             <CardBundleCardMotion
-              key={src}
+              key={card.id}
               style={{ zIndex: index + 1, originX: 0.5, originY: 1 }}
               initial={false}
               animate={{ x: pose.x, rotate: pose.rotate }}
@@ -85,7 +86,7 @@ export default function CardBundle({
               <TarotCardFaceFrame className={CARD_FACE_FRAME_CLASS}>
                 <TarotCardFaceImageFill>
                   <Image
-                    src={src}
+                    src={card.src}
                     alt=""
                     fill
                     sizes={CARD_SIZES}
