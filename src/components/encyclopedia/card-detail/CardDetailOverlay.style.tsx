@@ -1,6 +1,9 @@
 import styled from "@emotion/styled";
 import { motion } from "framer-motion";
-import { DESKTOP_MIN_WIDTH } from "@/lib/layout/layout";
+import {
+  DESKTOP_MIN_WIDTH,
+  LAYOUT_CONTENT_MAX_WIDTH,
+} from "@/lib/layout/layout";
 
 /** 헤더·하단탭(100) 위, 룬 로딩(200) 아래 */
 export const CARD_DETAIL_OVERLAY_Z = 160;
@@ -9,16 +12,24 @@ export const CardDetailLayer = styled(motion.div)`
   position: fixed;
   inset: 0;
   z-index: ${CARD_DETAIL_OVERLAY_Z};
+  overflow-x: hidden;
+  overflow-y: hidden;
+  background: rgb(3 4 7 / 90%);
+
+  @media (min-width: ${DESKTOP_MIN_WIDTH}) {
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+  }
 `;
 
 export const CardDetailBackdrop = styled.button`
-  position: absolute;
+  position: fixed;
   inset: 0;
   margin: 0;
   padding: 0;
   border: none;
-  background: #030407;
-  opacity: 0.9;
+  background: transparent;
   cursor: pointer;
 `;
 
@@ -28,6 +39,12 @@ export const CardDetailStage = styled.div`
   width: 100%;
   height: 100%;
   overflow: hidden;
+
+  @media (min-width: ${DESKTOP_MIN_WIDTH}) {
+    width: ${LAYOUT_CONTENT_MAX_WIDTH};
+    min-width: ${LAYOUT_CONTENT_MAX_WIDTH};
+    margin: 0 auto;
+  }
 `;
 
 const CARD_DETAIL_CHROME_PAD_TOP_DESKTOP = "4.5rem";
@@ -236,6 +253,7 @@ export const CardDetailFigureNavSlot = styled.div`
 `;
 
 export const CardDetailFigureRoot = styled.div`
+  position: relative;
   flex: 0 0 auto;
   width: 100%;
   aspect-ratio: 170 / 287;
@@ -243,6 +261,9 @@ export const CardDetailFigureRoot = styled.div`
   z-index: 1;
 
   @media (min-width: ${DESKTOP_MIN_WIDTH}) {
+    position: sticky;
+    top: 2rem;
+    align-self: flex-start;
     width: 16.5rem;
   }
 `;
@@ -260,6 +281,10 @@ export const CardDetailCopyRoot = styled.div`
 `;
 
 export const CardDetailCopyTitle = styled.h2`
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem;
   margin: 0 0 1.25rem;
   font-size: 1.25rem;
   font-weight: ${({ theme }) => theme.typography.fontWeight.bold};
@@ -270,6 +295,14 @@ export const CardDetailCopyTitle = styled.h2`
   @media (min-width: ${DESKTOP_MIN_WIDTH}) {
     font-size: 1.5rem;
   }
+`;
+
+export const CardDetailCopyTitleEnglish = styled.span`
+  letter-spacing: 0.025em;
+`;
+
+export const CardDetailCopyTitleSeparator = styled.span`
+  color: ${({ theme }) => theme.colors.accent.gold};
 `;
 
 export const CardDetailSection = styled.section`
@@ -322,9 +355,10 @@ export const CardDetailPinLayer = styled.div`
   pointer-events: none;
 `;
 
-export const CardDetailPin = styled.span<{
+export const CardDetailPin = styled.button<{
   $x: number;
   $y: number;
+  $active: boolean;
 }>`
   position: absolute;
   left: ${({ $x }) => `${$x}%`};
@@ -335,14 +369,31 @@ export const CardDetailPin = styled.span<{
   justify-content: center;
   width: 1.125rem;
   height: 1.125rem;
+  margin: 0;
+  padding: 0;
   transform: translate(-50%, -50%);
   border: 1.5px solid #eab865;
   border-radius: 999px;
-  background: #030407;
-  color: #eab865;
+  background: ${({ $active }) => ($active ? "#eab865" : "#030407")};
+  color: ${({ $active }) => ($active ? "#030407" : "#eab865")};
   font-size: 0.625rem;
   font-weight: ${({ theme }) => theme.typography.fontWeight.bold};
   line-height: 1;
+  cursor: pointer;
+  pointer-events: auto;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
+
+  &:hover {
+    transform: translate(-50%, -50%) scale(1.14);
+  }
+
+  &:focus-visible {
+    outline: 2px solid ${({ theme }) => theme.colors.neutral.white};
+    outline-offset: 2px;
+  }
 `;
 
 export const CardDetailPinList = styled.ol`
@@ -356,13 +407,18 @@ export const CardDetailPinList = styled.ol`
 
 export const CardDetailPinItem = styled.li`
   color: ${({ theme }) => theme.colors.neutral.silver};
+
+  &:focus {
+    outline: none;
+  }
 `;
 
-export const CardDetailPinHeading = styled.h3`
+export const CardDetailPinHeading = styled.h3<{ $active: boolean }>`
   margin: 0 0 0.375rem;
   font-size: 1rem;
   font-weight: ${({ theme }) => theme.typography.fontWeight.bold};
   line-height: 1.4;
-  color: inherit;
+  color: ${({ $active }) => ($active ? "#eab865" : "inherit")};
   word-break: keep-all;
+  transition: color 180ms ease;
 `;

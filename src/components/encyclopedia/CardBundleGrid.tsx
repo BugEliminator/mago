@@ -11,11 +11,11 @@ import { DESKTOP_MIN_PX } from "@/lib/layout/layout";
 import {
   ENCYCLOPEDIA_BUNDLE_GRID_COLUMNS_DESKTOP,
   ENCYCLOPEDIA_BUNDLE_GRID_COLUMNS_MOBILE,
+  encyclopediaCardPath,
 } from "@/lib/encyclopedia/cardBundleCatalog";
 import type {
   EncyclopediaCard,
   EncyclopediaCardBundle,
-  EncyclopediaCardId,
 } from "@/types/encyclopedia";
 import {
   CardBundleGridCardMotion,
@@ -30,7 +30,6 @@ const GRID_EASE = [0.6, -0.05, 0.01, 0.99] as [number, number, number, number];
 
 type CardBundleGridProps = {
   bundle: EncyclopediaCardBundle;
-  onSelectCard: (cardId: EncyclopediaCardId) => void;
   hoverSuspended?: boolean;
 };
 
@@ -40,7 +39,6 @@ type CardBundleGridEntryProps = {
   row: number;
   gap: string;
   hoverSuspended: boolean;
-  onSelect: () => void;
 };
 
 /** 한 장 — 펼침 애니 위에 데스크톱 틸트를 얹는다 */
@@ -50,7 +48,6 @@ function CardBundleGridEntry({
   row,
   gap,
   hoverSuspended,
-  onSelect,
 }: CardBundleGridEntryProps) {
   const [lifted, setLifted] = useState(false);
 
@@ -70,12 +67,9 @@ function CardBundleGridEntry({
       }}
     >
       <CardBundleGridHit
-        type="button"
+        href={encyclopediaCardPath(card.slug)}
+        scroll={false}
         aria-label={`${card.name} 상세 보기`}
-        onClick={(event) => {
-          event.currentTarget.blur();
-          onSelect();
-        }}
       >
         <CardTilt
           lifted={lifted}
@@ -110,7 +104,6 @@ function slideFromX(col: number, gap: string): string {
  */
 export default function CardBundleGrid({
   bundle,
-  onSelectCard,
   hoverSuspended = false,
 }: CardBundleGridProps) {
   const [columns, setColumns] = useState<number | null>(null);
@@ -149,7 +142,6 @@ export default function CardBundleGrid({
                 row={row}
                 gap={gap}
                 hoverSuspended={hoverSuspended}
-                onSelect={() => onSelectCard(card.id)}
               />
             );
           })}

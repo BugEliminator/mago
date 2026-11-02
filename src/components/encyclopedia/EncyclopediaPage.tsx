@@ -7,13 +7,13 @@ import {
   ENCYCLOPEDIA_CARD_BUNDLES,
   ENCYCLOPEDIA_PATH,
   encyclopediaCardPath,
-  findEncyclopediaCard,
   findEncyclopediaCardBySlug,
   parseEncyclopediaCardSlugFromPath,
 } from "@/lib/encyclopedia/cardBundleCatalog";
 import type {
   EncyclopediaBundleId,
   EncyclopediaCardMeaningById,
+  EncyclopediaCardSpotCopyById,
   EncyclopediaCardSlug,
 } from "@/types/encyclopedia";
 import DismissibleRuneLoadingOverlay from "@/components/common/fullscreen-rune-loading-overlay/DismissibleRuneLoadingOverlay";
@@ -23,11 +23,9 @@ import CardDetailOverlay from "./card-detail/CardDetailOverlay";
 import {
   CardBundleRow,
   EncyclopediaMain,
+  EncyclopediaPageTitle,
   EncyclopediaPanel,
-  EncyclopediaPanelHeader,
   EncyclopediaPanelInset,
-  EncyclopediaPanelSubtitle,
-  EncyclopediaPanelTitle,
   EncyclopediaRoot,
 } from "./EncyclopediaPage.style";
 
@@ -38,12 +36,16 @@ const NEBULA_OVERLAY_FALLBACK_MS = 8000;
 
 type EncyclopediaPageProps = {
   meanings: EncyclopediaCardMeaningById;
+  spotCopies: EncyclopediaCardSpotCopyById;
 };
 
 /**
  * 타로 백과사전 — 네뷸라 배경 위 카드 묶음
  */
-export default function EncyclopediaPage({ meanings }: EncyclopediaPageProps) {
+export default function EncyclopediaPage({
+  meanings,
+  spotCopies,
+}: EncyclopediaPageProps) {
   const router = useRouter();
   const pathname = usePathname();
   const selectedSlug = parseEncyclopediaCardSlugFromPath(pathname);
@@ -143,15 +145,9 @@ export default function EncyclopediaPage({ meanings }: EncyclopediaPageProps) {
         <EncyclopediaMain>
           <EncyclopediaPanel>
             <EncyclopediaPanelInset>
-              <EncyclopediaPanelHeader>
-                <EncyclopediaPanelTitle>
-                  알고 싶은 카드 묶음을 선택해주세요
-                </EncyclopediaPanelTitle>
-                <EncyclopediaPanelSubtitle>
-                  78장 카드의 깊은 상징부터 정·역방향 해설까지 한눈에
-                  확인해보세요.
-                </EncyclopediaPanelSubtitle>
-              </EncyclopediaPanelHeader>
+              <EncyclopediaPageTitle>
+                78장 타로 카드 백과사전
+              </EncyclopediaPageTitle>
               <CardBundleRow>
                 {ENCYCLOPEDIA_CARD_BUNDLES.map((bundle) => {
                   const selected = selectedBundleId === bundle.id;
@@ -180,12 +176,6 @@ export default function EncyclopediaPage({ meanings }: EncyclopediaPageProps) {
                 key={selectedBundle.id}
                 bundle={selectedBundle}
                 hoverSuspended={selectedCard != null}
-                onSelectCard={(cardId) => {
-                  const card = findEncyclopediaCard(cardId);
-                  if (card == null) return;
-                  setManualBundleId(card.bundleId);
-                  setCardPath(card.slug, "push");
-                }}
               />
             ) : null}
           </EncyclopediaPanel>
@@ -195,6 +185,7 @@ export default function EncyclopediaPage({ meanings }: EncyclopediaPageProps) {
         <CardDetailOverlay
           card={selectedCard}
           meaning={meanings[selectedCard.id] ?? null}
+          spotCopies={spotCopies}
           onClose={handleCloseCardDetail}
           onPrev={canStepCard ? handlePrevCard : undefined}
           onNext={canStepCard ? handleNextCard : undefined}

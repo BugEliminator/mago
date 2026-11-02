@@ -9,7 +9,7 @@ import {
 } from "@/components/common/card/TarotCardFaceShell.style";
 import type {
   EncyclopediaCard,
-  EncyclopediaCardPin,
+  EncyclopediaCardSpot,
 } from "@/types/encyclopedia";
 import CardTilt from "../CardTilt";
 import {
@@ -20,13 +20,17 @@ import {
 
 type CardDetailFigureProps = {
   card: EncyclopediaCard;
-  pins: readonly EncyclopediaCardPin[];
+  spots: readonly EncyclopediaCardSpot[];
+  activeSpotOrder: number | null;
+  onSpotSelect: (spotOrder: number) => void;
 };
 
 /** 상세 오버레이 왼쪽 — 고른 카드 앞면 + 키워드 점 */
 export default function CardDetailFigure({
   card,
-  pins,
+  spots,
+  activeSpotOrder,
+  onSpotSelect,
 }: CardDetailFigureProps) {
   const [lifted, setLifted] = useState(false);
 
@@ -37,18 +41,33 @@ export default function CardDetailFigure({
           <TarotCardFaceImageFill>
             <Image
               src={card.src}
-              alt={card.name}
+              alt={`${card.name} (${card.englishName}) 타로 카드`}
               fill
               sizes="(max-width: 640px) 72vw, 264px"
               style={{ objectFit: "cover" }}
             />
-            {pins.length > 0 ? (
+            {spots.length > 0 ? (
               <CardDetailPinLayer>
-                {pins.map((pin, index) => (
-                  <CardDetailPin key={pin.id} $x={pin.x} $y={pin.y}>
-                    {index + 1}
-                  </CardDetailPin>
-                ))}
+                {spots.flatMap((spot) =>
+                  spot.positions.map((position, positionIndex) => (
+                    <CardDetailPin
+                      key={`${spot.spotOrder}-${positionIndex}`}
+                      type="button"
+                      aria-label={`Point ${spot.spotOrder}: ${spot.title}`}
+                      aria-current={
+                        activeSpotOrder === spot.spotOrder ? "true" : undefined
+                      }
+                      $x={position.x}
+                      $y={position.y}
+                      $active={activeSpotOrder === spot.spotOrder}
+                      onClick={() => {
+                        onSpotSelect(spot.spotOrder);
+                      }}
+                    >
+                      {spot.spotOrder}
+                    </CardDetailPin>
+                  )),
+                )}
               </CardDetailPinLayer>
             ) : null}
           </TarotCardFaceImageFill>

@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import EncyclopediaPage from "@/components/encyclopedia/EncyclopediaPage";
 import { fetchEncyclopediaCardMeaningsFromDb } from "@/lib/server/fetchEncyclopediaCardMeaningsFromDb";
+import { fetchEncyclopediaCardSpotsFromDb } from "@/lib/server/fetchEncyclopediaCardSpotsFromDb";
 
 type EncyclopediaLayoutProps = {
   children: ReactNode;
@@ -12,12 +13,15 @@ type EncyclopediaLayoutProps = {
 export default async function EncyclopediaLayout({
   children,
 }: EncyclopediaLayoutProps) {
-  const meanings = await fetchEncyclopediaCardMeaningsFromDb();
+  const [meanings, spotCopies] = await Promise.all([
+    fetchEncyclopediaCardMeaningsFromDb(),
+    fetchEncyclopediaCardSpotsFromDb(),
+  ]);
 
   return (
     <>
       {children}
-      <EncyclopediaPage meanings={meanings} />
+      <EncyclopediaPage meanings={meanings} spotCopies={spotCopies} />
     </>
   );
 }

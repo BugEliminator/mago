@@ -1,13 +1,20 @@
 "use client";
 
-import { useCallback, useEffect, useLayoutEffect, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { createPortal } from "react-dom";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
-import { findEncyclopediaCardDetail } from "@/lib/encyclopedia/cardDetailCatalog";
+import { resolveEncyclopediaCardSpots } from "@/lib/encyclopedia/cardSpotCatalog";
 import type {
   EncyclopediaCard,
   EncyclopediaCardMeaning,
-  EncyclopediaCardPin,
+  EncyclopediaCardSpot,
+  EncyclopediaCardSpotCopyById,
 } from "@/types/encyclopedia";
 import CardDetailCopy from "./CardDetailCopy";
 import CardDetailFigure from "./CardDetailFigure";
@@ -32,6 +39,7 @@ const SLIDE_DURATION = 0.4;
 /** 하스스톤처럼 짧게만 민다. 화면 전체(100%)가 아니라 약 1/4 */
 const SLIDE_OFFSET = "25%";
 const ICON_STROKE = 1.75;
+const SPOT_HIGHLIGHT_MS = 800;
 
 const slideTransition = { duration: SLIDE_DURATION, ease: SLIDE_EASE };
 
@@ -47,7 +55,7 @@ type LeavingPack = CardPack & {
 type SlideViewProps = {
   card: EncyclopediaCard;
   meaning: EncyclopediaCardMeaning | null;
-  pins: readonly EncyclopediaCardPin[];
+  spots: readonly EncyclopediaCardSpot[];
   x: string | number;
   opacity: number;
   zIndex: number;
@@ -80,7 +88,7 @@ function NavArrow({ side }: { side: "prev" | "next" }) {
 function SlideView({
   card,
   meaning,
-  pins,
+  spots,
   x,
   opacity,
   zIndex,
@@ -90,6 +98,34 @@ function SlideView({
   onNext,
   showFigureNav = false,
 }: SlideViewProps) {
+  const [activeSpotOrder, setActiveSpotOrder] = useState<number | null>(null);
+  const spotItemRefs = useRef(new Map<number, HTMLLIElement>());
+  const highlightTimerRef = useRef<number | null>(null);
+
+  const handleSpotSelect = useCallback((spotOrder: number) => {
+    if (highlightTimerRef.current != null) {
+      window.clearTimeout(highlightTimerRef.current);
+    }
+    setActiveSpotOrder(spotOrder);
+    const item = spotItemRefs.current.get(spotOrder);
+    item?.scrollIntoView({ behavior: "smooth", block: "center" });
+    item?.focus({ preventScroll: true });
+    highlightTimerRef.current = window.setTimeout(() => {
+      setActiveSpotOrder((current) =>
+        current === spotOrder ? null : current,
+      );
+      highlightTimerRef.current = null;
+    }, SPOT_HIGHLIGHT_MS);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (highlightTimerRef.current != null) {
+        window.clearTimeout(highlightTimerRef.current);
+      }
+    };
+  }, []);
+
   return (
     <CardDetailSlide
       initial={
@@ -122,7 +158,12 @@ function SlideView({
           ) : (
             <CardDetailFigureNavSlot />
           )}
-          <CardDetailFigure card={card} pins={pins} />
+          <CardDetailFigure
+            card={card}
+            spots={spots}
+            activeSpotOrder={activeSpotOrder}
+            onSpotSelect={handleSpotSelect}
+          />
           {showFigureNav && onNext != null ? (
             <CardDetailNav
               type="button"
@@ -137,7 +178,19 @@ function SlideView({
             <CardDetailFigureNavSlot />
           )}
         </CardDetailFigureRow>
-        <CardDetailCopy card={card} meaning={meaning} pins={pins} />
+        <CardDetailCopy
+          card={card}
+          meaning={meaning}
+          spots={spots}
+          activeSpotOrder={activeSpotOrder}
+          onSpotItemRef={(spotOrder, node) => {
+            if (node == null) {
+              spotItemRefs.current.delete(spotOrder);
+              return;
+            }
+            spotItemRefs.current.set(spotOrder, node);
+          }}
+        />
       </CardDetailCluster>
     </CardDetailSlide>
   );
@@ -146,6 +199,7 @@ function SlideView({
 type CardDetailOverlayProps = {
   card: EncyclopediaCard;
   meaning: EncyclopediaCardMeaning | null;
+  spotCopies: EncyclopediaCardSpotCopyById;
   onClose: () => void;
   onPrev?: () => void;
   onNext?: () => void;
@@ -158,6 +212,7 @@ type CardDetailOverlayProps = {
 export default function CardDetailOverlay({
   card,
   meaning,
+  spotCopies,
   onClose,
   onPrev,
   onNext,
@@ -174,11 +229,11 @@ export default function CardDetailOverlay({
     setPack({ card, meaning });
   }
 
-  const shownPins = findEncyclopediaCardDetail(pack.card.id)?.pins ?? [];
-  const leavingPins =
+  const shownSpots = resolveEncyclopediaCardSpots(pack.card.id, spotCopies);
+  const leavingSpots =
     leaving == null
       ? []
-      : (findEncyclopediaCardDetail(leaving.card.id)?.pins ?? []);
+      : resolveEncyclopediaCardSpots(leaving.card.id, spotCopies);
 
   const handlePrev = useCallback(() => {
     setDirection(-1);
@@ -237,7 +292,7 @@ export default function CardDetailOverlay({
       <CardDetailStage
         role="dialog"
         aria-modal="true"
-        aria-label={`${pack.card.name} 상세`}
+        aria-label={`${pack.card.englishName} | ${pack.card.name} 상세`}
       >
         <CardDetailChrome>
           {onPrev != null ? (
@@ -257,7 +312,7 @@ export default function CardDetailOverlay({
                 key={leaving.card.id}
                 card={leaving.card}
                 meaning={leaving.meaning}
-                pins={leavingPins}
+                spots={leavingSpots}
                 x={leaveX(leaving.direction)}
                 opacity={0}
                 zIndex={2}
@@ -270,7 +325,7 @@ export default function CardDetailOverlay({
               key={pack.card.id}
               card={pack.card}
               meaning={pack.meaning}
-              pins={shownPins}
+              spots={shownSpots}
               x={0}
               opacity={1}
               zIndex={1}

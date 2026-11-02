@@ -1,5 +1,6 @@
 import styled from "@emotion/styled";
 import { motion } from "framer-motion";
+import Link from "next/link";
 import {
   CARD_BORDER_HOVER,
   CARD_FACE_FRAME_CLASS,
@@ -71,7 +72,7 @@ export const CardBundleGridCardMotion = styled(motion.div)<{ $lifted?: boolean }
 `;
 
 /** 펼침 애니와 분리된 클릭 영역 */
-export const CardBundleGridHit = styled.button`
+export const CardBundleGridHit = styled(Link)`
   display: block;
   width: 100%;
   height: 100%;
@@ -81,14 +82,15 @@ export const CardBundleGridHit = styled.button`
   border: none;
   background: transparent;
   cursor: pointer;
-  appearance: none;
   font: inherit;
   color: inherit;
+  text-decoration: none;
   outline: none;
 
-  &:focus,
   &:focus-visible {
-    outline: none;
+    outline: 2px solid ${({ theme }) => theme.colors.accent.gold};
+    outline-offset: 0.375rem;
+    border-radius: 0.75rem;
   }
 `;
 

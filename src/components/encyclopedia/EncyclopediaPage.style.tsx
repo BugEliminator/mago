@@ -6,56 +6,17 @@ import {
 } from "@/lib/layout/layout";
 import { HEADER_BAR_HEIGHT_MOBILE } from "@/components/layout/Header.style";
 
-/** 패널 상단 타이틀·서브타이틀 */
-export const EncyclopediaPanelHeader = styled.header`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 0.5rem;
-  margin: 0 0 1.25rem;
-  padding: 0 0.25rem;
-
-  @media (min-width: ${DESKTOP_MIN_WIDTH}) {
-    margin: 0 0 1.75rem;
-    gap: 0.625rem;
-  }
-`;
-
-export const EncyclopediaPanelTitle = styled.h1`
-  margin: 0;
-  font-size: 1.25rem;
-  font-weight: ${({ theme }) => theme.typography.fontWeight.bold};
-  line-height: 1.4;
-  word-break: keep-all;
-  color: transparent;
-  background-image: linear-gradient(
-    90deg,
-    #fde047 0%,
-    #d4af37 45%,
-    #b45309 100%
-  );
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-
-  @media (min-width: ${DESKTOP_MIN_WIDTH}) {
-    font-size: 1.5rem;
-  }
-`;
-
-export const EncyclopediaPanelSubtitle = styled.p`
-  margin: 0;
-  max-width: 36rem;
-  font-size: 0.875rem;
-  font-weight: ${({ theme }) => theme.typography.fontWeight.medium};
-  line-height: 1.6;
-  color: ${({ theme }) => theme.colors.neutral.silver};
-  word-break: keep-all;
-
-  @media (min-width: ${DESKTOP_MIN_WIDTH}) {
-    font-size: 1rem;
-  }
+/** 목록 페이지 문서 제목 — 화면 디자인에는 노출하지 않고 접근성 트리에만 남긴다 */
+export const EncyclopediaPageTitle = styled.h1`
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 `;
 
 /** 네뷸라 위 본문 레이어 */
