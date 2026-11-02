@@ -5,9 +5,7 @@ import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import type { User } from "@supabase/supabase-js";
 import { BookOpenText, CircleUserRound, Home } from "lucide-react";
-import { toast } from "sonner";
 import { supabase } from "@/lib/supabase/supabaseClient";
-import { TarotCardToastIcon } from "@/components/common/toast/ToastIcons";
 import { useTarotSetupEntry } from "@/hooks/useTarotSetupEntry";
 import TarotDraftResumeModal from "@/components/tarot/TarotDraftResumeModal";
 import TarotReadingResumeModal from "@/components/tarot/TarotReadingResumeModal";
@@ -51,8 +49,8 @@ const BOTTOM_NAV_ITEMS: BottomNavItemConfig[] = [
       pathname.startsWith("/tarot/reading"),
   },
   {
-    id: "tarot-history",
-    label: "도감",
+    id: "encyclopedia",
+    label: "백과사전",
     renderIcon: () => (
       <BookOpenText
         size={NAV_ICON_SIZE}
@@ -60,8 +58,7 @@ const BOTTOM_NAV_ITEMS: BottomNavItemConfig[] = [
         aria-hidden
       />
     ),
-    /** 도감 페이지 미구현 — 추후 경로 추가 시 여기 반영 */
-    isActive: () => false,
+    isActive: (pathname) => pathname.startsWith("/encyclopedia"),
   },
   {
     id: "mypage",
@@ -78,7 +75,7 @@ const BOTTOM_NAV_ITEMS: BottomNavItemConfig[] = [
 ];
 
 /**
- * 모바일 하단 탭 nav — 홈·타로·도감·마이(비로그인 시 로그인) 이동
+ * 모바일 하단 탭 nav — 홈·타로·백과사전·마이(비로그인 시 로그인) 이동
  */
 export default function BottomNav() {
   const pathname = usePathname();
@@ -139,8 +136,10 @@ export default function BottomNav() {
       case "tarot-start":
         requestTarotSetup();
         return;
-      case "tarot-history":
-        toast("준비중입니다", { icon: <TarotCardToastIcon /> });
+      case "encyclopedia":
+        if (!pathname.startsWith("/encyclopedia")) {
+          router.push("/encyclopedia");
+        }
         return;
       case "mypage":
         router.push(isLoggedIn ? "/mypage" : "/login");
