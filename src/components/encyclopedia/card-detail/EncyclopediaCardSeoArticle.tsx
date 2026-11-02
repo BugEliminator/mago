@@ -4,27 +4,29 @@ import { hasEncyclopediaCardMeaning } from "@/lib/encyclopedia/cardMeaningCatalo
 import type {
   EncyclopediaCard,
   EncyclopediaCardMeaning,
-  EncyclopediaCardPin,
+  EncyclopediaCardSpot,
 } from "@/types/encyclopedia";
 import { SeoArticle } from "./EncyclopediaCardSeoArticle.style";
 
 type EncyclopediaCardSeoArticleProps = {
   card: EncyclopediaCard;
   meaning: EncyclopediaCardMeaning | null;
-  pins: readonly EncyclopediaCardPin[];
+  spots: readonly EncyclopediaCardSpot[];
 };
 
 /** 카드 상세 첫 HTML에 제목·정역·핀을 넣어 검색이 본문을 읽게 한다 */
 export default function EncyclopediaCardSeoArticle({
   card,
   meaning,
-  pins,
+  spots,
 }: EncyclopediaCardSeoArticleProps) {
   const showMeaning = hasEncyclopediaCardMeaning(meaning);
 
   return (
     <SeoArticle>
-      <h1>{card.name} 타로 의미</h1>
+      <h1>
+        {card.name} 타로 의미 ({card.englishName})
+      </h1>
       {showMeaning && meaning != null ? (
         <>
           {meaning.uprightKeywords.length > 0 || meaning.upright.length > 0 ? (
@@ -48,12 +50,12 @@ export default function EncyclopediaCardSeoArticle({
           ) : null}
         </>
       ) : null}
-      {pins.length > 0 ? (
+      {spots.length > 0 ? (
         <section>
-          <h2>상징 키워드</h2>
-          {pins.map((pin) => (
-            <p key={pin.id}>
-              {pin.title}. {pin.body}
+          <h2>카드 속 Point</h2>
+          {spots.map((spot) => (
+            <p key={spot.spotOrder}>
+              {spot.spotOrder}. {spot.title}. {spot.description}
             </p>
           ))}
         </section>

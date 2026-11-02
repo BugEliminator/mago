@@ -1,18 +1,20 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import EncyclopediaCardSeoArticle from "@/components/encyclopedia/card-detail/EncyclopediaCardSeoArticle";
+import EncyclopediaCardJsonLd from "@/components/encyclopedia/seo/EncyclopediaCardJsonLd";
 import {
   encyclopediaCardPath,
   findEncyclopediaCardBySlug,
   listEncyclopediaCards,
   parseEncyclopediaCardQuery,
 } from "@/lib/encyclopedia/cardBundleCatalog";
-import { findEncyclopediaCardDetail } from "@/lib/encyclopedia/cardDetailCatalog";
+import { resolveEncyclopediaCardSpots } from "@/lib/encyclopedia/cardSpotCatalog";
 import {
   ENCYCLOPEDIA_LIST_METADATA,
   encyclopediaCardMetadata,
 } from "@/lib/encyclopedia/encyclopediaMetadata";
 import { fetchEncyclopediaCardMeaningsFromDb } from "@/lib/server/fetchEncyclopediaCardMeaningsFromDb";
+import { fetchEncyclopediaCardSpotsFromDb } from "@/lib/server/fetchEncyclopediaCardSpotsFromDb";
 
 type EncyclopediaRoutePageProps = {
   params: Promise<{ slug?: string[] }>;
@@ -72,13 +74,21 @@ export default async function EncyclopediaRoutePage({
 
   if (selectedCard == null) return null;
 
-  const meanings = await fetchEncyclopediaCardMeaningsFromDb();
+  const [meanings, spotCopies] = await Promise.all([
+    fetchEncyclopediaCardMeaningsFromDb(),
+    fetchEncyclopediaCardSpotsFromDb(),
+  ]);
+  const meaning = meanings[selectedCard.id] ?? null;
+  const spots = resolveEncyclopediaCardSpots(selectedCard.id, spotCopies);
 
   return (
-    <EncyclopediaCardSeoArticle
-      card={selectedCard}
-      meaning={meanings[selectedCard.id] ?? null}
-      pins={findEncyclopediaCardDetail(selectedCard.id)?.pins ?? []}
-    />
+    <>
+      <EncyclopediaCardJsonLd card={selectedCard} meaning={meaning} />
+      <EncyclopediaCardSeoArticle
+        card={selectedCard}
+        meaning={meaning}
+        spots={spots}
+      />
+    </>
   );
 }

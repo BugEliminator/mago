@@ -15,6 +15,14 @@ const LIST_DESCRIPTION =
 
 const DESCRIPTION_MAX_LENGTH = 140;
 
+export type EncyclopediaCardSeoData = {
+  title: string;
+  description: string;
+  canonicalUrl: string;
+  imageUrl: string;
+  imageAlt: string;
+};
+
 /** 목록 페이지 메타 */
 export const ENCYCLOPEDIA_LIST_METADATA: Metadata = {
   title: LIST_TITLE,
@@ -38,10 +46,24 @@ function cardDescription(
 ): string {
   const upright = meaning?.upright.trim() ?? "";
   if (upright.length === 0) {
-    return `타로 ${card.name}의 정방향·역방향 해석과 카드 속 상징을 살펴보세요.`;
+    return `타로 ${card.name}(${card.englishName})의 정방향·역방향 해석과 카드 속 상징을 살펴보세요.`;
   }
   if (upright.length <= DESCRIPTION_MAX_LENGTH) return upright;
   return `${upright.slice(0, DESCRIPTION_MAX_LENGTH)}...`;
+}
+
+/** metadata와 구조화 데이터가 공유하는 카드별 SEO 정보 */
+export function getEncyclopediaCardSeoData(
+  card: EncyclopediaCard,
+  meaning: EncyclopediaCardMeaning | null,
+): EncyclopediaCardSeoData {
+  return {
+    title: `${card.name} 타로 의미 (${card.englishName}) | MAGO`,
+    description: cardDescription(card, meaning),
+    canonicalUrl: toPublicSiteUrl(encyclopediaCardPath(card.slug)),
+    imageUrl: toPublicSiteUrl(card.src),
+    imageAlt: `${card.name} (${card.englishName}) 타로 카드`,
+  };
 }
 
 /** 카드 상세 페이지 메타 */
@@ -49,26 +71,25 @@ export function encyclopediaCardMetadata(
   card: EncyclopediaCard,
   meaning: EncyclopediaCardMeaning | null,
 ): Metadata {
-  const title = `${card.name} 타로 의미 | MAGO`;
-  const description = cardDescription(card, meaning);
-  const url = toPublicSiteUrl(encyclopediaCardPath(card.slug));
+  const { title, description, canonicalUrl, imageUrl, imageAlt } =
+    getEncyclopediaCardSeoData(card, meaning);
 
   return {
     title,
     description,
     alternates: {
-      canonical: url,
+      canonical: canonicalUrl,
     },
     openGraph: {
       title,
       description,
-      url,
+      url: canonicalUrl,
       locale: "ko_KR",
       type: "article",
       images: [
         {
-          url: card.src,
-          alt: card.name,
+          url: imageUrl,
+          alt: imageAlt,
         },
       ],
     },
@@ -76,7 +97,7 @@ export function encyclopediaCardMetadata(
       card: "summary_large_image",
       title,
       description,
-      images: [card.src],
+      images: [imageUrl],
     },
   };
 }
