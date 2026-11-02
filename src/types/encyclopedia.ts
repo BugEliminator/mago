@@ -18,6 +18,7 @@ export type EncyclopediaCard = {
   slug: EncyclopediaCardSlug;
   bundleId: EncyclopediaBundleId;
   name: string;
+  englishName: string;
   src: string;
 };
 
@@ -28,19 +29,43 @@ export type EncyclopediaCardBundle = {
   cards: readonly EncyclopediaCard[];
 };
 
-/** 카드 위 키워드 점 — x/y는 앞면 대비 퍼센트 */
-export type EncyclopediaCardPin = {
-  id: string;
+/** 카드 위 번호 하나의 위치 — x/y는 앞면 대비 퍼센트 */
+export type EncyclopediaCardSpotPosition = {
   x: number;
   y: number;
-  title: string;
-  body: string;
 };
 
-/** 카드 상세 해설 — 핀은 로컬, 정·역 의미는 Supabase */
+/** 한 Point는 같은 번호를 카드 위 여러 위치에 표시할 수 있다. */
+export type EncyclopediaCardSpotCoordinate = {
+  spotOrder: number;
+  positions: readonly EncyclopediaCardSpotPosition[];
+};
+
+/** card_spots에서 읽은 Point 설명 */
+export type EncyclopediaCardSpotCopy = {
+  spotOrder: number;
+  title: string;
+  description: string;
+};
+
+/** 좌표와 설명을 합친 화면용 Point */
+export type EncyclopediaCardSpot = EncyclopediaCardSpotCoordinate &
+  EncyclopediaCardSpotCopy;
+
+/** 백과 카드 id → Point 설명. 없는 카드는 키 자체가 없음 */
+export type EncyclopediaCardSpotCopyById = Partial<
+  Record<EncyclopediaCardId, readonly EncyclopediaCardSpotCopy[]>
+>;
+
+/** 백과 카드 id → 화면용 Point. 없는 카드는 키 자체가 없음 */
+export type EncyclopediaCardSpotById = Partial<
+  Record<EncyclopediaCardId, readonly EncyclopediaCardSpot[]>
+>;
+
+/** 카드 상세 좌표 — 사람이 식별하기 쉬운 URL slug로 연결한다. */
 export type EncyclopediaCardDetail = {
-  cardId: EncyclopediaCardId;
-  pins: readonly EncyclopediaCardPin[];
+  cardSlug: EncyclopediaCardSlug;
+  spots: readonly EncyclopediaCardSpotCoordinate[];
 };
 
 /** card_meanings에서 모은 한 장의 정·역 해설 */

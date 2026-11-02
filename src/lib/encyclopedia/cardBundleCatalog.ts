@@ -53,6 +53,32 @@ const MAJOR_NAMES = [
   "세계",
 ] as const;
 
+/** 카드 원본에 쓰인 메이저 영문명 */
+const MAJOR_ENGLISH_NAMES = [
+  "THE FOOL",
+  "THE MAGICIAN",
+  "THE HIGH PRIESTESS",
+  "THE EMPRESS",
+  "THE EMPEROR",
+  "THE HIEROPHANT",
+  "THE LOVERS",
+  "THE CHARIOT",
+  "STRENGTH",
+  "THE HERMIT",
+  "WHEEL OF FORTUNE",
+  "JUSTICE",
+  "THE HANGED MAN",
+  "DEATH",
+  "TEMPERANCE",
+  "THE DEVIL",
+  "THE TOWER",
+  "THE STAR",
+  "THE MOON",
+  "THE SUN",
+  "JUDGEMENT",
+  "THE WORLD",
+] as const;
+
 const MINOR_RANKS = [
   "에이스",
   "2",
@@ -68,6 +94,23 @@ const MINOR_RANKS = [
   "기사",
   "여왕",
   "왕",
+] as const;
+
+const MINOR_RANK_ENGLISH_NAMES = [
+  "ACE",
+  "TWO",
+  "THREE",
+  "FOUR",
+  "FIVE",
+  "SIX",
+  "SEVEN",
+  "EIGHT",
+  "NINE",
+  "TEN",
+  "PAGE",
+  "KNIGHT",
+  "QUEEN",
+  "KING",
 ] as const;
 
 const MINOR_SUIT_LABEL: Record<
@@ -136,6 +179,17 @@ function cardName(bundleId: EncyclopediaBundleId, offset: number): string {
   return `${MINOR_SUIT_LABEL[bundleId]} ${MINOR_RANKS[offset]}`;
 }
 
+function cardEnglishName(
+  bundleId: EncyclopediaBundleId,
+  offset: number,
+): string {
+  if (bundleId === "major") {
+    return MAJOR_ENGLISH_NAMES[offset];
+  }
+
+  return `${MINOR_RANK_ENGLISH_NAMES[offset]} OF ${bundleId.toUpperCase()}`;
+}
+
 /** 카드 한 장의 영어 slug */
 function cardSlug(
   bundleId: EncyclopediaBundleId,
@@ -164,6 +218,7 @@ function cardsForBundle(bundleId: EncyclopediaBundleId): EncyclopediaCard[] {
       slug: cardSlug(bundleId, offset),
       bundleId,
       name: cardName(bundleId, offset),
+      englishName: cardEnglishName(bundleId, offset),
       src: classicFaceSrc(folder, deckIndex),
     };
   });
