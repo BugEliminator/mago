@@ -7,7 +7,7 @@ export type MagoReadingClientResult =
 
 /**
  * 클라이언트 → POST /api/tarot/reading
- * 병렬 처리 실패 시 MAGO_v2 전체 해석 요청
+ * 병렬 처리 실패 시 코드 기반 MAGO_v2 전체 해석 요청
  */
 export async function requestMagoReadingFromClient(
   input: RequestMagoReadingClientInput,

@@ -24,7 +24,7 @@ type ServerTimingMetric = {
   durationMs: number;
 };
 
-/** POST /api/tarot/reading — 서버에서 입력을 조립한 뒤 전체 프롬프트 호출 */
+/** POST /api/tarot/reading — 서버에서 입력을 조립한 뒤 코드 기반 전체 프롬프트 호출 */
 export async function POST(request: Request) {
   const requestStartedAt = performance.now();
   const serverTimings: ServerTimingMetric[] = [];

@@ -1,6 +1,6 @@
 /**
- * MAGO LLM (MAGO_v1) 응답 타입
- * OpenAI response_format: json_object 기준
+ * MAGO LLM (MAGO_v2) 응답 타입
+ * OpenAI Structured Outputs 기준
  */
 
 /** 카드 1장의 LLM 해석 — res_readings 배열의 각 항목 */
@@ -24,7 +24,7 @@ export interface MagoLlmAdvice {
 }
 
 /**
- * MAGO_v1 LLM 전체 응답 구조
+ * MAGO_v2 LLM 전체 응답 구조
  * AX에서 받은 JSON을 코드에서 다룰 때 이 타입으로 파싱합니다.
  */
 export interface MagoLlmResult {

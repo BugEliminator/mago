@@ -8,7 +8,7 @@ export type TarotReadingLlmReadingItem = {
   meaning: string;
 };
 
-/** MAGO 프롬프트에 넘기는 v2 입력 JSON */
+/** MAGO 코드 기반 프롬프트에 넘기는 v2 입력 JSON */
 export type TarotReadingLlmPayload = {
   schema_version: 2;
   timestamp: {

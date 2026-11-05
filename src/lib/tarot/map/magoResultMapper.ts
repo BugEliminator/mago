@@ -17,7 +17,7 @@ function toDrawnCardsLabel(cardCount: number | null): string {
 }
 
 /**
- * MAGO_v1 LLM 응답 + 리딩 setup → 결과 페이지 전체 뷰 데이터
+ * MAGO_v2 LLM 응답 + 리딩 setup → 결과 페이지 전체 뷰 데이터
  *
  * @param llm - OpenAI/AX에서 받은 JSON (MagoLlmResult)
  * @param setup - 리딩 전 사용자 설정 (localStorage tarotSetup)
