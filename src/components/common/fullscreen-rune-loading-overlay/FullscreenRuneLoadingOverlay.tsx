@@ -28,6 +28,8 @@ export type FullscreenRuneLoadingOverlayProps = {
   animate?: DivMotion["animate"];
   transition?: DivMotion["transition"];
   onAnimationComplete?: DivMotion["onAnimationComplete"];
+  /** 캡션 아래에 표시할 선택적 페이지 전용 콘텐츠 */
+  children?: React.ReactNode;
 };
 
 /**
@@ -43,6 +45,7 @@ export default function FullscreenRuneLoadingOverlay({
   animate,
   transition,
   onAnimationComplete,
+  children,
 }: FullscreenRuneLoadingOverlayProps) {
   return (
     <FullscreenRuneLoadingBackdropMotion
@@ -68,6 +71,7 @@ export default function FullscreenRuneLoadingOverlay({
           </LottieTint>
         </LottieWrap>
         <Caption>{caption}</Caption>
+        {children}
       </LoadingStack>
     </FullscreenRuneLoadingBackdropMotion>
   );

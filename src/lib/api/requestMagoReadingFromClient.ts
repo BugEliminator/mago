@@ -1,5 +1,5 @@
 import type { MagoLlmResult } from "@/types/magoResult";
-import type { TarotReadingLlmPayload } from "@/lib/tarot/reading/tarotReadingLlmPayload";
+import type { RequestMagoReadingClientInput } from "@/types/tarotReadingRequest";
 
 export type MagoReadingClientResult =
   | { ok: true; result: MagoLlmResult }
@@ -7,17 +7,21 @@ export type MagoReadingClientResult =
 
 /**
  * 클라이언트 → POST /api/tarot/reading
- * Published Prompt(MAGO_v1) 해석 요청
+ * 병렬 처리 실패 시 코드 기반 MAGO_v2 전체 해석 요청
  */
 export async function requestMagoReadingFromClient(
-  payload: TarotReadingLlmPayload,
+  input: RequestMagoReadingClientInput,
 ): Promise<MagoReadingClientResult> {
+  const { accessToken, setup, pickedCards } = input;
   let response: Response;
   try {
     response = await fetch("/api/tarot/reading", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ payload }),
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({ setup, pickedCards }),
     });
   } catch {
     return { ok: false, error: "네트워크 오류로 리딩 요청에 실패했습니다." };
