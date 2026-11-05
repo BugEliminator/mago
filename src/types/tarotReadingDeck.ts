@@ -34,24 +34,9 @@ export type PickModalState = {
   slotIndex: number;
 };
 
-/** LLM payload용 profiles 조회 결과 */
-export type ProfileRowForLlm = {
-  nickname: string | null;
-  birth_date: string | null;
-  born_time: string | null;
-  gender: string | null;
-  language: string | null;
-};
-
 export type CardMeaningRow = {
   card_id: number;
   is_upright: boolean;
   keywords: string[] | null;
   description: string | null;
-};
-
-export type CardRow = {
-  id: number;
-  name_en: string | null;
-  type: string | null;
 };

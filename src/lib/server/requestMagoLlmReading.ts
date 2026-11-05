@@ -31,9 +31,7 @@ function getMagoPromptConfig(): {
   return { apiKey, promptId, promptVersion };
 }
 
-/**
- * Published Prompt(MAGO_v1)로 타로 해석 요청 — 서버 전용
- */
+/** Published Prompt로 전체 타로 해석 요청 — 서버 전용 */
 export async function requestMagoLlmReading(
   payload: TarotReadingLlmPayload,
 ): Promise<RequestMagoLlmReadingResult> {
@@ -50,13 +48,34 @@ export async function requestMagoLlmReading(
   const openai = new OpenAI({ apiKey: config.apiKey });
 
   try {
+    const requestStartedAt = performance.now();
     const response = await openai.responses.create({
       prompt: {
         id: config.promptId,
         version: config.promptVersion,
       },
       input: JSON.stringify(payload),
+      reasoning: { effort: "medium" },
     });
+    const durationMs = performance.now() - requestStartedAt;
+
+    if (process.env.NODE_ENV !== "production") {
+      const usage = response.usage;
+      console.info("[MAGO][타로 리딩][OpenAI 측정]", {
+        cardCount: payload.readings.length,
+        promptVersion: config.promptVersion,
+        model: response.model,
+        serviceTier: response.service_tier,
+        reasoningEffort: response.reasoning?.effort ?? null,
+        durationMs: Number(durationMs.toFixed(1)),
+        inputTokens: usage?.input_tokens ?? null,
+        cachedTokens: usage?.input_tokens_details.cached_tokens ?? null,
+        outputTokens: usage?.output_tokens ?? null,
+        reasoningTokens:
+          usage?.output_tokens_details.reasoning_tokens ?? null,
+        totalTokens: usage?.total_tokens ?? null,
+      });
+    }
 
     const parsed = parseMagoLlmResult(response.output_text);
     if (parsed == null) {

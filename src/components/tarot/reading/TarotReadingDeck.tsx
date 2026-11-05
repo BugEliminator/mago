@@ -9,7 +9,6 @@ import { getTarotCardStoragePublicUrl } from "@/lib/tarot/map/tarotCardStorageUr
 import type {
   PickModalState,
   PickedSlotEntry,
-  ProfileRowForLlm,
   ReadingCardState,
   ReadingViewState,
 } from "@/types/tarotReadingDeck";
@@ -34,16 +33,14 @@ import {
 import { useTarotDeckShuffle } from "@/hooks/useTarotDeckShuffle";
 import { useTarotReadingDeckTimers } from "@/hooks/useTarotReadingDeckTimers";
 import { useTarotSpreadMotion } from "@/hooks/useTarotSpreadMotion";
-import type {
-  BasePickedCardForLlm,
-  EnrichedPickedCardForLlm,
-} from "@/lib/tarot/reading/tarotReadingLlmPayload";
 import type { MagoLlmResult } from "@/types/magoResult";
-import {
-  buildTarotReadingLlmPayload,
-  enrichPickedCardsFromSupabase,
-} from "@/lib/tarot/reading/tarotReadingLlmPayload";
 import { requestMagoReadingFromClient } from "@/lib/api/requestMagoReadingFromClient";
+import {
+  requestMagoCardDraftFromClient,
+  requestMagoParallelSynthesisFromClient,
+  type MagoCardDraftClientResult,
+} from "@/lib/api/requestMagoParallelReadingFromClient";
+import { assembleMagoParallelResult } from "@/lib/tarot/reading/assembleMagoParallelResult";
 import { tarotPickSlotLabelKr } from "@/lib/tarot/reading/tarotPickSlotLabel";
 import { getTarotSpreadPositionMeta } from "@/lib/tarot/spread/tarotSpreadPositionMeta";
 import { supabase } from "@/lib/supabase/supabaseClient";
@@ -117,8 +114,6 @@ export default function TarotReadingDeck({
   const [deck, setDeck] = useState(initialDeck);
   const [deckReady, setDeckReady] = useState(false);
   const deckRef = useRef(initialDeck);
-  const [profile, setProfile] = useState<ProfileRowForLlm | null>(null);
-  const [profileLoaded, setProfileLoaded] = useState(false);
 
   const [deckCards, setDeckCards] = useState(() =>
     buildVisibleDeckCards(initialDeck),
@@ -180,62 +175,6 @@ export default function TarotReadingDeck({
   useEffect(() => {
     deckRef.current = deck;
   }, [deck]);
-
-  /** 프로필 로드 — nickname/생년월일/태어난시간/성별/국가(없으면 한국) */
-  useEffect(() => {
-    let cancelled = false;
-    const run = async () => {
-      try {
-        const {
-          data: { session },
-          error: sessionError,
-        } = await supabase.auth.getSession();
-
-        if (cancelled) return;
-        if (sessionError) {
-          console.warn("[MAGO][타로 리딩] 세션 조회 실패", sessionError);
-          setProfile(null);
-          setProfileLoaded(true);
-          return;
-        }
-
-        const uid = session?.user.id;
-        if (!uid) {
-          setProfile(null);
-          setProfileLoaded(true);
-          return;
-        }
-
-        const { data, error } = await supabase
-          .from("profiles")
-          .select("nickname,gender,birth_date,born_time,language")
-          .eq("id", uid)
-          .maybeSingle();
-
-        if (cancelled) return;
-
-        if (error) {
-          console.warn("[MAGO][타로 리딩] 프로필 조회 실패", error);
-          setProfile(null);
-          setProfileLoaded(true);
-          return;
-        }
-
-        setProfile((data ?? null) as ProfileRowForLlm | null);
-        setProfileLoaded(true);
-      } catch (e) {
-        if (cancelled) return;
-        console.warn("[MAGO][타로 리딩] 프로필 로드 예외", e);
-        setProfile(null);
-        setProfileLoaded(true);
-      }
-    };
-
-    void run();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   /** 일반 리딩: 마운트 후 한 번 셔플. 해석 모드는 카탈로그를 그대로 씁니다. */
   useEffect(() => {
@@ -335,31 +274,78 @@ export default function TarotReadingDeck({
     setPickModal(null);
   }, []);
 
+  const cardDraftPromisesRef = useRef<
+    Map<number, Promise<MagoCardDraftClientResult>>
+  >(new Map());
+
+  const startCardDraft = useCallback(
+    (
+      slotIndex: number,
+      pickedCard: { cardId: number; isReversed: boolean },
+    ): Promise<MagoCardDraftClientResult> => {
+      const existing = cardDraftPromisesRef.current.get(slotIndex);
+      if (existing != null) return existing;
+
+      const promise = (async (): Promise<MagoCardDraftClientResult> => {
+        const {
+          data: { session },
+          error,
+        } = await supabase.auth.getSession();
+        if (error != null || session?.access_token == null) {
+          return {
+            ok: false,
+            error: "카드 초안을 위한 로그인 정보를 확인하지 못했습니다.",
+          };
+        }
+
+        return requestMagoCardDraftFromClient({
+          accessToken: session.access_token,
+          setup,
+          pickedCard,
+          slotIndex,
+        });
+      })().catch(() => ({
+        ok: false as const,
+        error: "카드 초안 생성 중 오류가 발생했습니다.",
+      }));
+
+      cardDraftPromisesRef.current.set(slotIndex, promise);
+      return promise;
+    },
+    [setup],
+  );
+
   const handleConfirmPickModal = useCallback(() => {
-    setPickModal((m) => {
-      if (!m) return null;
-      const deckIndex = deckRef.current.findIndex(
-        (e) => e.id === m.cardId && e.isReversed === m.isReversed,
-      );
-      const fromTopIndex =
-        deckIndex >= 0 ? deckRef.current.length - 1 - deckIndex : null;
+    if (pickModal == null) return;
 
-      console.log("[MAGO][타로 리딩] 카드 확정", {
-        카드번호: m.cardId,
-        방향: m.isReversed ? "역방향" : "정방향",
-        슬롯: m.slotIndex,
-        덱인덱스_아래에서부터: deckIndex >= 0 ? deckIndex : null,
-        덱인덱스_위에서부터: fromTopIndex,
-      });
+    const deckIndex = deckRef.current.findIndex(
+      (entry) =>
+        entry.id === pickModal.cardId &&
+        entry.isReversed === pickModal.isReversed,
+    );
+    const fromTopIndex =
+      deckIndex >= 0 ? deckRef.current.length - 1 - deckIndex : null;
 
-      setPickedSlots((prev) => {
-        const next = [...prev];
-        next[m.slotIndex] = { cardId: m.cardId, isReversed: m.isReversed };
-        return next;
-      });
-      return null;
+    console.log("[MAGO][타로 리딩] 카드 확정", {
+      카드번호: pickModal.cardId,
+      방향: pickModal.isReversed ? "역방향" : "정방향",
+      슬롯: pickModal.slotIndex,
+      덱인덱스_아래에서부터: deckIndex >= 0 ? deckIndex : null,
+      덱인덱스_위에서부터: fromTopIndex,
     });
-  }, []);
+
+    const pickedCard = {
+      cardId: pickModal.cardId,
+      isReversed: pickModal.isReversed,
+    };
+    void startCardDraft(pickModal.slotIndex, pickedCard);
+    setPickedSlots((previous) => {
+      const next = [...previous];
+      next[pickModal.slotIndex] = pickedCard;
+      return next;
+    });
+    setPickModal(null);
+  }, [pickModal, startCardDraft]);
 
   const didNotifyAllPickedRef = useRef(false);
   useEffect(() => {
@@ -383,7 +369,6 @@ export default function TarotReadingDeck({
   }, [onReadingComplete, onReadingFailed]);
 
   useEffect(() => {
-    if (!profileLoaded) return;
     if (viewState !== "spread") return;
     if (isSpreading) return;
     if (pickSlotCount <= 0) return;
@@ -393,84 +378,102 @@ export default function TarotReadingDeck({
 
     didLogLlmPayloadRef.current = true;
 
-    const now = new Date();
-    const basePicked: BasePickedCardForLlm[] = pickedSlots.map((s, idx) => {
-      const meta =
-        setup.cardCount != null && setup.category != null
-          ? getTarotSpreadPositionMeta(
-              setup.cardCount,
-              setup.category,
-              idx,
-              setup.detailTag,
-            )
-          : null;
-
+    const pickedCards = pickedSlots.map((s) => {
       const slot = s as PickedSlotEntry;
       return {
-        순서: idx + 1,
-        카드번호: slot.cardId,
-        방향: slot.isReversed ? "역방향" : "정방향",
-        해석포지션: meta
-          ? {
-              번호: meta.pos,
-              라벨: meta.label,
-              설명: meta.desc,
-            }
-          : null,
+        cardId: slot.cardId,
+        isReversed: slot.isReversed,
       };
     });
 
     const run = async () => {
-      const result = await enrichPickedCardsFromSupabase(basePicked);
-      const pickedForLog:
-        | readonly EnrichedPickedCardForLlm[]
-        | readonly BasePickedCardForLlm[] = result.ok
-        ? result.pickedCards
-        : basePicked;
+      try {
+        const {
+          data: { session },
+          error: sessionError,
+        } = await supabase.auth.getSession();
+        const accessToken = session?.access_token;
+        if (sessionError != null || accessToken == null) {
+          console.error("[MAGO][타로 리딩] 인증 세션 조회 실패", sessionError);
+          onReadingFailedRef.current?.("로그인 정보를 확인하지 못했습니다.");
+          didLogLlmPayloadRef.current = false;
+          return;
+        }
 
-      if (!result.ok) {
-        if (result.meaningError != null) {
+        const parallelStartedAt = performance.now();
+        const draftResultsPromise = Promise.all(
+          pickedCards.map((pickedCard, slotIndex) =>
+            startCardDraft(slotIndex, pickedCard),
+          ),
+        );
+        const synthesisPromise = requestMagoParallelSynthesisFromClient({
+          accessToken,
+          setup,
+          pickedCards,
+        });
+        const [draftResults, synthesisResult] = await Promise.all([
+          draftResultsPromise,
+          synthesisPromise,
+        ]);
+        const drafts = draftResults.flatMap((result) =>
+          result.ok ? [result.draft] : [],
+        );
+
+        const parallelResult = synthesisResult.ok
+          ? assembleMagoParallelResult(setup, drafts, synthesisResult.synthesis)
+          : null;
+        const apiResult =
+          drafts.length === pickedCards.length && parallelResult != null
+            ? { ok: true as const, result: parallelResult }
+            : await requestMagoReadingFromClient({
+                accessToken,
+                setup,
+                pickedCards,
+              });
+
+        if (parallelResult != null) {
+          console.info("[MAGO][타로 리딩][병렬 전체 측정]", {
+            cardCount: pickedCards.length,
+            durationAfterLastPickMs: Number(
+              (performance.now() - parallelStartedAt).toFixed(1),
+            ),
+          });
+        } else if (!synthesisResult.ok) {
           console.warn(
-            "[MAGO][타로 리딩] card_meanings 조회 실패",
-            result.meaningError,
+            "[MAGO][타로 리딩] 병렬 종합 실패, 단일 호출로 복구",
+            synthesisResult.error,
+          );
+        } else {
+          console.warn(
+            "[MAGO][타로 리딩] 카드 초안 또는 결과 조립 실패, 단일 호출로 복구",
           );
         }
-        if (result.cardsError != null) {
-          console.warn("[MAGO][타로 리딩] cards 조회 실패", result.cardsError);
+        if (!apiResult.ok) {
+          console.error("[MAGO][타로 리딩] LLM 요청 실패", apiResult.error);
+          onReadingFailedRef.current?.(apiResult.error);
+          didLogLlmPayloadRef.current = false;
+          return;
         }
-      }
 
-      const consolePayload = buildTarotReadingLlmPayload(
-        now,
-        profile,
-        setup,
-        pickedForLog,
-      );
-      console.log("[MAGO][타로 리딩] LLM 전달 payload(최종)", consolePayload);
-
-      const apiResult = await requestMagoReadingFromClient(consolePayload);
-      if (!apiResult.ok) {
-        console.error("[MAGO][타로 리딩] LLM 요청 실패", apiResult.error);
-        onReadingFailedRef.current?.(apiResult.error);
+        console.log("[MAGO][타로 리딩] LLM 응답", apiResult.result);
+        onReadingCompleteRef.current?.({
+          result: apiResult.result,
+        });
+      } catch (error) {
+        console.error("[MAGO][타로 리딩] 요청 처리 중 예외", error);
+        onReadingFailedRef.current?.("리딩 요청 중 오류가 발생했습니다.");
         didLogLlmPayloadRef.current = false;
-        return;
       }
-
-      console.log("[MAGO][타로 리딩] LLM 응답", apiResult.result);
-      onReadingCompleteRef.current?.({
-        result: apiResult.result,
-      });
     };
 
     void run();
   }, [
-    profileLoaded,
     viewState,
     isSpreading,
     pickSlotCount,
     pickedSlots,
-    profile,
     setup,
+    startCardDraft,
   ]);
 
   const handleCardClick = useCallback(
