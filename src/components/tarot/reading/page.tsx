@@ -35,6 +35,9 @@ const NEBULA_BOOT_FALLBACK_MS = 8000;
 /** 해석 오버레이 최소 노출 시간(ms) — API가 빨리 끝나도 잠깐은 보여줍니다. */
 const MIN_INTERPRET_OVERLAY_MS = 2000;
 
+/** 100%와 완료 문구를 확인할 수 있도록 결과 이동 전 잠시 유지합니다. */
+const INTERPRET_COMPLETE_HOLD_MS = 450;
+
 type PendingNavigation = {
   readingId: string;
   data: TarotReadingCompletePayload;
@@ -55,10 +58,12 @@ export default function TarotReadingPage({
 
   const [bootOverlayVisible, setBootOverlayVisible] = useState(true);
   const [interpretOverlayVisible, setInterpretOverlayVisible] = useState(false);
+  const [interpretComplete, setInterpretComplete] = useState(false);
   const pendingResultIdRef = useRef<string | null>(null);
   const overlayShownAtRef = useRef<number | null>(null);
   const pendingNavigationRef = useRef<PendingNavigation | null>(null);
   const navigateTimerRef = useRef<number | null>(null);
+  const completeTimerRef = useRef<number | null>(null);
   const isCompletingRef = useRef(false);
   const [minBootElapsed, setMinBootElapsed] = useState(false);
   const [deckAssetReady, setDeckAssetReady] = useState(false);
@@ -103,6 +108,9 @@ export default function TarotReadingPage({
       if (navigateTimerRef.current != null) {
         window.clearTimeout(navigateTimerRef.current);
       }
+      if (completeTimerRef.current != null) {
+        window.clearTimeout(completeTimerRef.current);
+      }
     };
   }, []);
 
@@ -117,6 +125,7 @@ export default function TarotReadingPage({
   const resetReadingProgress = useCallback(() => {
     isCompletingRef.current = false;
     setInterpretOverlayVisible(false);
+    setInterpretComplete(false);
     pendingResultIdRef.current = null;
     overlayShownAtRef.current = null;
     pendingNavigationRef.current = null;
@@ -178,6 +187,14 @@ export default function TarotReadingPage({
       return;
     }
 
+    setInterpretComplete(true);
+    await new Promise<void>((resolve) => {
+      completeTimerRef.current = window.setTimeout(() => {
+        completeTimerRef.current = null;
+        resolve();
+      }, INTERPRET_COMPLETE_HOLD_MS);
+    });
+
     clearTarotReadingLocalDraft(session.user.id);
     router.push(`/tarot/result/${pending.readingId}`);
   }, [router, setup, resetReadingProgress]);
@@ -186,6 +203,7 @@ export default function TarotReadingPage({
   const handleAllSlotsPicked = useCallback(() => {
     pendingResultIdRef.current = generateUuid();
     overlayShownAtRef.current = Date.now();
+    setInterpretComplete(false);
     setInterpretOverlayVisible(true);
   }, []);
 
@@ -230,7 +248,12 @@ export default function TarotReadingPage({
           />
         </ReadingStretchCardsWrap>
       </ReadingStretchColumn>
-      {interpretOverlayVisible ? <TarotReadingInterpretOverlay /> : null}
+      {interpretOverlayVisible ? (
+        <TarotReadingInterpretOverlay
+          cardCount={setup.cardCount ?? 3}
+          isComplete={interpretComplete}
+        />
+      ) : null}
       {bootOverlayVisible && (
         <DismissibleRuneLoadingOverlay
           caption="운명의 실타래를 푸는 중..."
