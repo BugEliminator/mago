@@ -75,6 +75,7 @@ import {
   TotalCount,
   PageNav,
   PageBtn,
+  PageEllipsis,
   NavBtn,
   PaginationFooterSpacer,
   MobileTopBar,
@@ -93,6 +94,34 @@ const PAGE_SIZE = 6;
 const MOBILE_PAGE_SIZE = 10;
 const SEARCH_DEBOUNCE_MS = 300;
 const HISTORY_DELETE_ICON_SIZE = 14;
+
+type PaginationItem = number | "start-ellipsis" | "end-ellipsis";
+
+/** 최대 5칸: 처음·마지막·현재 위치에 따라 페이지와 생략 부호를 구성합니다. */
+function getPaginationItems(
+  currentPage: number,
+  totalPages: number,
+): PaginationItem[] {
+  if (totalPages <= 5) {
+    return Array.from({ length: totalPages }, (_, index) => index + 1);
+  }
+
+  if (currentPage <= 3) {
+    return [1, 2, 3, "end-ellipsis", totalPages];
+  }
+
+  if (currentPage >= totalPages - 2) {
+    return [1, "start-ellipsis", totalPages - 2, totalPages - 1, totalPages];
+  }
+
+  return [1, "start-ellipsis", currentPage, "end-ellipsis", totalPages];
+}
+
+/** URL의 page 쿼리를 안전한 1 이상의 정수로 변환합니다. */
+function getPageFromSearch(search: string): number {
+  const parsed = Number(new URLSearchParams(search).get("page"));
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : 1;
+}
 
 /** 히스토리 페이지 부제 — 데스크톱·모바일 공통 */
 const HISTORY_PAGE_SUBTITLE =
@@ -154,6 +183,7 @@ function formatDate(dateString: string): string {
 type HistoryPageClientProps = {
   initialSessions: HistoryListItem[];
   totalCount: number;
+  initialPage: number;
 };
 
 /** Supabase access token — 히스토리 추가 로드 API용 */
@@ -172,6 +202,7 @@ async function getClientAccessToken(): Promise<string | null> {
 export default function HistoryPageClient({
   initialSessions,
   totalCount: initialTotalCount,
+  initialPage,
 }: HistoryPageClientProps) {
   const router = useRouter();
   const [sessions, setSessions] = useState(initialSessions);
@@ -179,7 +210,8 @@ export default function HistoryPageClient({
   const [selectedCategory, setSelectedCategory] = useState("전체");
   const [searchInput, setSearchInput] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(initialPage);
+  const [isPageRestored, setIsPageRestored] = useState(false);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -202,6 +234,36 @@ export default function HistoryPageClient({
   useEffect(() => {
     totalCountRef.current = totalCount;
   }, [totalCount]);
+
+  /** 캐시 복원·브라우저 뒤로가기 시 URL의 페이지를 클라이언트 상태에 반영 */
+  useEffect(() => {
+    const restorePageFromUrl = () => {
+      setCurrentPage(getPageFromSearch(window.location.search));
+    };
+
+    restorePageFromUrl();
+    setIsPageRestored(true);
+    window.addEventListener("popstate", restorePageFromUrl);
+    return () => window.removeEventListener("popstate", restorePageFromUrl);
+  }, []);
+
+  /** 상세 페이지에서 뒤로 왔을 때 현재 페이지를 복원할 수 있도록 URL에 기록 */
+  useEffect(() => {
+    if (!isPageRestored) return;
+
+    const url = new URL(window.location.href);
+    if (currentPage === 1) {
+      url.searchParams.delete("page");
+    } else {
+      url.searchParams.set("page", String(currentPage));
+    }
+
+    const nextUrl = `${url.pathname}${url.search}${url.hash}`;
+    const currentUrl = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    if (nextUrl !== currentUrl) {
+      window.history.replaceState(window.history.state, "", nextUrl);
+    }
+  }, [currentPage, isPageRestored]);
 
   const hasActiveFilter =
     selectedCategory !== "전체" || debouncedSearchTerm.length > 0;
@@ -243,6 +305,7 @@ export default function HistoryPageClient({
   const totalPages = hasActiveFilter
     ? Math.ceil(filteredData.length / PAGE_SIZE)
     : Math.ceil(totalCount / PAGE_SIZE);
+  const paginationItems = getPaginationItems(currentPage, totalPages);
 
   const paginatedData = filteredData.slice(
     (currentPage - 1) * PAGE_SIZE,
@@ -741,31 +804,41 @@ export default function HistoryPageClient({
         </TotalCount>
 
         {filteredData.length > 0 && totalPages > 1 ? (
-          <PageNav>
+          <PageNav aria-label="고민 기록 페이지">
             <NavBtn
+              aria-label="이전 페이지"
               disabled={currentPage === 1}
               onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
             >
-              <ChevronLeft size={15} />
+              <ChevronLeft size={15} aria-hidden />
             </NavBtn>
 
-            {Array.from({ length: totalPages }, (_, idx) => (
-              <PageBtn
-                key={idx + 1}
-                $active={currentPage === idx + 1}
-                onClick={() => setCurrentPage(idx + 1)}
-              >
-                {idx + 1}
-              </PageBtn>
-            ))}
+            {paginationItems.map((item) =>
+              typeof item === "number" ? (
+                <PageBtn
+                  key={item}
+                  $active={currentPage === item}
+                  aria-label={`${item}페이지`}
+                  aria-current={currentPage === item ? "page" : undefined}
+                  onClick={() => setCurrentPage(item)}
+                >
+                  {item}
+                </PageBtn>
+              ) : (
+                <PageEllipsis key={item} aria-hidden>
+                  …
+                </PageEllipsis>
+              ),
+            )}
 
             <NavBtn
+              aria-label="다음 페이지"
               disabled={currentPage === totalPages}
               onClick={() =>
                 setCurrentPage((p) => Math.min(p + 1, totalPages))
               }
             >
-              <ChevronRight size={15} />
+              <ChevronRight size={15} aria-hidden />
             </NavBtn>
           </PageNav>
         ) : null}
