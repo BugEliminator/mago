@@ -1,20 +1,20 @@
 "use client";
 
-import type { CSSProperties } from "react";
-import { memo, useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import confetti from "canvas-confetti";
 import { CircleDollarSign, Star } from "lucide-react";
 import { toast } from "sonner";
 import { requestSubmitTarotSessionReviewFromClient } from "@/lib/api/requestSubmitTarotSessionReviewFromClient";
 import { COIN_REWARD_REVIEW } from "@/lib/coin/coinRewards";
 import { useCoinStore } from "@/stores/coinStore";
 import { supabase } from "@/lib/supabase/supabaseClient";
-import { tarotReadingQueryKey, type TarotReadingQueryData } from "@/lib/tarot/reading/tarotReadingQuery";
+import {
+  tarotReadingQueryKey,
+  type TarotReadingQueryData,
+} from "@/lib/tarot/reading/tarotReadingQuery";
 import type { TarotResultRatingProps } from "@/types/tarotResult";
 import {
-  CoinBurstFace,
-  CoinBurstMotionRoot,
-  CoinBurstViewport,
   DoneIconCircle,
   DoneSub,
   DoneTitle,
@@ -34,56 +34,15 @@ import {
 
 const STAR_VALUES = [1, 2, 3, 4, 5] as const;
 
-const COIN_BURST_COUNT = 120;
-
-/** 코인 1개 분출 파라미터 */
-interface CoinBurstParticle {
-  id: string;
-  tx: number;
-  ty: number;
-  rot: number;
-  delay: number;
-  size: number;
-}
-
-/** 제출 버튼 클릭 시 난수 코인 궤적 생성 */
-function createBurstCoins(): CoinBurstParticle[] {
-  return Array.from({ length: COIN_BURST_COUNT }, (_, i) => {
-    const angle = Math.random() * Math.PI * 2;
-    const velocity = 150 + Math.random() * 350;
-    return {
-      id: `coin-${i}-${Math.random().toString(36).slice(2, 11)}`,
-      tx: Math.cos(angle) * velocity,
-      ty: Math.sin(angle) * velocity - 200,
-      rot: 720 + Math.random() * 720,
-      delay: Math.random() * 0.3,
-      size: 0.6 + Math.random() * 0.8,
-    };
-  });
-}
-
-/**
- * 코인 개별 렌더 비용 완화
- */
-const CoinBurstItem = memo(function CoinBurstItem({
-  coin,
-}: {
-  coin: CoinBurstParticle;
-}) {
-  const motionStyle = {
-    ["--tx"]: `${coin.tx}px`,
-    ["--ty"]: `${coin.ty}px`,
-    ["--rot"]: `${coin.rot}deg`,
-    ["--size"]: String(coin.size),
-    animationDelay: `${coin.delay}s`,
-  } as CSSProperties;
-
-  return (
-    <CoinBurstMotionRoot style={motionStyle}>
-      <CoinBurstFace aria-hidden>₩</CoinBurstFace>
-    </CoinBurstMotionRoot>
-  );
-});
+const CONFETTI_COLORS = [
+  "#f43f5e",
+  "#f59e0b",
+  "#fde047",
+  "#22d3ee",
+  "#8b5cf6",
+  "#d946ef",
+  "#86efac",
+] as const;
 
 /**
  * 결과 하단 — 리딩 만족도 별점·선택 피드백 (DB has_reviewed 연동)
@@ -96,28 +55,22 @@ export default function ResultRating({
   const [rating, setRating] = useState<number | null>(null);
   const [feedback, setFeedback] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [burstCoins, setBurstCoins] = useState<CoinBurstParticle[]>([]);
-  const coinClearTimerRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    return () => {
-      if (coinClearTimerRef.current !== null) {
-        window.clearTimeout(coinClearTimerRef.current);
-      }
-    };
-  }, []);
-
-  const triggerCoinBurst = (): void => {
-    if (coinClearTimerRef.current !== null) {
-      window.clearTimeout(coinClearTimerRef.current);
-    }
-    requestAnimationFrame(() => {
-      setBurstCoins(createBurstCoins());
+  // 스텝 페이지 카드 돌아가는거 수정, 페이지네이션 최대 3~5개만 보이게
+  const triggerConfetti = (): void => {
+    void confetti({
+      particleCount: 200,
+      spread: 140,
+      startVelocity: 42,
+      gravity: 0.75,
+      decay: 0.93,
+      ticks: 260,
+      scalar: 0.75,
+      origin: { x: 0.5, y: 0.55 },
+      colors: [...CONFETTI_COLORS],
+      shapes: ["square", "circle"],
+      zIndex: 10_000,
+      disableForReducedMotion: true,
     });
-    coinClearTimerRef.current = window.setTimeout(() => {
-      setBurstCoins([]);
-      coinClearTimerRef.current = null;
-    }, 4000);
   };
 
   /** 의견 보내기 — Supabase tarot_sessions 후기 저장 */
@@ -172,20 +125,12 @@ export default function ResultRating({
       setBalance(balance + COIN_REWARD_REVIEW);
     }
 
-    triggerCoinBurst();
+    triggerConfetti();
     setIsSubmitting(false);
   };
 
   return (
     <>
-      {burstCoins.length > 0 ? (
-        <CoinBurstViewport aria-hidden>
-          {burstCoins.map((coin) => (
-            <CoinBurstItem key={coin.id} coin={coin} />
-          ))}
-        </CoinBurstViewport>
-      ) : null}
-
       {hasReviewed ? (
         <Panel data-reading-id={readingId} aria-live="polite">
           <DoneWrap>
@@ -193,9 +138,7 @@ export default function ResultRating({
               <CircleDollarSign size={40} strokeWidth={2} />
             </DoneIconCircle>
             <DoneTitle>소중한 의견 감사합니다</DoneTitle>
-            <DoneSub>
-              감사한 마음을 담아 복채 30냥을 지급해 드렸습니다.
-            </DoneSub>
+            <DoneSub>감사한 마음을 담아 복채 30냥을 지급해 드렸습니다.</DoneSub>
           </DoneWrap>
         </Panel>
       ) : (
@@ -203,9 +146,13 @@ export default function ResultRating({
           data-reading-id={readingId}
           aria-labelledby="tarot-result-rating-heading"
         >
-          <Title id="tarot-result-rating-heading">이번 리딩은 어떠셨나요?</Title>
+          <Title id="tarot-result-rating-heading">
+            이번 리딩은 어떠셨나요?
+          </Title>
           <SubtitleGroup>
-            <SubtitleLine>이번 리딩에 대한 솔직한 후기를 남겨주세요.</SubtitleLine>
+            <SubtitleLine>
+              이번 리딩에 대한 솔직한 후기를 남겨주세요.
+            </SubtitleLine>
             <SubtitleLine>
               감사의 의미로 복채 30냥을 바로{" "}
               <SubtitlePhrase>지급해 드립니다!</SubtitlePhrase>
