@@ -40,10 +40,15 @@ import { supabase } from "@/lib/supabase/supabaseClient";
 import { toast } from "sonner";
 import type { CardSpread } from "@/types/tarot";
 import { withTarotDevReveal } from "@/lib/tarot/devReveal";
+import {
+  TAROT_SETUP_STEP3_MAX_TOTAL_CHARS,
+  TAROT_SETUP_STEP3_MIN_TOTAL_CHARS,
+} from "@/lib/tarot/setup/tarotSetupConstraints";
 
 const SMOOTH_EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 const FLIP_MS = 650;
+const HIDE_FRONT_CONTENT_MS = FLIP_MS / 2;
 const ENTER_MS = 1600;
 const EXIT_MS = 1400;
 const CENTER_PAUSE_MS = 150;
@@ -84,6 +89,7 @@ export default function TarotSetupPage({
   const revealRef = useRef(initialReveal);
 
   const [isFaceUp, setIsFaceUp] = useState(false);
+  const [isFrontContentVisible, setIsFrontContentVisible] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(true);
   const [isFinalConfirmOpen, setIsFinalConfirmOpen] = useState(false);
@@ -148,11 +154,13 @@ export default function TarotSetupPage({
     clearTimers();
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsFaceUp(false);
+    setIsFrontContentVisible(false);
     setIsLeaving(false);
     setIsTransitioning(true);
 
     const flipToFrontTimer = setTimeout(() => {
       setIsFaceUp(true);
+      setIsFrontContentVisible(true);
     }, ENTER_MS + CENTER_PAUSE_MS);
 
     const readyTimer = setTimeout(
@@ -174,6 +182,10 @@ export default function TarotSetupPage({
     setIsTransitioning(true);
     setIsFaceUp(false);
 
+    const hideFrontContentTimer = setTimeout(() => {
+      setIsFrontContentVisible(false);
+    }, HIDE_FRONT_CONTENT_MS);
+
     const leaveTimer = setTimeout(() => {
       setIsLeaving(true);
     }, FLIP_MS + EXIT_AFTER_FLIP_PAUSE_MS);
@@ -185,7 +197,11 @@ export default function TarotSetupPage({
       FLIP_MS + EXIT_AFTER_FLIP_PAUSE_MS + EXIT_MS,
     );
 
-    timersRef.current = [leaveTimer, nextStepTimer];
+    timersRef.current = [
+      hideFrontContentTimer,
+      leaveTimer,
+      nextStepTimer,
+    ];
   };
 
   /** 복채 차감 성공 후 저장하고 카드 뒤집기·퇴장 뒤 리딩 페이지로 이동합니다. */
@@ -202,6 +218,10 @@ export default function TarotSetupPage({
       setIsTransitioning(true);
       setIsFaceUp(false);
 
+      const hideFrontContentTimer = setTimeout(() => {
+        setIsFrontContentVisible(false);
+      }, HIDE_FRONT_CONTENT_MS);
+
       const leaveTimer = setTimeout(() => {
         setIsLeaving(true);
       }, FLIP_MS + EXIT_AFTER_FLIP_PAUSE_MS);
@@ -213,7 +233,11 @@ export default function TarotSetupPage({
         FLIP_MS + EXIT_AFTER_FLIP_PAUSE_MS + EXIT_MS,
       );
 
-      timersRef.current = [leaveTimer, routeTimer];
+      timersRef.current = [
+        hideFrontContentTimer,
+        leaveTimer,
+        routeTimer,
+      ];
     },
     [clearTimers, isSpendingCoin, isTransitioning, router],
   );
@@ -277,9 +301,6 @@ export default function TarotSetupPage({
     exitToReading(userId);
   }, [exitToReading, formData.cardCount, isSpendingCoin, isTransitioning]);
 
-  const MIN_STEP3_CHARS = 30;
-  const MAX_STEP3_TOTAL = 300;
-
   const handleConfirm = () => {
     if (step === 1 && formData.cardCount === null) return;
     if (step === 2 && formData.category === null) return;
@@ -287,7 +308,8 @@ export default function TarotSetupPage({
     const step3Total = formData.situation.length + formData.question.length;
     if (
       step === 3 &&
-      (step3Total < MIN_STEP3_CHARS || step3Total > MAX_STEP3_TOTAL)
+      (step3Total < TAROT_SETUP_STEP3_MIN_TOTAL_CHARS ||
+        step3Total > TAROT_SETUP_STEP3_MAX_TOTAL_CHARS)
     ) {
       return;
     }
@@ -364,7 +386,7 @@ export default function TarotSetupPage({
               transition={{ duration: FLIP_MS / 1000, ease: "easeInOut" }}
             >
               <CardFaceFront aria-label={`설정 ${step}단계 앞면`}>
-                <CardFrontPanel $visible={isFaceUp}>
+                <CardFrontPanel $visible={isFrontContentVisible}>
                   {step === 1 ? (
                     <StepOneSelection
                       selectedCardCount={formData.cardCount}

@@ -1,6 +1,10 @@
 import type { SetupStep } from "@/components/tarot/setup/SetupStepHeader";
 import type { TarotSessionSetup } from "@/types/tarot";
 import {
+  TAROT_SETUP_STEP3_MAX_TOTAL_CHARS,
+  TAROT_SETUP_STEP3_MIN_TOTAL_CHARS,
+} from "@/lib/tarot/setup/tarotSetupConstraints";
+import {
   TAROT_WIZARD_INITIAL_FORM,
 } from "@/stores/tarotSetupStore";
 
@@ -16,10 +20,6 @@ type PersistShape = {
 function isSetupStep(n: unknown): n is SetupStep {
   return n === 1 || n === 2 || n === 3;
 }
-
-/** 스텝 3 상황+질문 합산 글자 수 — setup·리딩 setup 토큰 검증과 동일 */
-export const TAROT_SETUP_STEP3_MIN_TOTAL_CHARS = 30;
-export const TAROT_SETUP_STEP3_MAX_TOTAL_CHARS = 300;
 
 export function isFormDataShape(fd: unknown): fd is TarotSessionSetup {
   if (!fd || typeof fd !== "object") return false;

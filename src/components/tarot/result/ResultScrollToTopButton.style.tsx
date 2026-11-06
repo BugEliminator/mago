@@ -17,7 +17,7 @@ export const ScrollToTopButton = styled.button`
   border-radius: 50%;
   cursor: pointer;
   color: ${({ theme }) => theme.colors.neutral.white};
-  background: ${({ theme }) => theme.colors.primary.blue};
+  background: #f9a925;
   box-shadow: ${({ theme }) => theme.shadows.lg};
   transition:
     opacity ${({ theme }) => theme.transitions.fast},

@@ -3,6 +3,10 @@ import { useMobileTouchScroll } from "@/hooks/useMobileTouchScroll";
 import { Heart, HelpCircle, PenLine } from "lucide-react";
 import type { TarotCategory } from "@/types/tarot";
 import {
+  TAROT_SETUP_STEP3_MAX_TOTAL_CHARS,
+  TAROT_SETUP_STEP3_MIN_TOTAL_CHARS,
+} from "@/lib/tarot/setup/tarotSetupConstraints";
+import {
   getIntentCategoryBadgeLabel,
   getIntentCategoryOption,
 } from "../setupIntentCatalog";
@@ -46,19 +50,21 @@ import {
   TextAreaWrap,
 } from "./StepThreePanel.style";
 
-/** 두 칸 합산 상한(필드 간 배분은 자유 — 예: 상황 300·질문 0 가능) */
-const MAX_COMBINED = 300;
-const MIN_REQUIRED = 30;
-
-/** 상황 입력: 합계가 MAX_COMBINED를 넘지 않도록 자릅니다. */
+/** 상황 입력: 합계가 상한을 넘지 않도록 자릅니다. */
 function nextSituation(raw: string, questionLen: number): string {
-  const maxLen = Math.max(0, MAX_COMBINED - questionLen);
+  const maxLen = Math.max(
+    0,
+    TAROT_SETUP_STEP3_MAX_TOTAL_CHARS - questionLen,
+  );
   return raw.slice(0, maxLen);
 }
 
-/** 질문 입력: 합계가 MAX_COMBINED를 넘지 않도록 자릅니다. */
+/** 질문 입력: 합계가 상한을 넘지 않도록 자릅니다. */
 function nextQuestion(raw: string, situationLen: number): string {
-  const maxLen = Math.max(0, MAX_COMBINED - situationLen);
+  const maxLen = Math.max(
+    0,
+    TAROT_SETUP_STEP3_MAX_TOTAL_CHARS - situationLen,
+  );
   return raw.slice(0, maxLen);
 }
 
@@ -78,8 +84,8 @@ type StepThreePanelProps = {
 /** 게이지 안내 문구 — 입력 총 길이에 따라 바뀝니다. */
 function getGageMessage(totalLength: number): string {
   if (totalLength === 0) return "마고에게 이야기를 들려주세요";
-  if (totalLength < MIN_REQUIRED)
-    return "마고가 이해하기에 조금 부족해요 (30자 이상)";
+  if (totalLength < TAROT_SETUP_STEP3_MIN_TOTAL_CHARS)
+    return "마고가 이해하기에 조금 부족해요 (20자 이상)";
   if (totalLength < 100) return "좋아요, 조금 더 구체적이면 완벽해요";
   if (totalLength < 250) return "마고가 당신의 상황을 깊이 이해하고 있어요";
   return "충분합니다! 이제 마고는 완벽히 이해했어요";
@@ -104,10 +110,16 @@ export default function StepThreePanel({
   useMobileTouchScroll(scrollRef, { nestedTextarea: true });
 
   const totalLength = situation.length + question.length;
-  const canSubmit = totalLength >= MIN_REQUIRED && totalLength <= MAX_COMBINED;
+  const canSubmit =
+    totalLength >= TAROT_SETUP_STEP3_MIN_TOTAL_CHARS &&
+    totalLength <= TAROT_SETUP_STEP3_MAX_TOTAL_CHARS;
 
   const gagePct = useMemo(
-    () => Math.min((totalLength / MAX_COMBINED) * 100, 100),
+    () =>
+      Math.min(
+        (totalLength / TAROT_SETUP_STEP3_MAX_TOTAL_CHARS) * 100,
+        100,
+      ),
     [totalLength],
   );
 
@@ -287,14 +299,16 @@ export default function StepThreePanel({
           </GageLeft>
           <GageCountWrap>
             <GageCountCurrent>{totalLength}</GageCountCurrent>
-            <GageCountMax>/ {MAX_COMBINED}</GageCountMax>
+            <GageCountMax>/ {TAROT_SETUP_STEP3_MAX_TOTAL_CHARS}</GageCountMax>
           </GageCountWrap>
         </GageTopRow>
 
         <GageTrackWrap>
           <GageTrack>
             <GageFill
-              $canOptimal={totalLength >= MIN_REQUIRED}
+              $canOptimal={
+                totalLength >= TAROT_SETUP_STEP3_MIN_TOTAL_CHARS
+              }
               $pct={gagePct}
             />
           </GageTrack>

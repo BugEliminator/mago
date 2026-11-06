@@ -701,10 +701,22 @@ export const TotalCount = styled.span`
   }
 `;
 
-export const PageNav = styled.div`
+export const PageNav = styled.nav`
   display: flex;
   align-items: center;
   gap: 0.375rem;
+`;
+
+export const PageEllipsis = styled.span`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  color: #9e9e9e;
+  font-size: 0.75rem;
+  font-weight: 700;
+  user-select: none;
 `;
 
 export const PageBtn = styled.button<{ $active?: boolean }>`

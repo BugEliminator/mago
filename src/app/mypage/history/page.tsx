@@ -8,7 +8,16 @@ import { getServerAuthUserId } from "@/lib/supabase/supabaseServer";
 /**
  * 내 운세 히스토리 페이지 — 서버에서 tarot_sessions 초기 목록 prefetch
  */
-export default async function HistoryPage() {
+export default async function HistoryPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string | string[] }>;
+}) {
+  const rawPage = (await searchParams).page;
+  const parsedPage = Number(Array.isArray(rawPage) ? rawPage[0] : rawPage);
+  const initialPage =
+    Number.isInteger(parsedPage) && parsedPage > 0 ? parsedPage : 1;
+
   const userId = await getServerAuthUserId();
   const { sessions, totalCount } =
     userId != null
@@ -19,6 +28,10 @@ export default async function HistoryPage() {
       : { sessions: [], totalCount: 0 };
 
   return (
-    <HistoryPageClient initialSessions={sessions} totalCount={totalCount} />
+    <HistoryPageClient
+      initialSessions={sessions}
+      totalCount={totalCount}
+      initialPage={initialPage}
+    />
   );
 }
